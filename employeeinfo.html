@@ -386,6 +386,30 @@
             transform: scale(1.05); /* Slightly enlarge on hover */
         }
 
+        .pin-cell {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pin-input {
+            border: none;
+            background: transparent;
+            font-family: monospace;
+            width: 60px;
+            text-align: center;
+        }
+
+        .toggle-pin {
+            cursor: pointer;
+            color: #666;
+            transition: color 0.3s ease;
+        }
+
+        .toggle-pin:hover {
+            color: #006633;
+        }
+
     </style>
 </head>
 <body>
@@ -469,96 +493,7 @@
                     </tr>
                 </thead>
                 <tbody id="attendance-body">
-                    <tr>
-                        <td class="emp-id">EMP001</td>
-                        <td>Maria</td>
-                        <td>Santos Cruz</td>
-                        <td>Instructor</td>
-                        <td>2483</td>
-                        <td><span class="status-active">Active</span></td>
-                        <td><button><a href="emp1edit.html">Edit</a></button></td>
-                    </tr>
-                    <tr>
-                        <td class="emp-id">EMP002</td>
-                        <td>Juan</td>
-                        <td>dela Cruz</td>
-                        <td>Caregiver</td>
-                        <td>4732</td>
-                        <td><span class="status-active">Active</span></td>
-                        <td><button>Edit</button></td>
-                    </tr>
-                    <tr>
-                        <td class="emp-id">EMP003</td>
-                        <td>Ana</td>
-                        <td>Reyes</td>
-                        <td>Other Personnel</td>
-                        <td>1098</td>
-                        <td><span class="status-absent">Inactive</span></td>
-                        <td><button>Edit</button></td>
-                    </tr>
-                    <tr>
-                        <td class="emp-id">EMP004</td>
-                        <td>Miguel</td>
-                        <td>Rodriguez</td>
-                        <td>Faculty Member</td>
-                        <td>5764</td>
-                        <td><span class="status-active">Active</span></td>
-                        <td><button>Edit</button></td>
-                    </tr>
-                    <tr>
-                        <td class="emp-id">EMP005</td>
-                        <td>Isabella</td>
-                        <td>Garcia</td>
-                        <td>Part-time Faculty Member</td>
-                        <td>8471</td>
-                        <td><span class="status-active">Active</span></td>
-                        <td><button>Edit</button></td>
-                    </tr>
-                    <tr>
-                        <td class="emp-id">EMP006</td>
-                        <td>Ricardo</td>
-                        <td>Lim</td>
-                        <td>Instructor</td>
-                        <td>1529</td>
-                        <td><span class="status-active">Active</span></td>
-                        <td><button>Edit</button></td>
-                    </tr>
-                    <tr>
-                        <td class="emp-id">EMP007</td>
-                        <td>Carmen</td>
-                        <td>Tan</td>
-                        <td>Caregiver</td>
-                        <td>9203</td>
-                        <td><span class="status-absent">Inactive</span></td>
-                        <td><button>Edit</button></td>
-                    </tr>
-                    <tr>
-                        <td class="emp-id">EMP008</td>
-                        <td>Alex</td>
-                        <td>Smith</td>
-                        <td>Other Personnel</td>
-                        <td>6128</td>
-                        <td><span class="status-active">Active</span></td>
-                        <td><button>Edit</button></td>
-                    </tr>
-                    <tr>
-                        <td class="emp-id">EMP009</td>
-                        <td>Jasmine</td>
-                        <td>Johnson</td>
-                        <td>Part-time Faculty Member</td>
-                        <td>3819</td>
-                        <td><span class="status-absent">Inactive</span></td>
-                        <td><button>Edit</button></td>
-                    </tr>
-                    <tr>
-                        <td class="emp-id">EMP010</td>
-                        <td>Liam</td>
-                        <td>Williams</td>
-                        <td>Faculty Member</td>
-                        <td>5247</td>
-                        <td><span class="status-active">Active</span></td>
-                        <td><button>Edit</button></td>
-                    </tr>
+                    <!-- Data will be populated dynamically -->
                 </tbody>
             </table>                     
         </div>
@@ -578,28 +513,99 @@
     const clearButton = document.querySelector('.clear-filters');
     const tbody = document.getElementById('attendance-body');
     
-    // Function to filter the table based on name and position
-    function filterTable() {
-        const nameValue = nameInput.value.toLowerCase();  // Get the search term and make it lowercase
-        const positionValue = positionSelect.value;  // Get the selected position
+    // Updated fetchEmployees function with better error handling and status display
+    async function fetchEmployees() {
+        try {
+            const response = await fetch('fetch_employees.php');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const employees = await response.json();
+            
+            const tbody = document.getElementById('attendance-body');
+            tbody.innerHTML = ''; // Clear existing content
 
-        // Loop through each row in the table body
+            if (employees.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="7" class="no-results-row">No employees found</td>
+                `;
+                tbody.appendChild(row);
+                return;
+            }
+
+            employees.forEach((emp, index) => {
+                const row = document.createElement('tr');
+                const status = emp.STATUS === '1' ? 'present' : 'absent';
+                const statusText = emp.STATUS === '1' ? 'Active' : 'Inactive';
+                
+                row.innerHTML = `
+                    <td class="emp-id">EMP${String(emp.emp_id).padStart(3, '0')}</td>
+                    <td>${emp.FIRST_NAME || ''}</td>
+                    <td>${emp.LAST_NAME || ''}</td>
+                    <td>${emp.POSITION || ''}</td>
+                    <td class="pin-cell">
+                        <input type="password" value="${emp.PIN_CODE || ''}" readonly class="pin-input" id="pin-${index}">
+                        <i class="fas fa-eye toggle-pin" data-pin-id="pin-${index}"></i>
+                    </td>
+                    <td><span class="status-${status}">${statusText}</span></td>
+                    <td><button onclick="editEmployee(${emp.emp_id})">Edit</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // Add event listeners for individual PIN toggles
+            document.querySelectorAll('.toggle-pin').forEach(toggle => {
+                toggle.addEventListener('click', function() {
+                    const pinInput = document.getElementById(this.dataset.pinId);
+                    const isVisible = pinInput.type === 'text';
+                    pinInput.type = isVisible ? 'password' : 'text';
+                    this.className = isVisible ? 'fas fa-eye toggle-pin' : 'fas fa-eye-slash toggle-pin';
+                });
+            });
+
+            // Update results count
+            const resultsCount = document.querySelector('.results-count');
+            resultsCount.textContent = `${employees.length} employees found`;
+
+        } catch (error) {
+            console.error('Error fetching employees:', error);
+            const tbody = document.getElementById('attendance-body');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="no-results-row">Error loading employees. Please try again later.</td>
+                </tr>
+            `;
+        }
+    }
+
+    // Function to handle employee editing
+    function editEmployee(empId) {
+        // Redirect to edit page with employee ID
+        window.location.href = `editemployee.html?id=${empId}`;
+    }
+
+    // Call fetchEmployees when page loads
+    window.addEventListener('load', () => {
+        fetchEmployees();
+        filterTable(); // Keep your existing filter functionality
+    });
+
+    // Update your existing filter function to work with dynamic content
+    function filterTable() {
+        const nameValue = nameInput.value.toLowerCase();
+        const positionValue = positionSelect.value;
+
         const rows = tbody.getElementsByTagName('tr');
         for (let row of rows) {
             const firstName = row.cells[1].textContent.toLowerCase();
             const lastName = row.cells[2].textContent.toLowerCase();
             const position = row.cells[3].textContent;
 
-            // Check if the row matches the search name and position filter
             const nameMatch = firstName.includes(nameValue) || lastName.includes(nameValue);
             const positionMatch = positionValue === 'all' || position === positionValue;
 
-            // If both conditions are met, show the row, otherwise hide it
-            if (nameMatch && positionMatch) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
+            row.style.display = (nameMatch && positionMatch) ? '' : 'none';
         }
     }
 

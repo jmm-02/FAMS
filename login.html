@@ -126,7 +126,7 @@
 <body>
     <div class="login-container">
         <img src="assets/logo.png" alt="Logo" class="logo">
-        <form onsubmit="return validateForm(event)">
+        <form method="POST" action="login.php">
             <div class="form-group">
                 <label for="username">Username</label>
                 <input type="text" id="username" name="username" placeholder="Enter Username" required>
@@ -138,24 +138,5 @@
             <button type="submit">LOGIN</button>
         </form>
     </div>
-
-    <script>
-        function validateForm(event) {
-            event.preventDefault();
-            
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const form = document.querySelector('form');
-
-            if (username === 'admin' && password === 'admin') {
-                alert('Login successful!');
-                window.location.href = 'welcome.html';
-            } else {
-                form.classList.add('error');
-                setTimeout(() => form.classList.remove('error'), 500);
-                alert('Invalid username or password!');
-            }
-        }
-    </script>
 </body>
 </html> 

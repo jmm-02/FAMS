@@ -481,26 +481,26 @@
                     </tr>
                 </thead>
                 <tbody id="attendance-body">
-                    <Form onsubmit="confirmSubmission()">
+                    <form action="add_employee.php" method="POST" onsubmit="return confirmSubmission(event)">
                         <tr>
-                            <td class="emp-id"><input type="text" name="" id="" placeholder="Employee ID" required></td>
-                            <td><input type="text" name="" id="" placeholder="Firstname" required></td>
-                            <td><input type="text" name="" id="" placeholder="Lastname" required></td>
-                            <td><select id="" class="filter-select">
+                            <td class="emp-id"><input type="text" name="emp_id" placeholder="Employee ID" required></td>
+                            <td><input type="text" name="first_name" placeholder="Firstname" required></td>
+                            <td><input type="text" name="last_name" placeholder="Lastname" required></td>
+                            <td><select name="position" class="filter-select" required>
                                 <option value="Faculty Member">Faculty Member</option>
                                 <option value="Caregiver">Caregiver</option>
                                 <option value="Instructor">Instructor</option>
-                                <option value="Part-time FacultyMember">Part-time Faculty Member</option>
+                                <option value="Part-time Faculty Member">Part-time Faculty Member</option>
                                 <option value="Other Personnel">Other Personnel</option>
                             </select></td>
-                            <td><input type="number" name="" id="" placeholder="0000" required></td>
-                            <td><select id="" class="filter-select">
-                                <option value="Faculty Member">Active</option>
-                                <option value="Caregiver">Inactive</option>
+                            <td><input type="number" name="pin_code" placeholder="0000" minlength="4" maxlength="4" required></td>
+                            <td><select name="status" class="filter-select" required>
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
                             </select></td>
                             <td><input type="submit" value="Submit"></td>
                         </tr>
-                    </Form>
+                    </form>
                 </tbody>
             </table>                     
         </div>
@@ -562,17 +562,14 @@
     window.addEventListener('load', filterTable);
 
     function confirmSubmission(event) {
-            // Show confirmation dialog
-            const userConfirmed = confirm("Do you want to save?");
-            
-            if (userConfirmed) {
-                // If yes, redirect to employeeinfo.html
-                window.location.href = "employeeinfo.html";
-            } else {
-                // Prevent form submission
-                event.preventDefault();
-            }
+        event.preventDefault(); // Prevent default form submission
+        
+        const userConfirmed = confirm("Do you want to save?");
+        if (userConfirmed) {
+            // If confirmed, submit the form
+            event.target.submit();
         }
+    }
 
     </script>
 </body>
