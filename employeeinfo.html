@@ -516,7 +516,7 @@
     // Updated fetchEmployees function with better error handling and status display
     async function fetchEmployees() {
         try {
-            const response = await fetch('fetch_employees.php');
+            const response = await fetch('Fetch/fetch_employees.php');
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -536,28 +536,27 @@
 
             employees.forEach((emp, index) => {
                 const row = document.createElement('tr');
-                const status = emp.STATUS === '1' ? 'present' : 'absent';
-                const statusText = emp.STATUS === '1' ? 'Active' : 'Inactive';
+                const status = emp.STATUS === 'Active' ? 'present' : 'absent';
                 
                 row.innerHTML = `
-                    <td class="emp-id">EMP${String(emp.emp_id).padStart(3, '0')}</td>
+                    <td class="emp-id">${emp.emp_id}</td>
                     <td>${emp.FIRST_NAME || ''}</td>
                     <td>${emp.LAST_NAME || ''}</td>
                     <td>${emp.POSITION || ''}</td>
                     <td class="pin-cell">
-                        <input type="password" value="${emp.PIN_CODE || ''}" readonly class="pin-input" id="pin-${index}">
-                        <i class="fas fa-eye toggle-pin" data-pin-id="pin-${index}"></i>
+                        <input type="password" value="${emp.PIN_CODE || ''}" readonly class="pin-input">
+                        <i class="fas fa-eye toggle-pin"></i>
                     </td>
-                    <td><span class="status-${status}">${statusText}</span></td>
+                    <td><span class="status-${status}">${emp.STATUS}</span></td>
                     <td><button onclick="editEmployee(${emp.emp_id})">Edit</button></td>
                 `;
                 tbody.appendChild(row);
-            });
 
-            // Add event listeners for individual PIN toggles
-            document.querySelectorAll('.toggle-pin').forEach(toggle => {
-                toggle.addEventListener('click', function() {
-                    const pinInput = document.getElementById(this.dataset.pinId);
+                // Add click event listener for the toggle button
+                const toggleBtn = row.querySelector('.toggle-pin');
+                const pinInput = row.querySelector('.pin-input');
+                
+                toggleBtn.addEventListener('click', function() {
                     const isVisible = pinInput.type === 'text';
                     pinInput.type = isVisible ? 'password' : 'text';
                     this.className = isVisible ? 'fas fa-eye toggle-pin' : 'fas fa-eye-slash toggle-pin';

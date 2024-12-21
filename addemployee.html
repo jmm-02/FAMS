@@ -481,9 +481,16 @@
                     </tr>
                 </thead>
                 <tbody id="attendance-body">
-                    <form action="add_employee.php" method="POST" onsubmit="return confirmSubmission(event)">
+                    <form action="Action/add_employee.php" method="POST" onsubmit="return confirmSubmission(event)">
                         <tr>
-                            <td class="emp-id"><input type="text" name="emp_id" placeholder="Employee ID" required></td>
+                            <td class="emp-id">
+                                <input type="text" 
+                                       name="emp_id" 
+                                       placeholder="Employee ID" 
+                                       pattern="[A-Za-z0-9]+" 
+                                       title="Please enter letters and numbers only (no spaces or special characters)"
+                                       required>
+                            </td>
                             <td><input type="text" name="first_name" placeholder="Firstname" required></td>
                             <td><input type="text" name="last_name" placeholder="Lastname" required></td>
                             <td><select name="position" class="filter-select" required>
@@ -570,6 +577,28 @@
             event.target.submit();
         }
     }
+
+    document.querySelector('form').addEventListener('submit', function(event) {
+        const empId = document.querySelector('input[name="emp_id"]').value;
+        
+        // Updated validation for Employee ID to allow letters and numbers
+        if (!/^[A-Za-z0-9]+$/.test(empId)) {
+            alert('Employee ID must contain only letters and numbers (no spaces or special characters)');
+            event.preventDefault();
+            return false;
+        }
+        
+        // Confirm submission
+        if (!confirm('Do you want to save?')) {
+            event.preventDefault();
+            return false;
+        }
+    });
+
+    // Optional: Convert input to uppercase as user types
+    document.querySelector('input[name="emp_id"]').addEventListener('input', function(e) {
+        this.value = this.value.toUpperCase();
+    });
 
     </script>
 </body>
