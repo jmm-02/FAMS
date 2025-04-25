@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -389,53 +389,7 @@
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <!-- Add burger menu at the top -->
-        <div class="burger-menu">
-            <div class="burger-bar"></div>
-            <div class="burger-bar"></div>
-            <div class="burger-bar"></div>
-        </div>
-
-        <div class="profile-icon">
-            <i class="fas fa-user"></i>
-        </div>
-        <div class="nav-links">
-            <a href="welcome.html">
-                <span class="nav-icon">
-                    <i class="fas fa-home"></i>
-                </span>
-                <span class="nav-text">Home</span>
-            </a>
-            <a href="logs.html">
-                <span class="nav-icon">
-                    <i class="fas fa-clipboard-list"></i>
-                </span>
-                <span class="nav-text">Logs</span>
-            </a>
-            <a href="#">
-                <span class="nav-icon">
-                    <i class="fas fa-users"></i>
-                </span>
-                <span class="nav-text">Employee Info</span>
-            </a>
-            <a href="#">
-                <span class="nav-icon">
-                    <i class="fas fa-user-plus"></i>
-                </span>
-                <span class="nav-text">Add Employee</span>
-            </a>
-            
-            <button class="logout-btn">
-                <span class="nav-icon">
-                    <i class="fas fa-sign-out-alt"></i>
-                </span>
-                <span class="nav-text"><a href="login.html">Log-out</a></span>
-            </button>
-        </div>
-    </div>
-
+<?php include 'sidebar.php'; ?>
     <!-- Main Content -->
     <div class="main-content">
         <div class="logs-table">
@@ -458,21 +412,36 @@
                 <tbody id="attendance-body">
                     <tr>
                         <td class="emp-id">EMP001</td>
-                        <td><input type="text" value="Maria"></td>
-                        <td><input type="text" value="Santos Cruz"></td>
-                        <td><select id="postion" class="filter-select">
-                            <option value="all">Instructor</option>
-                            <option value="Faculty Member">Faculty Member</option>
-                            <option value="Caregiver">Caregiver</option>
-                            <option value="Instructor">Instructor</option>
-                            <option value="Part-time FacultyMember">Part-time Faculty Member</option>
-                            <option value="Other Personnel">Other Personnel</option>
-                        </select></td>
-                        <td><input type="number" value="2483"></td>
-                        <td><select id="postion" class="filter-select">
-                            <option value="all">Active</option>
-                            <option value="Faculty Member">Inactive</option>
-                        </select></span></td>
+                        <td>
+                            <label for="first-name">First Name</label>
+                            <input type="text" id="first-name" value="Maria" title="Enter first name" placeholder="First Name">
+                        </td>
+                        <td>
+                            <label for="last-name">Last Name</label>
+                            <input type="text" id="last-name" value="Santos Cruz" title="Enter last name" placeholder="Last Name">
+                        </td>
+                        <td>
+                            <label for="position">Position</label>
+                            <select id="position" class="filter-select">
+                                <option value="all">Instructor</option>
+                                <option value="Faculty Member">Faculty Member</option>
+                                <option value="Caregiver">Caregiver</option>
+                                <option value="Instructor">Instructor</option>
+                                <option value="Part-time FacultyMember">Part-time Faculty Member</option>
+                                <option value="Other Personnel">Other Personnel</option>
+                            </select>
+                        </td>
+                        <td>
+                            <label for="pin">Pin</label>
+                            <input type="number" id="pin" value="2483" title="Enter pin" placeholder="Pin">
+                        </td>
+                        <td>
+                            <label for="active-status">Active Status</label>
+                            <select id="active-status" class="filter-select">
+                                <option value="all">Active</option>
+                                <option value="Faculty Member">Inactive</option>
+                            </select>
+                        </td>
                         <td><button onclick="confirmAndRedirect()">SAVE</button></td>
                     </tr>
                 </tbody>

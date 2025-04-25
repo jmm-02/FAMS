@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -14,17 +14,26 @@
         }
 
         body {
+            position: sticky;
             display: flex;
             min-height: 100vh;
+            height: 100vh; /* Ensure the sidebar takes the full viewport height */
+            overflow-y: auto; /* Enable vertical scrolling */
         }
 
         /* Sidebar Styles */
         .sidebar {
+            position: fixed; /* Fix the sidebar to the viewport */
+            top: 0;
+            left: 0;
             width: 250px;
             background-color: #006633;
             padding: 20px;
             color: white;
             transition: width 0.3s ease-in-out;
+            height: 100vh; /* Ensure the sidebar takes the full viewport height */
+            overflow-y: auto; /* Enable vertical scrolling for the sidebar */
+            z-index: 1000; /* Ensure it stays above other content */
         }
 
         .sidebar.collapsed {
@@ -125,10 +134,15 @@
 
         /* Main Content Styles */
         .main-content {
+            margin-left: 250px; /* Add margin to prevent overlap with the sidebar */
             flex: 1;
             padding: 20px;
             background-color: #f5f5f5;
             position: relative;
+        }
+
+        .sidebar.collapsed + .main-content {
+            margin-left: 80px; /* Adjust margin when the sidebar is collapsed */
         }
 
         .header-banner {
@@ -232,48 +246,37 @@
             <i class="fas fa-user"></i>
         </div>        
         <div class="nav-links">
-            <a href="welcome.html">
+            <a href="welcome.php">
                 <span class="nav-icon">
                     <i class="fas fa-home"></i>
                 </span>
                 <span class="nav-text">Home</span>
             </a>
-            <a href="logs.html">
+            <a href="logs.php">
                 <span class="nav-icon">
                     <i class="fas fa-clipboard-list"></i>
                 </span>
                 <span class="nav-text">Logs</span>
             </a>
-            <a href="employeeinfo.html">
+            <a href="employeeinfo.php">
                 <span class="nav-icon">
                     <i class="fas fa-users"></i>
                 </span>
                 <span class="nav-text">Employee Info</span>
             </a>
-            <a href="addemployee.html">
+            <a href="addemployee.php">
                 <span class="nav-icon">
                     <i class="fas fa-user-plus"></i>
                 </span>
                 <span class="nav-text">Add Employee</span>
             </a>
             
-            <button class="logout-btn">
+            <button class="logout-btn" onclick="window.location.href='login.php'">
                 <span class="nav-icon">
                     <i class="fas fa-sign-out-alt"></i>
                 </span>
-                <span class="nav-text"><a href="login.html">Log-out</a></span>
+                <span class="nav-text">Log-out</span>
             </button>
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="main-content">
-        <div class="header-banner">
-            <img src="assets/wall.png" alt="Colegio de Los Baños Logo">
-        </div>
-        
-        <div class="content-text">
-            <h2>The fingerprint attendance monitoring system for Colegio de Los Baños provides a user-friendly interface designed specifically for tracking employee attendance. It features real-time updates on faculty and staff attendance, including the total number of present and absent. A live feed displays names, and timestamps for time-in and time-out records, ensuring efficient monitoring.</h2>
         </div>
     </div>
 
