@@ -18,92 +18,6 @@
             min-height: 100vh;
         }
 
-        /* Sidebar Styles */
-        .sidebar {
-            width: 250px;
-            background-color: #006633;
-            padding: 20px;
-            color: white;
-            transition: width 0.3s ease-in-out;
-        }
-
-        .sidebar.collapsed {
-            width: 80px;
-        }
-
-        .sidebar.collapsed .nav-links a {
-            justify-content: center;  /* Center the icon when collapsed */
-            padding: 12px 0;
-        }
-
-        .sidebar.collapsed .nav-links a span.nav-text,
-        .sidebar.collapsed .logout-btn span.nav-text,
-        .sidebar.collapsed .profile-icon {
-            display: none;  /* Hide text and profile icon */
-        }
-
-        .nav-links {
-            margin-top: 40px;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;  /* Take up available space */
-        }
-
-        .nav-links a, 
-        .logout-btn {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            color: white;
-            text-decoration: none;
-            padding: 12px 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);  /* Top border for all items */
-            background: none;
-            border: none;
-            width: 100%;
-            text-align: left;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        /* Add bottom border to last nav item */
-        .nav-links a:last-of-type {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        /* Add borders to logout */
-        .logout-btn {
-            margin-top: auto;  /* Push to bottom */
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .nav-icon {
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        /* Hover effect for both nav links and logout */
-        .nav-links a:hover,
-        .logout-btn:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        /* Collapsed state styles */
-        .sidebar.collapsed .nav-links a,
-        .sidebar.collapsed .logout-btn {
-            justify-content: center;
-            padding: 12px 0;
-        }
-
-        .sidebar.collapsed .nav-text {
-            display: none;
-        }
-
         /* Main Content Styles */
         .main-content {
             flex: 1;
@@ -146,57 +60,6 @@
             display: none;
         }
 
-        /* Burger Menu Button Styles */
-        .burger-menu {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            width: 30px;
-            height: 21px;
-            z-index: 100;
-        }
-
-        .burger-bar {
-            width: 100%;
-            height: 3px;
-            background-color: white;
-            border-radius: 2px;
-            transition: all 0.3s ease-in-out;
-        }
-
-        /* Optional: Hover effect */
-        .burger-menu:hover .burger-bar {
-            background-color: rgba(255, 255, 255, 0.8);
-        }
-
-        /* Updated Nav Links Styles */
-        .nav-links a {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            color: white;
-            text-decoration: none;
-            padding: 12px 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .nav-icon {
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;  /* Prevent icon from shrinking */
-        }
-
-        /* Optional: Style for icons */
-        .nav-icon i {
-            font-size: 18px;
-        }
 
         /* Professional Table Styles */
         .logs-table {
@@ -369,52 +232,7 @@
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <!-- Add burger menu at the top -->
-        <div class="burger-menu">
-            <div class="burger-bar"></div>
-            <div class="burger-bar"></div>
-            <div class="burger-bar"></div>
-        </div>
-
-        <div class="profile-icon">
-            <i class="fas fa-user"></i>
-        </div>
-        <div class="nav-links">
-            <a href="welcome.html">
-                <span class="nav-icon">
-                    <i class="fas fa-home"></i>
-                </span>
-                <span class="nav-text">Home</span>
-            </a>
-            <a href="logs.html">
-                <span class="nav-icon">
-                    <i class="fas fa-clipboard-list"></i>
-                </span>
-                <span class="nav-text">Logs</span>
-            </a>
-            <a href="employeeinfo.html">
-                <span class="nav-icon">
-                    <i class="fas fa-users"></i>
-                </span>
-                <span class="nav-text">Employee Info</span>
-            </a>
-            <a href="addemployee.html">
-                <span class="nav-icon">
-                    <i class="fas fa-user-plus"></i>
-                </span>
-                <span class="nav-text">Add Employee</span>
-            </a>
-            
-            <button class="logout-btn">
-                <span class="nav-icon">
-                    <i class="fas fa-sign-out-alt"></i>
-                </span>
-                <span class="nav-text"><a href="login.html">Log-out</a></span>
-            </button>
-        </div>
-    </div>
+    <?php include 'sidebar.php'; ?>
 
     <!-- Main Content -->
     <div class="main-content">
