@@ -46,6 +46,15 @@
             animation: slideIn 0.5s ease-out forwards;
             opacity: 0;
         }
+        .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
         .form-group:nth-child(1) { animation-delay: 0.3s; }
         .form-group:nth-child(2) { animation-delay: 0.5s; }
         label {
@@ -128,12 +137,25 @@
 <body>
     <div class="login-container">
         <img src="assets/logo.png" alt="Logo" class="logo">
-        <form method="POST" action="login_handler.php">
-        <?php if (isset($_GET['error'])): ?>
-    <script>
-        alert('Invalid username or password');
-    </script>
-<?php endif; ?>
+        <form method="POST" action="reg_handler.php">
+            <h2>Registration Form<h2>
+            <div class="form-group">
+                <label for="firstname">First Name</label>
+                <input type="text" id="Fname" name="Fname" placeholder="Enter First Name" required>
+            </div>
+            <div class="form-group">
+                <label for="firstname">Last Name</label>
+                <input type="text" id="Lname" name="Lname" placeholder="Enter Last Name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="text" id="email" name="email" placeholder="Enter Email address" required>
+            </div>
+            <div class="form-group">
+                <label for="phone number">Phone Number</label>
+                <input type="text" id="phone number" name="Phone_Number" placeholder="Enter Phone Number" required>
+            </div>
+            <hr>
             <div class="form-group">
                 <label for="username">Username</label>
                 <input type="text" id="username" name="username" placeholder="Enter Username" required>
@@ -142,10 +164,8 @@
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" placeholder="Enter Password" required>
             </div>
-            <button type="submit">LOGIN</button>
+            <button type="submit">Submit</button>
         </form>
-            <br>
-        <a href="regestration.php">Click here to Register
     </div>
 </body>
 </html> 

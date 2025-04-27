@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.0
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 25, 2025 at 11:50 AM
--- Server version: 10.4.27-MariaDB
--- PHP Version: 8.2.0
+-- Generation Time: Apr 27, 2025 at 08:42 AM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -106,6 +106,31 @@ CREATE TABLE `emp_rec` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `info`
+--
+
+CREATE TABLE `info` (
+  `id` int(11) NOT NULL,
+  `Fname` varchar(55) NOT NULL,
+  `Lname` varchar(55) NOT NULL,
+  `email` varchar(55) NOT NULL,
+  `Phone_Number` varchar(55) NOT NULL,
+  `username` varchar(55) NOT NULL,
+  `password` varchar(55) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `info`
+--
+
+INSERT INTO `info` (`id`, `Fname`, `Lname`, `email`, `Phone_Number`, `username`, `password`) VALUES
+(1, 'dsdas', 'fasfasfafasf', 'asfadsf@gmail.com', '093423526243', 'haha', '$2y$10$ZRAZ64SC4H9d8IvmyJNSGOIw6HRWyxnDMp5t97x1CtAYVVFt'),
+(2, 'dsdas', 'fasfasfafasf', 'asfadsf@gmail.com', '093423526243', 'haha', '$2y$10$931TeIjG64Ol0ybV3n2xRe1bmGqXCVJufWHBdnAetj3kKyyz'),
+(3, 'trty', 'modal', 'echo@gmail.com', '0985982605', 'haha', '$2y$10$bTz88nD/.XdzuRy.eyvMgOIOMEchLsGN0FgMap8ZVWhuX8Dv');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `pass_key`
 --
 
@@ -158,6 +183,12 @@ ALTER TABLE `emp_rec`
   ADD KEY `emp_rec_ibfk_1` (`EMP_ID`);
 
 --
+-- Indexes for table `info`
+--
+ALTER TABLE `info`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `pass_key`
 --
 ALTER TABLE `pass_key`
@@ -185,6 +216,12 @@ ALTER TABLE `emp_position`
 --
 ALTER TABLE `emp_rec`
   MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `info`
+--
+ALTER TABLE `info`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `pass_key`
