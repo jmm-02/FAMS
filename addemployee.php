@@ -1,7 +1,7 @@
 <?php
 // Check if form was submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $conn = new mysqli("localhost", "root", "", "attendance_db");
+    $conn = new mysqli("localhost", "root", "", "famsattendance");
 
     if ($conn->connect_error) {
         die("Connection failed: " . $conn->connect_error);
@@ -65,13 +65,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         // If everything is successful, commit and redirect
         $conn->commit();
-        header("Location: employeeinfo.html");
+        header("Location: employeeinfo.php");
         exit();
         
     } catch (Exception $e) {
         // If there's an error, rollback and redirect with error
         $conn->rollback();
-        header("Location: addemployee.html?status=error&message=" . urlencode($e->getMessage()));
+        header("Location: addemployee.php?status=error&message=" . urlencode($e->getMessage()));
         exit();
     }
 
@@ -79,14 +79,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 // Add this right after your form's PHP processing code, before the DOCTYPE
-if (isset($_GET['status']) && $_GET['status'] === 'exists') {
+if (isset($_GET['status']) && $_GET['status'] === 'success') {
     echo "<script>
         document.addEventListener('DOMContentLoaded', function() {
             Swal.fire({
-                icon: 'error',
-                title: 'Oops...',
-                text: 'Employee ID already exists!',
-                footer: 'Please use a different Employee ID',
+                icon: 'success',
+                title: 'Success!',
+                text: 'Employee has been successfully added.',
                 confirmButtonColor: '#006633',
                 showClass: {
                     popup: 'animate__animated animate__fadeInDown animate__faster'
@@ -97,37 +96,9 @@ if (isset($_GET['status']) && $_GET['status'] === 'exists') {
                 customClass: {
                     popup: 'animated-popup'
                 }
-            }).then((result) => {
-                // Pre-fill the form with the submitted data
-                document.querySelector('input[name=\"emp_id\"]').value = '" . htmlspecialchars($_GET['id']) . "';
-                document.querySelector('input[name=\"first_name\"]').value = '" . htmlspecialchars($_GET['first_name']) . "';
-                document.querySelector('input[name=\"last_name\"]').value = '" . htmlspecialchars($_GET['last_name']) . "';
-                document.querySelector('select[name=\"position\"]').value = '" . htmlspecialchars($_GET['position']) . "';
-                document.querySelector('input[name=\"pin_code\"]').value = '" . htmlspecialchars($_GET['pin_code']) . "';
-                document.querySelector('select[name=\"status\"]').value = '" . htmlspecialchars($_GET['emp_status']) . "';
-                
-                // Add error styling to the Employee ID input
-                const empIdInput = document.querySelector('input[name=\"emp_id\"]');
-                empIdInput.classList.add('error');
-                empIdInput.focus();
-                
-                // Show the error message
-                document.querySelector('.error-message').style.display = 'block';
             });
         });
-    </script>
-    <style>
-        /* Custom animation duration */
-        .animated-popup {
-            animation-duration: 0.5s !important;
-        }
-        
-        /* Smoother animation timing function */
-        .animate__fadeInDown,
-        .animate__fadeOutUp {
-            animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
-        }
-    </style>";
+    </script>";
 }
 ?>
 <!DOCTYPE html>
@@ -396,8 +367,8 @@ if (isset($_GET['status']) && $_GET['status'] === 'exists') {
                         <th></th>
                     </tr>
                 </thead>
+                <form action="addemployee.php" method="POST" onsubmit="return confirmSubmission(event)">
                 <tbody id="attendance-body">
-                    <form action="addemployee.php" method="POST" onsubmit="return confirmSubmission(event)">
                         <tr>
                             <td class="emp-id">
                                 <div class="error-message">Employee ID already exists!</div>
@@ -443,7 +414,7 @@ if (isset($_GET['status']) && $_GET['status'] === 'exists') {
 
         // Get the elements
     const nameInput = document.getElementById('name');
-    const positionSelect = document.getElementById('postion');
+    const positionSelect = document.getElementById('position');
     const clearButton = document.querySelector('.clear-filters');
     const tbody = document.getElementById('attendance-body');
     
@@ -470,6 +441,25 @@ if (isset($_GET['status']) && $_GET['status'] === 'exists') {
                 row.style.display = 'none';
             }
         }
+
+        function confirmSubmission(event) {
+            event.preventDefault();
+            Swal.fire({
+                title: 'Confirm Submission',
+                text: "Are you sure you want to submit?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, submit it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    event.target.submit();
+                }
+            });
+            return false; // Always return false to wait for SweetAlert
+        }
+
     }
 
     // Event listener for name input field

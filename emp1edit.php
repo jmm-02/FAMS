@@ -508,7 +508,7 @@
             // Show the confirmation dialog
             if (confirm("Do you want to save and go to the employee info page?")) {
                 // Redirect to employeeinfo.html if confirmed
-                window.location.href = "employeeinfo.html";
+                window.location.href = "employeeinfo.php";
             }
         }
 

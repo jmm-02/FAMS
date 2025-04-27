@@ -1,388 +1,208 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Welcome</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
     <style>
-        * {
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f4f6fb;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
         }
-
-        body {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        
-
-        /* Professional Table Styles */
-        .logs-table {
-            background-color: white;
-            padding: 25px;
+        .container {
+            max-width: 900px;
+            margin: 40px auto 0 auto;
+            background: #fff;
             border-radius: 12px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-            margin: 20px 0;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 32px 24px 24px 24px;
         }
-
-        .logs-table table {
+        h2 {
+            color: #2d3a4b;
+            margin-bottom: 18px;
+            letter-spacing: 1px;
+        }
+        #searchName {
+            margin-bottom: 18px;
+            padding: 10px 14px;
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            font-size: 14px;
+            max-width: 350px;
+            border: 1px solid #d1d9e6;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
         }
-
-        .logs-table th {
-            background-color: #f8f9fa;
-            color: #2c3e50;
-            font-weight: 600;
-            padding: 16px;
-            text-align: left;
-            border-bottom: 2px solid #e9ecef;
-            white-space: nowrap;
-        }
-
-        .logs-table td {
-            padding: 14px 16px;
-            border-bottom: 1px solid #edf2f7;
-            color: #4a5568;
-        }
-
-        .logs-table tbody tr:hover {
-            background-color: #f8fafc;
-            transition: all 0.2s ease;
-        }
-
-        .logs-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        /* Status Badges */
-        .status-present, .status-absent {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 500;
-            text-align: center;
-            display: inline-block;
-            min-width: 100px;
-        }
-
-        .status-present {
-            background-color: #e6f4ea;
-            color: #1e7e34;
-        }
-
-        .status-absent {
-            background-color: #fde8e8;
-            color: #c53030;
-        }
-
-        /* Employee ID Style */
-        .emp-id {
-            font-family: 'Courier New', monospace;
-            color: #6b7280;
-            font-weight: 500;
-        }
-
-        /* Timestamp Style */
-        .timestamp {
-            font-family: 'Roboto Mono', monospace;
-            color: #4a5568;
-        }
-
-        /* Search and Filter Section */
-        .logs-controls {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 25px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .search-box, .filter-select, .clear-filters {
-            padding: 10px 16px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 14px;
-            color: #4a5568;
-            background-color: white;
-            transition: all 0.2s;
-        }
-
-        .clear-filters {
-            cursor: pointer;
-            background-color: #f8f9fa;
-        }
-
-        .clear-filters:hover {
-            background-color: #e9ecef;
-        }
-
-        .search-box:focus, .filter-select:focus {
+        #searchName:focus {
+            border-color: #5c8df6;
             outline: none;
-            border-color: #006633;
-            box-shadow: 0 0 0 3px rgba(0, 102, 51, 0.1);
         }
-
-        .filter-select:hover {
-            border-color: #006633;
+        #employeeTable {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            margin-top: 8px;
         }
-
-        .no-results-row td {
-            background-color: #f8fafc;
-            font-style: italic;
+        #employeeTable th, #employeeTable td {
+            padding: 12px 10px;
+            text-align: left;
         }
-
-        /* Table Header */
-        .table-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
+        #employeeTable thead {
+            background: linear-gradient(90deg, #5c8df6 0%, #6fc8fb 100%);
+            color: #fff;
         }
-
-        .table-title {
-            font-size: 1.5rem;
-            color: #2d3748;
-            font-weight: 600;
+        #employeeTable tbody tr {
+            border-bottom: 1px solid #e9ecef;
+            transition: background 0.2s;
         }
-
-        mark {
-            background-color: #fef3c7;
-            padding: 2px;
-            border-radius: 2px;
+        #employeeTable tbody tr:hover {
+            background: #f0f6ff;
         }
-
-        .results-count {
-            color: #6b7280;
-            font-size: 14px;
+        #employeeTable td {
+            color: #2d3a4b;
         }
-
-        .table-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        button {
-        background-color: #4CAF50; /* Green background */
-        color: white; /* White text */
-        border: none; /* Remove border */
-        padding: 10px 20px; /* Padding around text */
-        text-align: center; /* Center text */
-        text-decoration: none; /* Remove underline */
-        display: inline-block; /* Allow button to sit inline */
-        font-size: 16px; /* Font size */
-        cursor: pointer; /* Change cursor to pointer on hover */
-        border-radius: 5px; /* Rounded corners */
-        transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transition */
-        }
-
-        button:hover {
-            background-color: #45a049; /* Darker green on hover */
-            transform: scale(1.05); /* Slightly enlarge on hover */
-        }
-
-        .pin-cell {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .pin-input {
-            border: none;
-            background: transparent;
-            font-family: monospace;
-            width: 60px;
-            text-align: center;
-        }
-
-        .toggle-pin {
+        .toggle-pin-btn {
+            margin-left: 6px;
+            padding: 2px 7px;
+            border-radius: 3px;
+            border: 1px solid #d1d9e6;
+            background: #f4f6fb;
+            color: #2d3a4b;
             cursor: pointer;
-            color: #666;
-            transition: color 0.3s ease;
+            font-size: 1em;
+            line-height: 1.1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 26px;
+            width: 28px;
         }
-
-        .toggle-pin:hover {
-            color: #006633;
+        .toggle-pin-btn svg {
+            width: 18px;
+            height: 18px;
+            vertical-align: middle;
+            fill: #5c8df6;
+            transition: fill 0.2s;
         }
-
+        .toggle-pin-btn:active, .toggle-pin-btn:focus {
+            background: #e3eaf7;
+            outline: none;
+        }
+        @media (max-width: 700px) {
+            .container {
+                padding: 12px 2vw 18px 2vw;
+            }
+            #employeeTable th, #employeeTable td {
+                padding: 8px 4px;
+                font-size: 0.95rem;
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- Include Sidebar -->
     <?php include 'sidebar.php'; ?>
-
-    <!-- Main Content -->
-    <div class="main-content">
-        <div class="logs-table">
-            <div class="table-header">
-                <h2 class="table-title">Employees Info</h2>
-                <div class="results-count"></div>
-            </div>
-            
-            <div class="logs-controls">
-                <input id="name" type="text" class="search-box" placeholder="Search employee...">
-                <select id="postion" class="filter-select">
-                    <option value="all">position</option>
-                    <option value="Faculty Member">Faculty Member</option>
-                    <option value="Caregiver">Caregiver</option>
-                    <option value="Instructor">Instructor</option>
-                    <option value="Part-time FacultyMember">Part-time Faculty Member</option>
-                    <option value="Other Personnel">Other Personnel</option>
-                </select>
-                <button class="clear-filters">Clear Filters</button>
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Employee ID</th>
-                        <th>Firstname</th>
-                        <th>Lastname</th>
-                        <th>Position</th>
-                        <th>Pin</th>
-                        <th>Active Status</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody id="attendance-body">
-                    <!-- Data will be populated dynamically -->
-                </tbody>
-            </table>                     
-        </div>
+    <div class="container">
+        <h2>Employee Information</h2>
+        <input type="text" id="searchName" placeholder="Search by name...">
+        <table id="employeeTable" border="0" cellpadding="0" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Status</th>
+                    <th>Position</th>
+                    <th>PIN Code</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Employee rows will be inserted here -->
+            </tbody>
+        </table>
     </div>
-
     <script>
-        const burgerMenu = document.querySelector('.burger-menu');
-        const sidebar = document.querySelector('.sidebar');
-
-        burgerMenu.addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-        });
-
-        // Get the elements
-    const nameInput = document.getElementById('name');
-    const positionSelect = document.getElementById('postion');
-    const clearButton = document.querySelector('.clear-filters');
-    const tbody = document.getElementById('attendance-body');
-    
-    // Updated fetchEmployees function with better error handling and status display
-    async function fetchEmployees() {
-        try {
-            const response = await fetch('Fetch/fetch_employees.php');
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const employees = await response.json();
-            
-            const tbody = document.getElementById('attendance-body');
-            tbody.innerHTML = ''; // Clear existing content
-
-            if (employees.length === 0) {
+    let allEmployees = [];
+    function renderEmployees(data, filter = '') {
+        const tbody = document.querySelector('#employeeTable tbody');
+        tbody.innerHTML = '';
+        let filtered = data;
+        if (filter) {
+            const search = filter.toLowerCase();
+            filtered = data.filter(emp =>
+                (emp.FIRST_NAME && emp.FIRST_NAME.toLowerCase().includes(search)) ||
+                (emp.LAST_NAME && emp.LAST_NAME.toLowerCase().includes(search))
+            );
+        }
+        if (filtered.length > 0) {
+            filtered.forEach((emp, idx) => {
                 const row = document.createElement('tr');
+                // Use a unique id for each PIN cell/button
+                const pinId = `pin_${emp.emp_id || idx}`;
                 row.innerHTML = `
-                    <td colspan="7" class="no-results-row">No employees found</td>
-                `;
-                tbody.appendChild(row);
-                return;
-            }
-
-            employees.forEach((emp, index) => {
-                const row = document.createElement('tr');
-                const status = emp.STATUS === 'Active' ? 'present' : 'absent';
-                
-                row.innerHTML = `
-                    <td class="emp-id">${emp.emp_id}</td>
+                    <td>${emp.emp_id || ''}</td>
                     <td>${emp.FIRST_NAME || ''}</td>
                     <td>${emp.LAST_NAME || ''}</td>
+                    <td>${emp.STATUS || ''}</td>
                     <td>${emp.POSITION || ''}</td>
-                    <td class="pin-cell">
-                        <input type="password" value="${emp.PIN_CODE || ''}" readonly class="pin-input">
-                        <i class="fas fa-eye toggle-pin"></i>
+                    <td>
+                        <span id="${pinId}" style="letter-spacing:2px;">••••••</span>
+                        <button type="button" class="toggle-pin-btn" data-pin="${emp.PIN_CODE || ''}" data-target="${pinId}" aria-label="Show PIN">
+                            <span class="icon-eye">
+                                <svg viewBox="0 0 24 24"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5zm0-8a3 3 0 100 6 3 3 0 000-6z"/></svg>
+                            </span>
+                        </button>
                     </td>
-                    <td><span class="status-${status}">${emp.STATUS}</span></td>
-                    <td><button onclick="editEmployee(${emp.emp_id})">Edit</button></td>
                 `;
                 tbody.appendChild(row);
-
-                // Add click event listener for the toggle button
-                const toggleBtn = row.querySelector('.toggle-pin');
-                const pinInput = row.querySelector('.pin-input');
-                
-                toggleBtn.addEventListener('click', function() {
-                    const isVisible = pinInput.type === 'text';
-                    pinInput.type = isVisible ? 'password' : 'text';
-                    this.className = isVisible ? 'fas fa-eye toggle-pin' : 'fas fa-eye-slash toggle-pin';
-                });
             });
-
-            // Update results count
-            const resultsCount = document.querySelector('.results-count');
-            resultsCount.textContent = `${employees.length} employees found`;
-
-        } catch (error) {
-            console.error('Error fetching employees:', error);
-            const tbody = document.getElementById('attendance-body');
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="7" class="no-results-row">Error loading employees. Please try again later.</td>
-                </tr>
-            `;
+        } else {
+            const row = document.createElement('tr');
+            row.innerHTML = '<td colspan="6">No employees found.</td>';
+            tbody.appendChild(row);
         }
+        // Add event listeners for all show/hide PIN buttons
+        tbody.querySelectorAll('.toggle-pin-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const pinSpan = document.getElementById(this.getAttribute('data-target'));
+                const iconSpan = this.querySelector('.icon-eye');
+                if (this.getAttribute('data-state') !== 'shown') {
+                    pinSpan.textContent = this.getAttribute('data-pin');
+                    this.setAttribute('data-state', 'shown');
+                    // Change to eye-slash
+                    iconSpan.innerHTML = `<svg viewBox=\"0 0 24 24\"><path d=\"M1 12s3-7 11-7c2.5 0 4.7.6 6.5 1.7l1.3-1.5 1.4 1.4-1.5 1.3C21.4 8.7 23 10.2 23 12c0 2-3 7-11 7-2.5 0-4.7-.6-6.5-1.7l-1.3 1.5-1.4-1.4 1.5-1.3C2.6 15.3 1 13.8 1 12zm11 5c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5zm0-8a3 3 0 100 6 3 3 0 000-6z\"/></svg>`;
+                    this.setAttribute('aria-label', 'Hide PIN');
+                } else {
+                    pinSpan.textContent = '••••••';
+                    this.setAttribute('data-state', 'hidden');
+                    // Change to eye
+                    iconSpan.innerHTML = `<svg viewBox=\"0 0 24 24\"><path d=\"M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5zm0-8a3 3 0 100 6 3 3 0 000-6z\"/></svg>`;
+                    this.setAttribute('aria-label', 'Show PIN');
+                }
+            });
+        });
     }
-
-    // Function to handle employee editing
-    function editEmployee(empId) {
-        // Redirect to edit page with employee ID
-        window.location.href = `editemployee.html?id=${empId}`;
-    }
-
-    // Call fetchEmployees when page loads
-    window.addEventListener('load', () => {
-        fetchEmployees();
-        filterTable(); // Keep your existing filter functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('Fetch/fetch_employees.php')
+            .then(response => response.json())
+            .then(data => {
+                if (Array.isArray(data)) {
+                    allEmployees = data;
+                    renderEmployees(allEmployees);
+                } else if (data.error) {
+                    renderEmployees([], '');
+                    const tbody = document.querySelector('#employeeTable tbody');
+                    tbody.innerHTML = `<tr><td colspan="6">Error: ${data.error}</td></tr>`;
+                }
+            })
+            .catch(error => {
+                const tbody = document.querySelector('#employeeTable tbody');
+                tbody.innerHTML = `<tr><td colspan="6">Fetch error: ${error}</td></tr>`;
+            });
+        document.getElementById('searchName').addEventListener('input', function() {
+            renderEmployees(allEmployees, this.value);
+        });
     });
-
-    // Update your existing filter function to work with dynamic content
-    function filterTable() {
-        const nameValue = nameInput.value.toLowerCase();
-        const positionValue = positionSelect.value;
-
-        const rows = tbody.getElementsByTagName('tr');
-        for (let row of rows) {
-            const firstName = row.cells[1].textContent.toLowerCase();
-            const lastName = row.cells[2].textContent.toLowerCase();
-            const position = row.cells[3].textContent;
-
-            const nameMatch = firstName.includes(nameValue) || lastName.includes(nameValue);
-            const positionMatch = positionValue === 'all' || position === positionValue;
-
-            row.style.display = (nameMatch && positionMatch) ? '' : 'none';
-        }
-    }
-
-    // Event listener for name input field
-    nameInput.addEventListener('input', filterTable);
-
-    // Event listener for position filter dropdown
-    positionSelect.addEventListener('change', filterTable);
-
-    // Clear filters functionality
-    clearButton.addEventListener('click', () => {
-        nameInput.value = '';  // Clear name search
-        positionSelect.value = 'all';  // Reset position filter to 'all'
-        filterTable();  // Apply the clear filter
-    });
-
-    // Initial filter on page load (in case default filters need to be applied)
-    window.addEventListener('load', filterTable);
-
     </script>
 </body>
 </html>
