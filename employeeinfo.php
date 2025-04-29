@@ -6,6 +6,8 @@
     <title>Document</title>
     <style>
         body {
+            align-items: center;
+            justify-content: center;
             font-family: 'Segoe UI', Arial, sans-serif;
             background: #f4f6fb;
             margin: 0;
@@ -13,7 +15,7 @@
         }
         .container {
             max-width: 900px;
-            margin: 40px auto 0 auto;
+            margin: -15% auto 0 auto;
             background: #fff;
             border-radius: 12px;
             box-shadow: 0 4px 24px rgba(0,0,0,0.08);
@@ -114,12 +116,34 @@
                     <th>Status</th>
                     <th>Position</th>
                     <th>PIN Code</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 <!-- Employee rows will be inserted here -->
             </tbody>
         </table>
+        <!-- Edit Employee Modal -->
+        <div id="editModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:1000;">
+          <form id="editForm" style="background:#fff;padding:24px;border-radius:8px;max-width:400px;margin:auto;position:relative;">
+            <h3>Edit Employee</h3>
+            <input type="hidden" name="emp_id" id="edit_emp_id">
+            <label>First Name:<input type="text" name="FIRST_NAME" id="edit_first_name" required></label><br>
+            <label>Last Name:<input type="text" name="LAST_NAME" id="edit_last_name" required></label><br>
+            <label>Status:<input type="text" name="STATUS" id="edit_status" required></label><br>
+            <label for="position">Select Position:</label>
+            <select name="POSITION" id="edit_position">
+                <option value="Faculty Member">Faculty Member</option>
+                <option value="Caregiver">Caregiver</option>
+                <option value="Instructor">Instructor</option>
+                <option value="Part-time Faculty Member">Part-time Faculty Member</option>
+                <option value="Other Personnel">Other Personnel</option>
+            </select><br>
+            <label>PIN Code:<input type="text" name="PIN_CODE" id="edit_pin_code" maxlength="4" pattern="\d{4}" required oninput="this.value = this.value.replace(/\D/g, '').slice(0, 4);"></label><br>
+            <button type="submit">Save</button>
+            <button type="button" onclick="closeEditModal()">Cancel</button>
+          </form>
+        </div>
     </div>
     <script>
     let allEmployees = [];
@@ -146,12 +170,15 @@
                     <td>${emp.STATUS || ''}</td>
                     <td>${emp.POSITION || ''}</td>
                     <td>
-                        <span id="${pinId}" style="letter-spacing:2px;">••••••</span>
+                        <span id="${pinId}" style="letter-spacing:2px;">••••</span>
                         <button type="button" class="toggle-pin-btn" data-pin="${emp.PIN_CODE || ''}" data-target="${pinId}" aria-label="Show PIN">
                             <span class="icon-eye">
                                 <svg viewBox="0 0 24 24"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5zm0-8a3 3 0 100 6 3 3 0 000-6z"/></svg>
                             </span>
                         </button>
+                    </td>
+                    <td>
+                    <button type="button" class="edit-btn" data-emp='${JSON.stringify(emp)}'>Edit</button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -173,7 +200,7 @@
                     iconSpan.innerHTML = `<svg viewBox=\"0 0 24 24\"><path d=\"M1 12s3-7 11-7c2.5 0 4.7.6 6.5 1.7l1.3-1.5 1.4 1.4-1.5 1.3C21.4 8.7 23 10.2 23 12c0 2-3 7-11 7-2.5 0-4.7-.6-6.5-1.7l-1.3 1.5-1.4-1.4 1.5-1.3C2.6 15.3 1 13.8 1 12zm11 5c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5zm0-8a3 3 0 100 6 3 3 0 000-6z\"/></svg>`;
                     this.setAttribute('aria-label', 'Hide PIN');
                 } else {
-                    pinSpan.textContent = '••••••';
+                    pinSpan.textContent = '••••';
                     this.setAttribute('data-state', 'hidden');
                     // Change to eye
                     iconSpan.innerHTML = `<svg viewBox=\"0 0 24 24\"><path d=\"M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5zm0-8a3 3 0 100 6 3 3 0 000-6z\"/></svg>`;
@@ -203,6 +230,47 @@
             renderEmployees(allEmployees, this.value);
         });
     });
+
+    function closeEditModal() {
+  document.getElementById('editModal').style.display = 'none';
+}
+
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('edit-btn')) {
+    const emp = JSON.parse(e.target.getAttribute('data-emp'));
+    document.getElementById('edit_emp_id').value = emp.emp_id || '';
+    document.getElementById('edit_first_name').value = emp.FIRST_NAME || '';
+    document.getElementById('edit_last_name').value = emp.LAST_NAME || '';
+    document.getElementById('edit_status').value = emp.STATUS || '';
+    document.getElementById('edit_position').value = emp.POSITION || '';
+    document.getElementById('edit_pin_code').value = emp.PIN_CODE || '';
+    document.getElementById('editModal').style.display = 'flex';
+  }
+});
+
+document.getElementById('editForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const formData = new FormData(this);
+  fetch('update_employee.php', {
+    method: 'POST',
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      closeEditModal();
+      // Refresh employee data
+      fetch('Fetch/fetch_employees.php')
+        .then(response => response.json())
+        .then(data => {
+          allEmployees = data;
+          renderEmployees(allEmployees);
+        });
+    } else {
+      alert('Update failed: ' + (data.error || 'Unknown error'));
+    }
+  });
+});
     </script>
 </body>
 </html>

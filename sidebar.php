@@ -33,7 +33,7 @@
             transition: width 0.3s ease-in-out;
             height: 100vh; /* Ensure the sidebar takes the full viewport height */
             overflow-y: auto; /* Enable vertical scrolling for the sidebar */
-            z-index: 1000; /* Ensure it stays above other content */
+            /* z-index: 1000; Ensure it stays above other content */
         }
 
         .sidebar.collapsed {
