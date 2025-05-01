@@ -9,7 +9,7 @@
             align-items: center;
             justify-content: center;
             font-family: 'Segoe UI', Arial, sans-serif;
-            background: #f4f6fb;
+            background: #f0f7f0;
             margin: 0;
             padding: 0;
         }
@@ -34,11 +34,12 @@
             border: 1px solid #d1d9e6;
             border-radius: 6px;
             font-size: 1rem;
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
         #searchName:focus {
-            border-color: #5c8df6;
+            border-color: #4CAF50;
             outline: none;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
         }
         #employeeTable {
             width: 100%;
@@ -51,7 +52,7 @@
             text-align: left;
         }
         #employeeTable thead {
-            background: linear-gradient(90deg, #5c8df6 0%, #6fc8fb 100%);
+            background: linear-gradient(90deg, #4CAF50 0%, #81C784 100%);
             color: #fff;
         }
         #employeeTable tbody tr {
@@ -59,7 +60,7 @@
             transition: background 0.2s;
         }
         #employeeTable tbody tr:hover {
-            background: #f0f6ff;
+            background: #e8f5e9;
         }
         #employeeTable td {
             color: #2d3a4b;
@@ -69,7 +70,7 @@
             padding: 2px 7px;
             border-radius: 3px;
             border: 1px solid #d1d9e6;
-            background: #f4f6fb;
+            background: #f0f7f0;
             color: #2d3a4b;
             cursor: pointer;
             font-size: 1em;
@@ -84,11 +85,11 @@
             width: 18px;
             height: 18px;
             vertical-align: middle;
-            fill: #5c8df6;
+            fill: #4CAF50;
             transition: fill 0.2s;
         }
         .toggle-pin-btn:active, .toggle-pin-btn:focus {
-            background: #e3eaf7;
+            background: #c8e6c9;
             outline: none;
         }
         @media (max-width: 700px) {
@@ -123,7 +124,7 @@
         </table>
         <!-- Edit Employee Modal -->
         <div id="editModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:1000;">
-          <form id="editForm" style="background:#fff;padding:24px;border-radius:8px;max-width:400px;margin:auto;position:relative;">
+          <form id="editForm" style="background:#fff;padding:24px;border-radius:8px;max-width:400px;margin:auto;position:relative;box-shadow: 0 4px 20px rgba(76, 175, 80, 0.15);">
             <h3>Edit Employee</h3>
             <input type="hidden" name="emp_id" id="edit_emp_id">
             <div style="margin-bottom:16px;">
@@ -138,8 +139,8 @@
               <label for="edit_status">Status:</label>
               <input type="text" name="status" id="edit_status">
             </div>
-            <button type="submit">Save</button>
-            <button type="button" onclick="closeEditModal()">Cancel</button>
+            <button type="submit" style="background:#4CAF50;color:#fff;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;margin-right:8px;">Save</button>
+            <button type="button" onclick="closeEditModal()" style="background:#f0f7f0;color:#333;border:1px solid #ccc;padding:8px 16px;border-radius:4px;cursor:pointer;">Cancel</button>
           </form>
         </div>
     </div>

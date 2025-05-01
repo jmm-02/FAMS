@@ -6,25 +6,29 @@
     <title>Employee Attendance Records</title>
     <style>
         body {
-            align-items: center;
-            justify-content: center;
             font-family: 'Segoe UI', Arial, sans-serif;
-            background: #f4f6fb;
+            background: #e8f5e9;
             margin: 0;
             padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
         .container {
             max-width: 1000px;
-            margin: -15% auto 0 auto;
+            margin: 20px auto;
             background: #fff;
             border-radius: 12px;
             box-shadow: 0 4px 24px rgba(0,0,0,0.08);
             padding: 32px 24px 24px 24px;
+            overflow: visible; /* Change from auto to visible */
+            max-height: none; /* Remove fixed height */
+            position: relative;
         }
         .employee-info {
             margin-bottom: 24px;
             padding: 16px;
-            background: #f0f6ff;
+            background: #e0f2e0;
             border-radius: 8px;
             display: flex;
             flex-wrap: wrap;
@@ -36,7 +40,7 @@
         }
         .employee-info strong {
             display: block;
-            color: #5c8df6;
+            color: #2e7d32;
             font-size: 0.9rem;
             margin-bottom: 4px;
         }
@@ -53,74 +57,171 @@
         .back-link {
             display: inline-block;
             margin-bottom: 16px;
-            color: #5c8df6;
+            color: #2e7d32;
             text-decoration: none;
         }
         .back-link:hover {
             text-decoration: underline;
         }
         .table-header-title th {
-            background: linear-gradient(90deg, #5c8df6 0%, #6fc8fb 100%);
+            background: linear-gradient(90deg, #2e7d32 0%, #388e3c 100%);
             color: #fff;
-            padding: 12px 10px;
+            padding: 14px 12px;
             text-align: center;
             font-weight: bold;
             border-bottom: 2px solid #fff;
+            position: sticky;
+            top: 0;
+            z-index: 11;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
         }
         #recordsTable {
             width: 100%;
             border-collapse: collapse;
             background: #fff;
             margin-top: 0;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            border-radius: 8px;
         }
         #recordsTable th, #recordsTable td {
-            padding: 12px 10px;
+            padding: 14px 12px;
             text-align: left;
         }
+        
+        /* Fixed column widths for consistent alignment */
+        #recordsTable th:nth-child(1),
+        #recordsTable td:nth-child(1) {
+            width: 20%;
+        }
+        #recordsTable th:nth-child(2),
+        #recordsTable td:nth-child(2),
+        #recordsTable th:nth-child(3),
+        #recordsTable td:nth-child(3),
+        #recordsTable th:nth-child(4),
+        #recordsTable td:nth-child(4),
+        #recordsTable th:nth-child(5),
+        #recordsTable td:nth-child(5) {
+            width: 20%;
+        }
+        
         #recordsTable thead {
-            background: linear-gradient(90deg, #5c8df6 0%, #6fc8fb 100%);
+            background: linear-gradient(90deg, #2e7d32 0%, #388e3c 100%);
             color: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        /* Table wrapper with proper scrolling */
+        .table-wrapper {
+            max-height: 500px;
+            overflow: auto;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        
+        /* Both header rows */
+        #recordsTable thead tr {
+            width: 100%;
+            table-layout: fixed;
+        }
+        
+        /* First row in thead (title row) */
+        #recordsTable thead tr:first-child th {
+            background: linear-gradient(90deg, #2e7d32 0%, #388e3c 100%);
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+        
+        /* Second row in thead (column headers) */
+        #recordsTable thead tr:nth-child(2) th {
+            background: linear-gradient(90deg, #388e3c 0%, #2e7d32 100%);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+        #recordsTable th {
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            position: sticky;
+            top: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         #recordsTable tbody tr {
             border-bottom: 1px solid #e9ecef;
-            transition: background 0.2s;
+            transition: background 0.2s, transform 0.15s;
         }
         #recordsTable tbody tr:hover {
-            background: #f0f6ff;
+            background: #e0f2e0;
+            transform: translateY(-1px);
+        }
+        #recordsTable tbody {
+            color: #2d3a4b;
         }
         #recordsTable td {
             color: #2d3a4b;
         }
         .date-filter {
-            margin-bottom: 16px;
+            margin-bottom: 20px;
             display: flex;
             gap: 12px;
             align-items: center;
             flex-wrap: wrap;
+            padding: 16px;
+            background: #f8faff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            flex-shrink: 0;
         }
         .date-filter input {
-            padding: 8px 12px;
+            padding: 10px 14px;
             border: 1px solid #d1d9e6;
             border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .date-filter input:focus {
+            outline: none;
+            border-color: #2e7d32;
+            box-shadow: 0 0 0 3px rgba(46,125,50,0.2);
         }
         .date-filter button {
-            padding: 8px 16px;
-            background: #5c8df6;
+            padding: 10px 18px;
+            background: #2e7d32;
             color: white;
             border: none;
             border-radius: 6px;
             cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
         }
         .date-filter button:hover {
-            background: #4a7de0;
+            background: #1b5e20;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        #resetBtn {
+            background: #546e7a;
+        }
+        #resetBtn:hover {
+            background: #455a64;
         }
         @media (max-width: 700px) {
             .container {
                 padding: 12px 2vw 18px 2vw;
+                height: calc(100vh - 40px); /* Smaller margin for mobile */
             }
             #recordsTable th, #recordsTable td {
                 padding: 8px 4px;
                 font-size: 0.95rem;
+            }
+            #recordsTable thead tr:nth-child(2) th {
+                top: 40px; /* Adjusted for smaller header on mobile */
             }
             .employee-info {
                 flex-direction: column;
@@ -149,7 +250,8 @@
             <button id="resetBtn">Reset</button>
         </div>
         
-        <table id="recordsTable" border="0" cellpadding="0" cellspacing="0">
+        <div class="table-wrapper">
+            <table id="recordsTable" border="0" cellpadding="0" cellspacing="0">
             <thead>
                 <tr class="table-header-title">
                     <th colspan="5">Attendance Record Details</th>
@@ -166,6 +268,9 @@
                 <!-- Records will be inserted here -->
             </tbody>
         </table>
+        </div>
+        
+
     </div>
     
     <script>
@@ -176,6 +281,18 @@
     if (!empId) {
         window.location.href = 'employeeinfo.php';
     }
+    
+    // Update sticky header positioning after content loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set a small timeout to allow browser to calculate dimensions
+        setTimeout(function() {
+            const headerHeight = document.querySelector('#recordsTable thead tr:first-child th').offsetHeight;
+            const headerElements = document.querySelectorAll('#recordsTable thead tr:nth-child(2) th');
+            headerElements.forEach(function(el) {
+                el.style.top = headerHeight + 'px';
+            });
+        }, 100);
+    });
     
     let allRecords = [];
     

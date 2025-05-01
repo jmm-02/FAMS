@@ -1,3 +1,37 @@
+<?php
+session_start();
+require_once 'includes/db_connect.php';
+
+// Handle filtering
+$filter_start_date = isset($_GET['start_date']) ? $_GET['start_date'] : '';
+$filter_end_date = isset($_GET['end_date']) ? $_GET['end_date'] : '';
+$filter_name = isset($_GET['employee_name']) ? $_GET['employee_name'] : '';
+
+// Build query based on filters
+$query = "SELECT e.ID as EMP_ID, e.Name, e.DEPT, r.DATE, r.AM_IN, r.AM_OUT, r.PM_IN, r.PM_OUT 
+          FROM emp_info e 
+          LEFT JOIN emp_rec r ON e.ID = r.EMP_ID 
+          WHERE 1=1";
+
+$params = [];
+if ($filter_start_date && $filter_end_date) {
+    $query .= " AND r.DATE BETWEEN ? AND ?";
+    $params[] = $filter_start_date;
+    $params[] = $filter_end_date;
+}
+if ($filter_name) {
+    $query .= " AND e.Name LIKE ?";
+    $params[] = "%$filter_name%";
+}
+
+$query .= " ORDER BY e.ID, r.DATE DESC";
+
+$stmt = $pdo->prepare($query);
+$stmt->execute($params);
+$records = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+?>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -77,6 +111,12 @@
             font-size: 14px;
         }
 
+        .logs-table thead {
+            position: sticky;
+            top: 90px; /* Space for the filter section */
+            z-index: 99;
+        }
+
         .logs-table th {
             background-color: #f8f9fa;
             color: #2c3e50;
@@ -85,6 +125,7 @@
             text-align: left;
             border-bottom: 2px solid #e9ecef;
             white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
         .logs-table td {
@@ -100,6 +141,103 @@
 
         .logs-table tbody tr:last-child td {
             border-bottom: none;
+        }
+
+        /* Filter Styles */
+        .filter-container {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .filter-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .filter-button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+            flex-shrink: 0;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .filter-button:hover {
+            background-color: #0056b3;
+        }
+
+        .reset-button {
+            background-color: #6c757d;
+            text-decoration: none;
+            color: white;
+        }
+
+        .reset-button:hover {
+            background-color: #5a6268;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .filter-form {
+                flex-direction: column;
+            }
+
+            .filter-group {
+                width: 100%;
+            }
+
+            .filter-actions {
+                margin-top: 10px;
+                width: 100%;
+            }
+
+            .filter-button {
+                flex: 1;
+            }
         }
 
         /* Status Badges */
@@ -237,114 +375,59 @@
     <!-- Main Content -->
     <div class="main-content">
         <div class="logs-table">
+            <div class="filter-container">
+                <form method="GET" action="" class="filter-form">
+                    <div class="filter-group">
+                        <label class="filter-label">Employee Name</label>
+                        <input type="text" name="employee_name" class="filter-input" value="<?php echo htmlspecialchars($filter_name); ?>" placeholder="Enter employee name">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Start Date</label>
+                        <input type="date" name="start_date" class="filter-input" value="<?php echo htmlspecialchars($filter_start_date); ?>">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">End Date</label>
+                        <input type="date" name="end_date" class="filter-input" value="<?php echo htmlspecialchars($filter_end_date); ?>">
+                    </div>
+                    <div class="filter-actions">
+                        <button type="submit" class="filter-button">Apply Filters</button>
+                        <a href="logs.php" class="filter-button reset-button">Reset</a>
+                    </div>
+                </form>
+            </div>
             <div class="table-header">
                 <h2 class="table-title">Attendance Records</h2>
-                <div class="results-count"></div>
+                <div class="results-count">Total records: <?php echo count($records); ?></div>
             </div>
             
-            <div class="logs-controls">
-                <input id="name" type="text" class="search-box" placeholder="Search employee...">
-                <input id="date" type="date" class="filter-select">
-                <select id="status" class="filter-select">
-                    <option value="all">All Status</option>
-                    <option value="present">Present</option>
-                    <option value="absent">Absent</option>
-                </select>
-                <button class="clear-filters">Clear Filters</button>
-            </div>
+
 
             <table>
                 <thead>
                     <tr>
                         <th>Employee ID</th>
                         <th>Name</th>
+                        <th>Department</th>
                         <th>Date</th>
-                        <th>Time In</th>
-                        <th>Time Out</th>
-                        <th>Status</th>
+                        <th>AM IN</th>
+                        <th>AM OUT</th>
+                        <th>PM IN</th>
+                        <th>PM OUT</th>
                     </tr>
                 </thead>
-                <tbody id="attendance-body">
+                <tbody>
+                    <?php foreach ($records as $record): ?>
                     <tr>
-                        <td class="emp-id">EMP001</td>
-                        <td>Maria Santos Cruz</td>
-                        <td>2024-03-30</td>
-                        <td class="timestamp">07:45 AM</td>
-                        <td class="timestamp">04:30 PM</td>
-                        <td><span class="status-present">Present</span></td>
+                        <td><?php echo htmlspecialchars($record['EMP_ID']); ?></td>
+                        <td><?php echo htmlspecialchars($record['Name']); ?></td>
+                        <td><?php echo htmlspecialchars($record['DEPT']); ?></td>
+                        <td><?php echo htmlspecialchars($record['DATE']); ?></td>
+                        <td><?php echo htmlspecialchars($record['AM_IN'] ?? ''); ?></td>
+                        <td><?php echo htmlspecialchars($record['AM_OUT'] ?? ''); ?></td>
+                        <td><?php echo htmlspecialchars($record['PM_IN'] ?? ''); ?></td>
+                        <td><?php echo htmlspecialchars($record['PM_OUT'] ?? ''); ?></td>
                     </tr>
-                    <tr>
-                        <td class="emp-id">EMP002</td>
-                        <td>Juan dela Cruz</td>
-                        <td>2024-03-20</td>
-                        <td class="timestamp">07:55 AM</td>
-                        <td class="timestamp">05:00 PM</td>
-                        <td><span class="status-present">Present</span></td>
-                    </tr>
-                    <tr>
-                        <td class="emp-id">EMP003</td>
-                        <td>Ana Reyes</td>
-                        <td>2024-03-20</td>
-                        <td class="timestamp">-</td>
-                        <td class="timestamp">-</td>
-                        <td><span class="status-absent">Absent</span></td>
-                    </tr>
-                    <tr>
-                        <td class="emp-id">EMP004</td>
-                        <td>Miguel Rodriguez</td>
-                        <td>2024-03-20</td>
-                        <td class="timestamp">07:45 AM</td>
-                        <td class="timestamp">04:55 PM</td>
-                        <td><span class="status-present">Present</span></td>
-                    </tr>
-                    <tr>
-                        <td class="emp-id">EMP005</td>
-                        <td>Isabella Garcia</td>
-                        <td>2024-03-20</td>
-                        <td class="timestamp">08:00 AM</td>
-                        <td class="timestamp">05:00 PM</td>
-                        <td><span class="status-present">Present</span></td>
-                    </tr>
-                    <tr>
-                        <td class="emp-id">EMP006</td>
-                        <td>Ricardo Lim</td>
-                        <td>2024-03-20</td>
-                        <td class="timestamp">08:30 AM</td>
-                        <td class="timestamp">05:15 PM</td>
-                        <td><span class="status-present">Present</span></td>
-                    </tr>
-                    <tr>
-                        <td class="emp-id">EMP007</td>
-                        <td>Carmen Tan</td>
-                        <td>2024-03-20</td>
-                        <td class="timestamp">-</td>
-                        <td class="timestamp">-</td>
-                        <td><span class="status-absent">Absent</span></td>
-                    </tr>
-                    <tr>
-                        <td class="emp-id">EMP008</td>
-                        <td>Alex Smith</td>
-                        <td>2024-03-20</td>
-                        <td class="timestamp">09:00 AM</td>
-                        <td class="timestamp">06:00 PM</td>
-                        <td><span class="status-present">Present</span></td>
-                    </tr>
-                    <tr>
-                        <td class="emp-id">EMP009</td>
-                        <td>Jasmine Johnson</td>
-                        <td>2024-03-20</td>
-                        <td class="timestamp">-</td>
-                        <td class="timestamp">-</td>
-                        <td><span class="status-absent">Absent</span></td>
-                    </tr>
-                    <tr>
-                        <td class="emp-id">EMP010</td>
-                        <td>Liam Williams</td>
-                        <td>2024-03-20</td>
-                        <td class="timestamp">08:45 AM</td>
-                        <td class="timestamp">05:30 PM</td>
-                        <td><span class="status-present">Present</span></td>
-                    </tr>
+                    <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
@@ -357,55 +440,5 @@
         burgerMenu.addEventListener('click', () => {
             sidebar.classList.toggle('collapsed');
         });
-
-        document.addEventListener('DOMContentLoaded', () => {
-        const nameInput = document.getElementById('name');
-        const dateInput = document.getElementById('date');
-        const statusInput = document.getElementById('status');
-        const tableBody = document.getElementById('attendance-body');
-        const rows = tableBody.getElementsByTagName('tr');
-        const clearFiltersButton = document.querySelector('.clear-filters');
-
-        const filterTable = () => {
-            const nameFilter = nameInput.value.toLowerCase();
-            const dateFilter = dateInput.value;
-            const statusFilter = statusInput.value;
-
-            for (let row of rows) {
-                const name = row.cells[1].textContent.toLowerCase();
-                const date = row.cells[2].textContent;
-                const status = row.cells[5].textContent.toLowerCase();
-
-                const matchesName = name.includes(nameFilter);
-                const matchesDate = dateFilter === "" || date === dateFilter;
-                const matchesStatus = statusFilter === "all" || status.includes(statusFilter);
-
-                if (matchesName && matchesDate && matchesStatus) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            }
-        };
-
-        // Event listeners for filter changes
-        nameInput.addEventListener('input', filterTable);
-        dateInput.addEventListener('change', filterTable);
-        statusInput.addEventListener('change', filterTable);
-
-        // Clear filters function
-        clearFiltersButton.addEventListener('click', () => {
-            // Reset the filter inputs
-            nameInput.value = '';
-            dateInput.value = '';
-            statusInput.value = 'all';
-
-            // Show all rows again
-            for (let row of rows) {
-                row.style.display = '';
-            }
-        });
-    });
-
     </script>
 </body>
