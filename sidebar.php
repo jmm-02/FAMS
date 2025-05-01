@@ -246,7 +246,7 @@
             <i class="fas fa-user"></i>
         </div>        
         <div class="nav-links">
-            <a href="welcome.php">
+            <a href="index.php">
                 <span class="nav-icon">
                     <i class="fas fa-home"></i>
                 </span>
@@ -264,12 +264,12 @@
                 </span>
                 <span class="nav-text">Employee Info</span>
             </a>
-            <a href="addemployee.php">
+            <!-- <a href="addemployee.php">
                 <span class="nav-icon">
                     <i class="fas fa-user-plus"></i>
                 </span>
                 <span class="nav-text">Add Employee</span>
-            </a>
+            </a> -->
             
             <button class="logout-btn" onclick="window.location.href='login.php'">
                 <span class="nav-icon">

@@ -147,7 +147,7 @@
         
         <div class="content-text">
             <h2>The fingerprint attendance monitoring system for Colegio de Los Baños provides a user-friendly interface designed specifically for tracking employee attendance. It features real-time updates on faculty and staff attendance, including the total number of present and absent. A live feed displays names, and timestamps for time-in and time-out records, ensuring efficient monitoring.</h2>
-            <form action="hardcoded_import.php" method="post" enctype="multipart/form-data">
+            <form action="import_excel.php" method="post" enctype="multipart/form-data">
             <div class="file-upload-container">
                 <div class="file-input-wrapper">
                     <label class="file-input-button">
