@@ -384,9 +384,9 @@ if (isset($_GET['status']) && $_GET['status'] === 'success') {
                             <td>
                                 <label for="position">Select Position:</label>
                                 <select id="position" name="position" class="filter-select" required title="Select the employee's position">
+                                    <option value="Adminitrator">Adminitrator</option>
                                     <option value="Faculty Member">Faculty Member</option>
-                                    <option value="Caregiver">Caregiver</option>
-                                    <option value="Instructor">Instructor</option>
+                                    <option value="Caregiver Instructor">Caregiver Instructor</option>
                                     <option value="Part-time Faculty Member">Part-time Faculty Member</option>
                                     <option value="Other Personnel">Other Personnel</option>
                                 </select>

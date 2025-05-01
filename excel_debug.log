@@ -1,0 +1,64 @@
+Starting Hardcoded Import...
+Created attendance record: ID=1, Date=2025-04-01, AM_IN=18:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-02, AM_IN=19:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-03, AM_IN=20:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-04, AM_IN=21:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-05, AM_IN=22:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-06, AM_IN=23:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-07, AM_IN=00:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-08, AM_IN=01:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-09, AM_IN=02:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-10, AM_IN=03:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-11, AM_IN=04:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-12, AM_IN=05:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-13, AM_IN=06:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-14, AM_IN=07:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-15, AM_IN=08:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-16, AM_IN=09:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-17, AM_IN=10:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-18, AM_IN=11:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-19, AM_IN=12:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-20, AM_IN=13:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-21, AM_IN=14:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-22, AM_IN=15:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-23, AM_IN=16:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-24, AM_IN=17:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-25, AM_IN=18:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-26, AM_IN=19:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-27, AM_IN=20:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-28, AM_IN=21:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-29, AM_IN=22:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created attendance record: ID=1, Date=2025-04-30, AM_IN=23:31:00, AM_OUT=18:31:00, PM_IN=18:31:00, PM_OUT=18:31:00
+Created 1 employees and 30 attendance records
+Updated employee: ID=1
+Updated attendance: ID=1, Date=2025-04-01
+Updated attendance: ID=1, Date=2025-04-02
+Updated attendance: ID=1, Date=2025-04-03
+Updated attendance: ID=1, Date=2025-04-04
+Updated attendance: ID=1, Date=2025-04-05
+Updated attendance: ID=1, Date=2025-04-06
+Updated attendance: ID=1, Date=2025-04-07
+Updated attendance: ID=1, Date=2025-04-08
+Updated attendance: ID=1, Date=2025-04-09
+Updated attendance: ID=1, Date=2025-04-10
+Updated attendance: ID=1, Date=2025-04-11
+Updated attendance: ID=1, Date=2025-04-12
+Updated attendance: ID=1, Date=2025-04-13
+Updated attendance: ID=1, Date=2025-04-14
+Updated attendance: ID=1, Date=2025-04-15
+Updated attendance: ID=1, Date=2025-04-16
+Updated attendance: ID=1, Date=2025-04-17
+Updated attendance: ID=1, Date=2025-04-18
+Updated attendance: ID=1, Date=2025-04-19
+Updated attendance: ID=1, Date=2025-04-20
+Updated attendance: ID=1, Date=2025-04-21
+Updated attendance: ID=1, Date=2025-04-22
+Updated attendance: ID=1, Date=2025-04-23
+Updated attendance: ID=1, Date=2025-04-24
+Updated attendance: ID=1, Date=2025-04-25
+Updated attendance: ID=1, Date=2025-04-26
+Updated attendance: ID=1, Date=2025-04-27
+Updated attendance: ID=1, Date=2025-04-28
+Updated attendance: ID=1, Date=2025-04-29
+Updated attendance: ID=1, Date=2025-04-30
+Successfully processed 0 new employees, updated 1 employees, inserted 0 attendance records, and updated 30 attendance records.

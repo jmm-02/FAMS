@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Employee Information</title>
     <style>
         body {
             align-items: center;
@@ -111,11 +111,9 @@
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>First Name</th>
-                    <th>Last Name</th>
+                    <th>Name</th>
+                    <th>Department</th>
                     <th>Status</th>
-                    <th>Position</th>
-                    <th>PIN Code</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -128,18 +126,18 @@
           <form id="editForm" style="background:#fff;padding:24px;border-radius:8px;max-width:400px;margin:auto;position:relative;">
             <h3>Edit Employee</h3>
             <input type="hidden" name="emp_id" id="edit_emp_id">
-            <label>First Name:<input type="text" name="FIRST_NAME" id="edit_first_name" required></label><br>
-            <label>Last Name:<input type="text" name="LAST_NAME" id="edit_last_name" required></label><br>
-            <label>Status:<input type="text" name="STATUS" id="edit_status" required></label><br>
-            <label for="position">Select Position:</label>
-            <select name="POSITION" id="edit_position">
-                <option value="Faculty Member">Faculty Member</option>
-                <option value="Caregiver">Caregiver</option>
-                <option value="Instructor">Instructor</option>
-                <option value="Part-time Faculty Member">Part-time Faculty Member</option>
-                <option value="Other Personnel">Other Personnel</option>
-            </select><br>
-            <label>PIN Code:<input type="text" name="PIN_CODE" id="edit_pin_code" maxlength="4" pattern="\d{4}" required oninput="this.value = this.value.replace(/\D/g, '').slice(0, 4);"></label><br>
+            <div style="margin-bottom:16px;">
+              <label for="edit_name">Name:</label>
+              <input type="text" name="name" id="edit_name" required>
+            </div>
+            <div style="margin-bottom:16px;">
+              <label for="edit_department">Department:</label>
+              <input type="text" name="department" id="edit_department" required>
+            </div>
+            <div style="margin-bottom:16px;">
+              <label for="edit_status">Status:</label>
+              <input type="text" name="status" id="edit_status">
+            </div>
             <button type="submit">Save</button>
             <button type="button" onclick="closeEditModal()">Cancel</button>
           </form>
@@ -154,58 +152,34 @@
         if (filter) {
             const search = filter.toLowerCase();
             filtered = data.filter(emp =>
-                (emp.FIRST_NAME && emp.FIRST_NAME.toLowerCase().includes(search)) ||
-                (emp.LAST_NAME && emp.LAST_NAME.toLowerCase().includes(search))
+                (emp.Name && emp.Name.toLowerCase().includes(search))
             );
         }
         if (filtered.length > 0) {
             filtered.forEach((emp, idx) => {
                 const row = document.createElement('tr');
-                // Use a unique id for each PIN cell/button
-                const pinId = `pin_${emp.emp_id || idx}`;
                 row.innerHTML = `
                     <td>${emp.emp_id || ''}</td>
-                    <td>${emp.FIRST_NAME || ''}</td>
-                    <td>${emp.LAST_NAME || ''}</td>
-                    <td>${emp.STATUS || ''}</td>
-                    <td>${emp.POSITION || ''}</td>
+                    <td>${emp.Name || ''}</td>
+                    <td>${emp.department || ''}</td>
+                    <td>${emp.status || ''}</td>
                     <td>
-                        <span id="${pinId}" style="letter-spacing:2px;">••••</span>
-                        <button type="button" class="toggle-pin-btn" data-pin="${emp.PIN_CODE || ''}" data-target="${pinId}" aria-label="Show PIN">
-                            <span class="icon-eye">
-                                <svg viewBox="0 0 24 24"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5zm0-8a3 3 0 100 6 3 3 0 000-6z"/></svg>
-                            </span>
-                        </button>
-                    </td>
-                    <td>
-                    <button type="button" class="edit-btn" data-emp='${JSON.stringify(emp)}'>Edit</button>
+                        <button type="button" class="edit-btn" data-emp='${JSON.stringify(emp)}'>Edit</button>
+                        <button type="button" class="view-records-btn" data-emp-id="${emp.emp_id}">View Records</button>
                     </td>
                 `;
                 tbody.appendChild(row);
             });
         } else {
             const row = document.createElement('tr');
-            row.innerHTML = '<td colspan="6">No employees found.</td>';
+            row.innerHTML = '<td colspan="5">No employees found.</td>';
             tbody.appendChild(row);
         }
-        // Add event listeners for all show/hide PIN buttons
-        tbody.querySelectorAll('.toggle-pin-btn').forEach(btn => {
+        // Add event listeners for view records buttons
+        tbody.querySelectorAll('.view-records-btn').forEach(btn => {
             btn.addEventListener('click', function() {
-                const pinSpan = document.getElementById(this.getAttribute('data-target'));
-                const iconSpan = this.querySelector('.icon-eye');
-                if (this.getAttribute('data-state') !== 'shown') {
-                    pinSpan.textContent = this.getAttribute('data-pin');
-                    this.setAttribute('data-state', 'shown');
-                    // Change to eye-slash
-                    iconSpan.innerHTML = `<svg viewBox=\"0 0 24 24\"><path d=\"M1 12s3-7 11-7c2.5 0 4.7.6 6.5 1.7l1.3-1.5 1.4 1.4-1.5 1.3C21.4 8.7 23 10.2 23 12c0 2-3 7-11 7-2.5 0-4.7-.6-6.5-1.7l-1.3 1.5-1.4-1.4 1.5-1.3C2.6 15.3 1 13.8 1 12zm11 5c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5zm0-8a3 3 0 100 6 3 3 0 000-6z\"/></svg>`;
-                    this.setAttribute('aria-label', 'Hide PIN');
-                } else {
-                    pinSpan.textContent = '••••';
-                    this.setAttribute('data-state', 'hidden');
-                    // Change to eye
-                    iconSpan.innerHTML = `<svg viewBox=\"0 0 24 24\"><path d=\"M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5zm0-8a3 3 0 100 6 3 3 0 000-6z\"/></svg>`;
-                    this.setAttribute('aria-label', 'Show PIN');
-                }
+                const empId = this.getAttribute('data-emp-id');
+                window.location.href = `employee_records.php?emp_id=${empId}`;
             });
         });
     }
@@ -219,12 +193,12 @@
                 } else if (data.error) {
                     renderEmployees([], '');
                     const tbody = document.querySelector('#employeeTable tbody');
-                    tbody.innerHTML = `<tr><td colspan="6">Error: ${data.error}</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="5">Error: ${data.error}</td></tr>`;
                 }
             })
             .catch(error => {
                 const tbody = document.querySelector('#employeeTable tbody');
-                tbody.innerHTML = `<tr><td colspan="6">Fetch error: ${error}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5">Fetch error: ${error}</td></tr>`;
             });
         document.getElementById('searchName').addEventListener('input', function() {
             renderEmployees(allEmployees, this.value);
@@ -239,11 +213,9 @@ document.addEventListener('click', function(e) {
   if (e.target.classList.contains('edit-btn')) {
     const emp = JSON.parse(e.target.getAttribute('data-emp'));
     document.getElementById('edit_emp_id').value = emp.emp_id || '';
-    document.getElementById('edit_first_name').value = emp.FIRST_NAME || '';
-    document.getElementById('edit_last_name').value = emp.LAST_NAME || '';
-    document.getElementById('edit_status').value = emp.STATUS || '';
-    document.getElementById('edit_position').value = emp.POSITION || '';
-    document.getElementById('edit_pin_code').value = emp.PIN_CODE || '';
+    document.getElementById('edit_name').value = emp.Name || '';
+    document.getElementById('edit_department').value = emp.department || '';
+    document.getElementById('edit_status').value = emp.status || '';
     document.getElementById('editModal').style.display = 'flex';
   }
 });
