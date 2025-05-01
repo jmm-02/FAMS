@@ -92,6 +92,34 @@
             background: #c8e6c9;
             outline: none;
         }
+        
+        /* Status toggle button styles */
+        .toggle-status-btn {
+            margin-left: 8px;
+            padding: 6px 10px;
+            border-radius: 4px;
+            border: 1px solid #d1d9e6;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+        
+        .toggle-status-btn[data-current-status="Active"] {
+            background: #e8f5e9;
+            color: #2d3a4b;
+            border-color: #4CAF50;
+        }
+        
+        .toggle-status-btn[data-current-status="Inactive"] {
+            background: #f5f5f5;
+            color: #666;
+            border-color: #ccc;
+        }
+        
+        .toggle-status-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
         @media (max-width: 700px) {
             .container {
                 padding: 12px 2vw 18px 2vw;
@@ -122,27 +150,7 @@
                 <!-- Employee rows will be inserted here -->
             </tbody>
         </table>
-        <!-- Edit Employee Modal -->
-        <div id="editModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:1000;">
-          <form id="editForm" style="background:#fff;padding:24px;border-radius:8px;max-width:400px;margin:auto;position:relative;box-shadow: 0 4px 20px rgba(76, 175, 80, 0.15);">
-            <h3>Edit Employee</h3>
-            <input type="hidden" name="emp_id" id="edit_emp_id">
-            <div style="margin-bottom:16px;">
-              <label for="edit_name">Name:</label>
-              <input type="text" name="name" id="edit_name" required>
-            </div>
-            <div style="margin-bottom:16px;">
-              <label for="edit_department">Department:</label>
-              <input type="text" name="department" id="edit_department" required>
-            </div>
-            <div style="margin-bottom:16px;">
-              <label for="edit_status">Status:</label>
-              <input type="text" name="status" id="edit_status">
-            </div>
-            <button type="submit" style="background:#4CAF50;color:#fff;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;margin-right:8px;">Save</button>
-            <button type="button" onclick="closeEditModal()" style="background:#f0f7f0;color:#333;border:1px solid #ccc;padding:8px 16px;border-radius:4px;cursor:pointer;">Cancel</button>
-          </form>
-        </div>
+
     </div>
     <script>
     let allEmployees = [];
@@ -165,8 +173,10 @@
                     <td>${emp.department || ''}</td>
                     <td>${emp.status || ''}</td>
                     <td>
-                        <button type="button" class="edit-btn" data-emp='${JSON.stringify(emp)}'>Edit</button>
                         <button type="button" class="view-records-btn" data-emp-id="${emp.emp_id}">View Records</button>
+                        <button type="button" class="toggle-status-btn" data-emp-id="${emp.emp_id}" data-current-status="${emp.status || 'Inactive'}">
+                            ${emp.status === 'Active' ? 'Set Inactive' : 'Set Active'}
+                        </button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -181,6 +191,19 @@
             btn.addEventListener('click', function() {
                 const empId = this.getAttribute('data-emp-id');
                 window.location.href = `employee_records.php?emp_id=${empId}`;
+            });
+        });
+        
+        // Add event listeners for toggle status buttons
+        tbody.querySelectorAll('.toggle-status-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const empId = this.getAttribute('data-emp-id');
+                const currentStatus = this.getAttribute('data-current-status');
+                const newStatus = currentStatus === 'Active' ? 'Inactive' : 'Active';
+                
+                if (confirm(`Are you sure you want to change this employee's status to ${newStatus}?`)) {
+                    updateEmployeeStatus(empId, newStatus);
+                }
             });
         });
     }
@@ -205,45 +228,35 @@
             renderEmployees(allEmployees, this.value);
         });
     });
-
-    function closeEditModal() {
-  document.getElementById('editModal').style.display = 'none';
-}
-
-document.addEventListener('click', function(e) {
-  if (e.target.classList.contains('edit-btn')) {
-    const emp = JSON.parse(e.target.getAttribute('data-emp'));
-    document.getElementById('edit_emp_id').value = emp.emp_id || '';
-    document.getElementById('edit_name').value = emp.Name || '';
-    document.getElementById('edit_department').value = emp.department || '';
-    document.getElementById('edit_status').value = emp.status || '';
-    document.getElementById('editModal').style.display = 'flex';
-  }
-});
-
-document.getElementById('editForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const formData = new FormData(this);
-  fetch('update_employee.php', {
-    method: 'POST',
-    body: formData
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      closeEditModal();
-      // Refresh employee data
-      fetch('Fetch/fetch_employees.php')
-        .then(response => response.json())
+    
+    // Function to update employee status
+    function updateEmployeeStatus(empId, newStatus) {
+        const formData = new FormData();
+        formData.append('emp_id', empId);
+        formData.append('status', newStatus);
+        
+        fetch('update_employee_status.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
         .then(data => {
-          allEmployees = data;
-          renderEmployees(allEmployees);
+            if (data.success) {
+                // Refresh employee data
+                fetch('Fetch/fetch_employees.php')
+                    .then(response => response.json())
+                    .then(data => {
+                        allEmployees = data;
+                        renderEmployees(allEmployees);
+                    });
+            } else {
+                alert('Status update failed: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            alert('Error updating status: ' + error);
         });
-    } else {
-      alert('Update failed: ' + (data.error || 'Unknown error'));
     }
-  });
-});
     </script>
 </body>
 </html>

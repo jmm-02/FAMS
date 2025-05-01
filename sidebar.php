@@ -275,7 +275,7 @@
                 <span class="nav-icon">
                     <i class="fas fa-sign-out-alt"></i>
                 </span>
-                <span class="nav-text">Log-out</span>
+                <span class="nav-text">Logout</span>
             </button>
         </div>
     </div>
