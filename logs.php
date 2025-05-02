@@ -210,6 +210,26 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
             background-color: #0056b3;
         }
 
+        .export-button {
+            background-color:rgb(0, 135, 14);
+            color: white;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+            flex-shrink: 0;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .export-button:hover {
+            background-color:rgb(17, 255, 0);
+        }
+
         .reset-button {
             background-color: #6c757d;
             text-decoration: none;
@@ -368,6 +388,7 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
             transform: scale(1.1); /* Slightly enlarge the icon on hover */
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
     <?php include 'sidebar.php'; ?>
@@ -392,6 +413,7 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <div class="filter-actions">
                         <button type="submit" class="filter-button">Apply Filters</button>
                         <a href="logs.php" class="filter-button reset-button">Reset</a>
+                        <button id="exportExcelBtn" class="export-button">Export to Excel</button>
                     </div>
                 </form>
             </div>
@@ -434,11 +456,34 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 
     <script>
-        const burgerMenu = document.querySelector('.burger-menu');
-        const sidebar = document.querySelector('.sidebar');
+        document.addEventListener('DOMContentLoaded', function () {
+            const exportButton = document.getElementById('exportExcelBtn');
+            if (exportButton) {
+                exportButton.addEventListener('click', function () {
+                    // Get table data
+                    const table = document.querySelector('.logs-table table');
+                    if (!table) {
+                        alert('Table not found!');
+                        return;
+                    }
 
-        burgerMenu.addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
+                    const rows = Array.from(table.querySelectorAll('tr'));
+                    const data = rows.map(row =>
+                        Array.from(row.querySelectorAll('th, td')).map(cell => cell.textContent.trim())
+                    );
+
+                    // Create a worksheet and workbook
+                    const worksheet = XLSX.utils.aoa_to_sheet(data);
+                    const workbook = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendance Records');
+
+                    // Export the workbook to an Excel file
+                    XLSX.writeFile(workbook, 'Attendance_Records.xlsx');
+                });
+            } else {
+                console.error('Export button not found!');
+            }
         });
     </script>
 </body>
+</html>
