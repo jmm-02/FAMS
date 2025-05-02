@@ -30,7 +30,7 @@
             padding: 16px;
             background: #e0f2e0;
             border-radius: 8px;
-            display: flex;
+            display: flex; /* Ensure it's visible */
             flex-wrap: wrap;
             justify-content: space-between;
         }
@@ -235,10 +235,11 @@
         <a href="employeeinfo.php" class="back-link">← Back to Employee List</a>
         <h2>Employee Attendance Records</h2>
         
+        <!-- Update the employee info section -->
         <div id="employeeInfo" class="employee-info">
             <!-- Employee info will be inserted here -->
         </div>
-        
+
         <h3>Attendance Records</h3>
         
         <div class="date-filter">
@@ -248,6 +249,7 @@
             <input type="date" id="endDate">
             <button id="filterBtn">Filter</button>
             <button id="resetBtn">Reset</button>
+            <button id="exportBtn">Export to Excel</button>
         </div>
         
         <div class="table-wrapper">
@@ -273,6 +275,7 @@
 
     </div>
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
     // Get employee ID from URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -295,6 +298,7 @@
     });
     
     let allRecords = [];
+    let employeeData = {};
     
     // Format time function
     function formatTime(timeStr) {
@@ -316,22 +320,13 @@
     // Render employee info
     function renderEmployeeInfo(employee) {
         const infoDiv = document.getElementById('employeeInfo');
+        infoDiv.innerHTML = ''; // Clear existing content
         infoDiv.innerHTML = `
             <div>
-                <strong>Employee ID</strong>
-                ${employee.emp_id || '—'}
+                <strong>Employee ID:</strong> ${employee.emp_id || '—'}
             </div>
             <div>
-                <strong>Name</strong>
-                ${employee.Name || '—'}
-            </div>
-            <div>
-                <strong>Department</strong>
-                ${employee.department || '—'}
-            </div>
-            <div>
-                <strong>Status</strong>
-                ${employee.status || '—'}
+                <strong>Name:</strong> ${employee.Name || '—'}
             </div>
         `;
     }
@@ -373,11 +368,50 @@
         }
     }
     
+    // Function to export filtered data to Excel
+    function exportToExcel(records, employee) {
+        if (records.length === 0) {
+            alert('No data to export.');
+            return;
+        }
+
+        // Prepare employee info
+        const employeeInfo = [
+            ['Employee ID:', employee.emp_id || '—'],
+            ['Name:', employee.Name || '—'],
+            [], // Empty row for spacing
+        ];
+
+        // Prepare attendance records
+        const attendanceData = [
+            ['Date', 'AM In', 'AM Out', 'PM In', 'PM Out'], // Header row
+            ...records.map(record => [
+                formatDate(record.date),
+                formatTime(record.am_in),
+                formatTime(record.am_out),
+                formatTime(record.pm_in),
+                formatTime(record.pm_out)
+            ])
+        ];
+
+        // Combine employee info and attendance data
+        const worksheetData = [...employeeInfo, ...attendanceData];
+
+        // Create a new workbook and worksheet
+        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendance Records');
+
+        // Export the workbook to an Excel file
+        XLSX.writeFile(workbook, 'Attendance_Records.xlsx');
+    }
+
     // Fetch employee data and records
     document.addEventListener('DOMContentLoaded', function() {
         fetch(`Fetch/fetch_employee_records.php?emp_id=${empId}`)
             .then(response => response.json())
             .then(data => {
+                console.log(data); // Log the response to check its structure
                 if (data.error) {
                     alert(`Error: ${data.error}`);
                     return;
@@ -385,9 +419,10 @@
                 
                 // Store all records
                 allRecords = data.records;
+                employeeData = data.employee;
                 
                 // Render employee info
-                renderEmployeeInfo(data.employee);
+                renderEmployeeInfo(employeeData);
                 
                 // Render all records initially
                 renderRecords(allRecords);
@@ -416,7 +451,46 @@
             document.getElementById('endDate').value = '';
             renderRecords(allRecords);
         });
+
+        // Add event listener to the Export button
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            // Filter records based on selected dates
+            let filteredRecords = allRecords;
+            if (startDate && endDate) {
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59); // Include the entire end day
+
+                filteredRecords = allRecords.filter(record => {
+                    const recordDate = new Date(record.date);
+                    return recordDate >= start && recordDate <= end;
+                });
+            }
+
+            // Export the filtered records with employee info
+            exportToExcel(filteredRecords, employeeData);
+        });
     });
     </script>
 </body>
 </html>
+
+<?php
+// Example response structure
+header('Content-Type: application/json');
+
+$emp_id = $_GET['emp_id'];
+// Fetch employee details and records from the database
+$employee = [
+    'emp_id' => $emp_id,
+    'Name' => 'John Doe' // Replace with actual database query result
+];
+$records = [
+    ['date' => '2025-05-01', 'am_in' => '08:00', 'am_out' => '12:00', 'pm_in' => '13:00', 'pm_out' => '17:00']
+];
+
+echo json_encode(['employee' => $employee, 'records' => $records]);
+?>

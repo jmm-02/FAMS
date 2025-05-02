@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($user && password_verify($password, $user['PASSWORD'])) {
         $_SESSION['user_id'] = $user['ID'];
-        header('Location: welcome.php');
+        header('Location: index.php');
         exit();
     } else {
         // Redirect back to login form with error flag

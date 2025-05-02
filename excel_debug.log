@@ -1,1 +1,38 @@
 Starting Excel Import...
+Database connected successfully
+Loading CSV file: C:\xampp\tmp\php6CC2.tmp
+Skipping header row: Stat.Date:, 2025-04-01 ~ 2025-04-30
+Skipping header row: ID, Name
+Found 1 unique employees and 30 attendance records.
+Inserted employee: ID=1, Name=JM
+Inserted attendance record: ID=1, Date=2025-04-01
+Inserted attendance record: ID=1, Date=2025-04-02
+Inserted attendance record: ID=1, Date=2025-04-03
+Inserted attendance record: ID=1, Date=2025-04-04
+Inserted attendance record: ID=1, Date=2025-04-05
+Inserted attendance record: ID=1, Date=2025-04-06
+Inserted attendance record: ID=1, Date=2025-04-07
+Inserted attendance record: ID=1, Date=2025-04-08
+Inserted attendance record: ID=1, Date=2025-04-09
+Inserted attendance record: ID=1, Date=2025-04-10
+Inserted attendance record: ID=1, Date=2025-04-11
+Inserted attendance record: ID=1, Date=2025-04-12
+Inserted attendance record: ID=1, Date=2025-04-13
+Inserted attendance record: ID=1, Date=2025-04-14
+Inserted attendance record: ID=1, Date=2025-04-15
+Inserted attendance record: ID=1, Date=2025-04-16
+Inserted attendance record: ID=1, Date=2025-04-17
+Inserted attendance record: ID=1, Date=2025-04-18
+Inserted attendance record: ID=1, Date=2025-04-19
+Inserted attendance record: ID=1, Date=2025-04-20
+Inserted attendance record: ID=1, Date=2025-04-21
+Inserted attendance record: ID=1, Date=2025-04-22
+Inserted attendance record: ID=1, Date=2025-04-23
+Inserted attendance record: ID=1, Date=2025-04-24
+Inserted attendance record: ID=1, Date=2025-04-25
+Inserted attendance record: ID=1, Date=2025-04-26
+Inserted attendance record: ID=1, Date=2025-04-27
+Inserted attendance record: ID=1, Date=2025-04-28
+Inserted attendance record: ID=1, Date=2025-04-29
+Inserted attendance record: ID=1, Date=2025-04-30
+Import successful: Added 1 new employees, updated 0 existing employees, added 30 new attendance records.
