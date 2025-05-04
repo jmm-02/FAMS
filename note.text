@@ -1,0 +1,7 @@
+remove ";" in php.ini:
+    ;extension=zip
+    ;extension=gd
+
+https://getcomposer.org/download/
+
+terminal composer install

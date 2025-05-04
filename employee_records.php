@@ -477,20 +477,3 @@
     </script>
 </body>
 </html>
-
-<?php
-// Example response structure
-header('Content-Type: application/json');
-
-$emp_id = $_GET['emp_id'];
-// Fetch employee details and records from the database
-$employee = [
-    'emp_id' => $emp_id,
-    'Name' => 'John Doe' // Replace with actual database query result
-];
-$records = [
-    ['date' => '2025-05-01', 'am_in' => '08:00', 'am_out' => '12:00', 'pm_in' => '13:00', 'pm_out' => '17:00']
-];
-
-echo json_encode(['employee' => $employee, 'records' => $records]);
-?>

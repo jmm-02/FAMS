@@ -48,14 +48,54 @@ if (!isset($_FILES['excel_file']) || $_FILES['excel_file']['error'] !== UPLOAD_E
     exit;
 }
 
-// Only accept CSV files for simplicity
+// Only accept CSV or Excel files
 $fileExtension = strtolower(pathinfo($_FILES['excel_file']['name'], PATHINFO_EXTENSION));
-if ($fileExtension !== 'csv') {
+if (!in_array($fileExtension, ['csv', 'xls', 'xlsx'])) {
     echo json_encode([
         'success' => false,
-        'message' => "Please upload a CSV file. Save your Excel file as CSV first."
+        'message' => "Please upload a valid file. Supported formats: CSV, XLS, XLSX."
     ]);
     exit;
+}
+
+// Load the file
+$inputFileName = $_FILES['excel_file']['tmp_name'];
+$dataRows = [];
+
+if ($fileExtension === 'csv') {
+    // Handle CSV file
+    $file = fopen($inputFileName, 'r');
+    if (!$file) {
+        throw new Exception("Could not open the CSV file.");
+    }
+
+    // Skip header row
+    fgetcsv($file);
+
+    // Read all rows from CSV
+    while (($row = fgetcsv($file)) !== FALSE) {
+        $dataRows[] = $row;
+    }
+
+    fclose($file);
+} else {
+    // Handle Excel file using PhpSpreadsheet
+    require 'vendor/autoload.php'; // Ensure PhpSpreadsheet is loaded
+
+    try {
+        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($inputFileName);
+        $sheet = $spreadsheet->getActiveSheet();
+        $dataRows = $sheet->toArray(null, true, true, true); // Read all rows as an array
+    } catch (Exception $e) {
+        echo json_encode([
+            'success' => false,
+            'message' => "Error reading Excel file: " . $e->getMessage()
+        ]);
+        exit;
+    }
+
+    // Remove header row
+    array_shift($dataRows);
 }
 
 /**
@@ -97,19 +137,6 @@ try {
     // Log database connection
     file_put_contents(__DIR__ . '/excel_debug.log', "Database connected successfully\n", FILE_APPEND);
     
-    // Load the CSV file
-    $inputFileName = $_FILES['excel_file']['tmp_name'];
-    file_put_contents(__DIR__ . '/excel_debug.log', "Loading CSV file: $inputFileName\n", FILE_APPEND);
-    
-    // Open the CSV file
-    $file = fopen($inputFileName, 'r');
-    if (!$file) {
-        throw new Exception("Could not open the CSV file.");
-    }
-    
-    // Skip header row
-    fgetcsv($file);
-    
     // Begin transaction
     $pdo->beginTransaction();
     
@@ -118,70 +145,63 @@ try {
     $attendanceData = [];
     $rowCount = 0;
     
-    // Read all rows from CSV
-    while (($row = fgetcsv($file)) !== FALSE) {
+    // Process rows
+    foreach ($dataRows as $row) {
         $rowCount++;
-        
-        // Check if we have enough columns
+
+        // Ensure we have enough columns (adjust based on your Excel structure)
         if (count($row) < 8) {
             file_put_contents(__DIR__ . '/excel_debug.log', "Warning: Row $rowCount has less than 8 columns. Skipping.\n", FILE_APPEND);
             continue;
         }
-        
-        // Read REAL data from CSV - direct mapping from Excel columns
-        $empId = trim($row[0]);
-        $name = trim($row[1]);
-        $dept = trim($row[2]);
-        $date = trim($row[3]);
-        $amIn = trim($row[4]);
-        $amOut = trim($row[5]);
-        $pmIn = trim($row[6]);
-        $pmOut = trim($row[7]);
-        
+
+        // Map columns (adjust based on your Excel structure)
+        $empId = trim($row['A']); // Column A
+        $name = trim($row['B']); // Column B
+        $dept = trim($row['C']); // Column C
+        $date = trim($row['D']); // Column D
+        $amIn = trim($row['E']); // Column E
+        $amOut = trim($row['F']); // Column F
+        $pmIn = trim($row['G']); // Column G
+        $pmOut = trim($row['H']); // Column H
+
         // Skip header rows
         if ($empId == 'ID' || $name == 'Name' || $dept == 'Department' || 
             strpos($empId, 'Stat.Date') !== false) {
             file_put_contents(__DIR__ . '/excel_debug.log', "Skipping header row: $empId, $name\n", FILE_APPEND);
             continue;
         }
-        
-        // Format date properly
+
+        // Format date and time (reuse existing logic)
         if (!empty($date)) {
-            // Handle m/d/Y format (4/30/2025)
             if (preg_match('/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/', $date, $matches)) {
                 $month = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
                 $day = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
                 $year = $matches[3];
                 $date = "$year-$month-$day";
             } else if (is_numeric($date)) {
-                // Handle Excel numeric date
                 $excelBaseDate = new DateTime('1900-01-01');
                 $excelBaseDate->modify('+' . ($date - 2) . ' days');
                 $date = $excelBaseDate->format('Y-m-d');
             } else if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
-                // Try strtotime as last resort
                 $date = date('Y-m-d', strtotime($date));
             }
         }
-        
-        // Format time values
+
         $amIn = formatTime($amIn);
         $amOut = formatTime($amOut);
         $pmIn = formatTime($pmIn);
         $pmOut = formatTime($pmOut);
-        
-        // Store employee data (update if ID exists)
+
+        // Store employee and attendance data (reuse existing logic)
         if (!empty($empId) && !empty($name)) {
             $employeeData[$empId] = [
                 'name' => $name,
                 'dept' => $dept
             ];
         }
-        
-        // Store attendance record - use emp_id + date as key to handle duplicates in file
+
         if (!empty($empId) && !empty($date)) {
-            // Using empId_date as key means we only keep the last occurrence
-            // of each empId+date combination from the file, as per requirements
             $key = $empId . '_' . $date;
             $attendanceData[$key] = [
                 'emp_id' => $empId,
@@ -196,9 +216,6 @@ try {
             ];
         }
     }
-    
-    // Close the file
-    fclose($file);
     
     file_put_contents(__DIR__ . '/excel_debug.log', "Found " . count($employeeData) . " unique employees and " . count($attendanceData) . " attendance records.\n", FILE_APPEND);
     

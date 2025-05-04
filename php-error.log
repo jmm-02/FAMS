@@ -1,0 +1,27 @@
+[02-May-2025 09:44:45 Europe/Berlin] PHP Fatal error:  Uncaught Error: Class "ZipArchive" not found in C:\xampp\htdocs\FAMS\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Shared\File.php:61
+Stack trace:
+#0 C:\xampp\htdocs\FAMS\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Shared\File.php(186): PhpOffice\PhpSpreadsheet\Shared\File::fileExists('zip://C:\\xampp\\...')
+#1 C:\xampp\htdocs\FAMS\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Reader\Xlsx.php(77): PhpOffice\PhpSpreadsheet\Shared\File::testFileNoThrow('C:\\xampp\\tmp\\ph...', '_rels/.rels')
+#2 C:\xampp\htdocs\FAMS\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\IOFactory.php(172): PhpOffice\PhpSpreadsheet\Reader\Xlsx->canRead('C:\\xampp\\tmp\\ph...')
+#3 C:\xampp\htdocs\FAMS\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\IOFactory.php(112): PhpOffice\PhpSpreadsheet\IOFactory::createReaderForFile('C:\\xampp\\tmp\\ph...', NULL)
+#4 C:\xampp\htdocs\FAMS\import_excel.php(38): PhpOffice\PhpSpreadsheet\IOFactory::load('C:\\xampp\\tmp\\ph...')
+#5 {main}
+  thrown in C:\xampp\htdocs\FAMS\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Shared\File.php on line 61
+[02-May-2025 09:44:59 Europe/Berlin] PHP Fatal error:  Uncaught Error: Class "ZipArchive" not found in C:\xampp\htdocs\FAMS\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Shared\File.php:61
+Stack trace:
+#0 C:\xampp\htdocs\FAMS\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Shared\File.php(186): PhpOffice\PhpSpreadsheet\Shared\File::fileExists('zip://C:\\xampp\\...')
+#1 C:\xampp\htdocs\FAMS\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Reader\Xlsx.php(77): PhpOffice\PhpSpreadsheet\Shared\File::testFileNoThrow('C:\\xampp\\tmp\\ph...', '_rels/.rels')
+#2 C:\xampp\htdocs\FAMS\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\IOFactory.php(172): PhpOffice\PhpSpreadsheet\Reader\Xlsx->canRead('C:\\xampp\\tmp\\ph...')
+#3 C:\xampp\htdocs\FAMS\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\IOFactory.php(112): PhpOffice\PhpSpreadsheet\IOFactory::createReaderForFile('C:\\xampp\\tmp\\ph...', NULL)
+#4 C:\xampp\htdocs\FAMS\import_excel.php(38): PhpOffice\PhpSpreadsheet\IOFactory::load('C:\\xampp\\tmp\\ph...')
+#5 {main}
+  thrown in C:\xampp\htdocs\FAMS\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Shared\File.php on line 61
+[02-May-2025 09:49:42 Europe/Berlin] PHP Fatal error:  Uncaught Error: Class "ZipArchive" not found in C:\xampp\htdocs\FAMS\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Shared\File.php:61
+Stack trace:
+#0 C:\xampp\htdocs\FAMS\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Shared\File.php(186): PhpOffice\PhpSpreadsheet\Shared\File::fileExists('zip://C:\\xampp\\...')
+#1 C:\xampp\htdocs\FAMS\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Reader\Xlsx.php(77): PhpOffice\PhpSpreadsheet\Shared\File::testFileNoThrow('C:\\xampp\\tmp\\ph...', '_rels/.rels')
+#2 C:\xampp\htdocs\FAMS\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\IOFactory.php(172): PhpOffice\PhpSpreadsheet\Reader\Xlsx->canRead('C:\\xampp\\tmp\\ph...')
+#3 C:\xampp\htdocs\FAMS\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\IOFactory.php(112): PhpOffice\PhpSpreadsheet\IOFactory::createReaderForFile('C:\\xampp\\tmp\\ph...', NULL)
+#4 C:\xampp\htdocs\FAMS\import_excel.php(38): PhpOffice\PhpSpreadsheet\IOFactory::load('C:\\xampp\\tmp\\ph...')
+#5 {main}
+  thrown in C:\xampp\htdocs\FAMS\vendor\phpoffice\phpspreadsheet\src\PhpSpreadsheet\Shared\File.php on line 61
