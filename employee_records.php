@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -361,10 +360,7 @@
                     <td>${formatTime(record.pm_in)}</td>
                     <td>${formatTime(record.pm_out)}</td>
                     <td>
-                        <input type="text" value="${record.note || ''}" 
-                            data-emp-id="${empId}" 
-                            data-date="${record.date}" 
-                            class="note-input">
+                        <input type="text" class="note-input" value="${record.note || ''}" data-date="${record.date}" />
                         <button class="save-note-btn" data-emp-id="${empId}" data-date="${record.date}">Save</button>
                     </td>
                 `;
@@ -390,6 +386,16 @@
     
     // Function to export filtered data to Excel
     function exportToExcel(records, employee) {
+        // Update records with the latest notes from the input fields
+        document.querySelectorAll('.note-input').forEach(input => {
+            const date = input.getAttribute('data-date');
+            const note = input.value;
+            const record = records.find(r => r.date === date);
+            if (record) {
+                record.note = note; // Update the note in the records array
+            }
+        });
+
         if (records.length === 0) {
             alert('No data to export.');
             return;
@@ -404,13 +410,14 @@
 
         // Prepare attendance records
         const attendanceData = [
-            ['Date', 'AM In', 'AM Out', 'PM In', 'PM Out'], // Header row
+            ['Date', 'AM In', 'AM Out', 'PM In', 'PM Out', 'Note'], // Header row
             ...records.map(record => [
                 formatDate(record.date),
                 formatTime(record.am_in),
                 formatTime(record.am_out),
                 formatTime(record.pm_in),
-                formatTime(record.pm_out)
+                formatTime(record.pm_out),
+                record.note || '—' // Include the updated "Note" field
             ])
         ];
 
