@@ -83,8 +83,25 @@ if ($fileExtension === 'csv') {
     require 'vendor/autoload.php'; // Ensure PhpSpreadsheet is loaded
 
     try {
-        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($inputFileName);
-        $sheet = $spreadsheet->getActiveSheet();
+        // Use the appropriate reader for .xls or .xlsx
+        $reader = ($fileExtension === 'xls') 
+            ? new \PhpOffice\PhpSpreadsheet\Reader\Xls() 
+            : new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+        
+        $spreadsheet = $reader->load($inputFileName);
+
+        // Ensure the correct sheet is selected
+        $sheetName = 'Exception Stat.';
+        if ($spreadsheet->sheetNameExists($sheetName)) {
+            $sheet = $spreadsheet->getSheetByName($sheetName);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => "The sheet '$sheetName' does not exist in the uploaded file."
+            ]);
+            exit;
+        }
+
         $dataRows = $sheet->toArray(null, true, true, true); // Read all rows as an array
     } catch (Exception $e) {
         echo json_encode([
@@ -96,37 +113,93 @@ if ($fileExtension === 'csv') {
 
     // Remove header row
     array_shift($dataRows);
-}
 
-/**
- * Format time value to proper HH:MM:SS format
- * Handles multiple time formats (Excel numeric, HH:MM, etc.)
- */
-function formatTime($time) {
-    if (empty($time)) return null;
-    
-    // If already in correct format, return as is
-    if (preg_match('/^\d{1,2}:\d{2}(:\d{2})?$/', $time)) {
-        return strlen($time) == 5 ? "$time:00" : $time;
+    // Function to parse Excel dates
+    function parseExcelDate($excelDate) {
+        if (is_numeric($excelDate)) {
+            $excelBaseDate = new DateTime('1900-01-01');
+            $excelBaseDate->modify('+' . ((int)$excelDate - 2) . ' days'); // Adjust for Excel's date system
+            return $excelBaseDate->format('Y-m-d');
+        }
+        return date('Y-m-d', strtotime($excelDate)); // Fallback for non-numeric dates
     }
-    
-    // Try to convert numeric time (Excel fraction of day)
-    if (is_numeric($time)) {
-        $seconds = round($time * 86400);
-        $hours = floor($seconds / 3600);
-        $seconds %= 3600;
-        $minutes = floor($seconds / 60);
-        $seconds %= 60;
-        return sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+
+    // Function to parse Excel times
+    function parseExcelTime($excelTime) {
+        if (is_numeric($excelTime)) {
+            $seconds = round($excelTime * 86400); // Convert Excel time fraction to seconds
+            $hours = floor($seconds / 3600);
+            $seconds %= 3600;
+            $minutes = floor($seconds / 60);
+            $seconds %= 60;
+            return sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+        }
+        return $excelTime; // Fallback for non-numeric times
     }
-    
-    // Try with strtotime as last resort
-    $timestamp = strtotime($time);
-    if ($timestamp !== false) {
-        return date('H:i:s', $timestamp);
+
+    // Function to format time
+    function formatTime($excelTime) {
+        if (is_numeric($excelTime)) {
+            $seconds = round($excelTime * 86400); // Convert Excel time fraction to seconds
+            $hours = floor($seconds / 3600);
+            $seconds %= 3600;
+            $minutes = floor($seconds / 60);
+            $seconds %= 60;
+            return sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+        }
+        return $excelTime; // Fallback for non-numeric times
     }
-    
-    return null;
+
+    // Process rows
+    foreach ($dataRows as $row) {
+        $rowCount++;
+
+        // Ensure we have enough columns (adjust based on your Excel structure)
+        if (count($row) < 8) {
+            file_put_contents(__DIR__ . '/excel_debug.log', "Warning: Row $rowCount has less than 8 columns. Skipping.\n", FILE_APPEND);
+            continue;
+        }
+
+        // Map columns (adjust based on your Excel structure)
+        $empId = trim($row['A']); // Column A
+        $name = trim($row['B']); // Column B
+        $dept = trim($row['C']); // Column C
+        $date = parseExcelDate(trim($row['D'])); // Column D (parse date)
+        $amIn = parseExcelTime(trim($row['E'])); // Column E (parse time)
+        $amOut = parseExcelTime(trim($row['F'])); // Column F (parse time)
+        $pmIn = parseExcelTime(trim($row['G'])); // Column G (parse time)
+        $pmOut = parseExcelTime(trim($row['H'])); // Column H (parse time)
+
+        // Skip header rows
+        if ($empId == 'ID' || $name == 'Name' || $dept == 'Department' || 
+            strpos($empId, 'Stat.Date') !== false) {
+            file_put_contents(__DIR__ . '/excel_debug.log', "Skipping header row: $empId, $name\n", FILE_APPEND);
+            continue;
+        }
+
+        // Store employee and attendance data
+        if (!empty($empId) && !empty($name)) {
+            $employeeData[$empId] = [
+                'name' => $name,
+                'dept' => $dept
+            ];
+        }
+
+        if (!empty($empId) && !empty($date)) {
+            $key = $empId . '_' . $date;
+            $attendanceData[$key] = [
+                'emp_id' => $empId,
+                'name' => $name,
+                'dept' => $dept,
+                'date' => $date,
+                'am_in' => $amIn,
+                'am_out' => $amOut,
+                'pm_in' => $pmIn,
+                'pm_out' => $pmOut,
+                'row' => $rowCount
+            ];
+        }
+    }
 }
 
 try {
