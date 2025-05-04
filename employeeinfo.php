@@ -30,7 +30,6 @@ require_once 'includes/session_handler.php';
             letter-spacing: 1px;
         }
         #searchName {
-            margin-bottom: 18px;
             padding: 10px 14px;
             width: 100%;
             max-width: 350px;
@@ -40,6 +39,18 @@ require_once 'includes/session_handler.php';
             transition: border-color 0.2s, box-shadow 0.2s;
         }
         #searchName:focus {
+            border-color: #4CAF50;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+        }
+        #statusFilter {
+            padding: 10px 14px;
+            border: 1px solid #d1d9e6;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        #statusFilter:focus {
             border-color: #4CAF50;
             outline: none;
             box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
@@ -123,6 +134,32 @@ require_once 'includes/session_handler.php';
             transform: translateY(-1px);
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
+
+        /* Style for the "View Records" button */
+        .view-records-btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: 1px solidrgb(0, 139, 5);
+            background:rgb(0, 82, 7);
+            color:rgb(255, 255, 255);
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .view-records-btn:hover {
+            background: #c8e6c9;
+            border-color: #388E3C;
+            color: #1b5e20;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .view-records-btn:active {
+            background: #a5d6a7;
+            border-color: #2E7D32;
+        }
+
         @media (max-width: 700px) {
             .container {
                 padding: 12px 2vw 18px 2vw;
@@ -138,7 +175,15 @@ require_once 'includes/session_handler.php';
     <?php include 'sidebar.php'; ?>
     <div class="container">
         <h2>Employee Information</h2>
-        <input type="text" id="searchName" placeholder="Search by name...">
+        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 18px;">
+            <input type="text" id="searchName" placeholder="Search by name...">
+            <select id="statusFilter">
+                <option value="">All Statuses</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+                <option value="Not set">Not set</option>
+            </select>
+        </div>
         <table id="employeeTable" border="0" cellpadding="0" cellspacing="0">
             <thead>
                 <tr>
@@ -153,20 +198,32 @@ require_once 'includes/session_handler.php';
                 <!-- Employee rows will be inserted here -->
             </tbody>
         </table>
-
     </div>
     <script>
     let allEmployees = [];
-    function renderEmployees(data, filter = '') {
+    function renderEmployees(data, nameFilter = '', statusFilter = '') {
         const tbody = document.querySelector('#employeeTable tbody');
         tbody.innerHTML = '';
         let filtered = data;
-        if (filter) {
-            const search = filter.toLowerCase();
-            filtered = data.filter(emp =>
+
+        // Apply name filter
+        if (nameFilter) {
+            const search = nameFilter.toLowerCase();
+            filtered = filtered.filter(emp =>
                 (emp.Name && emp.Name.toLowerCase().includes(search))
             );
         }
+
+        // Apply status filter
+        if (statusFilter) {
+            filtered = filtered.filter(emp => {
+                if (statusFilter === 'Not set') {
+                    return !emp.status || emp.status === '';
+                }
+                return emp.status === statusFilter;
+            });
+        }
+
         if (filtered.length > 0) {
             filtered.forEach((emp, idx) => {
                 const row = document.createElement('tr');
@@ -174,7 +231,7 @@ require_once 'includes/session_handler.php';
                     <td>${emp.emp_id || ''}</td>
                     <td>${emp.Name || ''}</td>
                     <td>${emp.department || ''}</td>
-                    <td>${emp.status || ''}</td>
+                    <td>${emp.status || 'Not set'}</td>
                     <td>
                         <button type="button" class="view-records-btn" data-emp-id="${emp.emp_id}">View Records</button>
                         <button type="button" class="toggle-status-btn" data-emp-id="${emp.emp_id}" data-current-status="${emp.status || 'Inactive'}">
@@ -189,6 +246,7 @@ require_once 'includes/session_handler.php';
             row.innerHTML = '<td colspan="5">No employees found.</td>';
             tbody.appendChild(row);
         }
+
         // Add event listeners for view records buttons
         tbody.querySelectorAll('.view-records-btn').forEach(btn => {
             btn.addEventListener('click', function() {
@@ -196,20 +254,21 @@ require_once 'includes/session_handler.php';
                 window.location.href = `employee_records.php?emp_id=${empId}`;
             });
         });
-        
+
         // Add event listeners for toggle status buttons
         tbody.querySelectorAll('.toggle-status-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const empId = this.getAttribute('data-emp-id');
                 const currentStatus = this.getAttribute('data-current-status');
                 const newStatus = currentStatus === 'Active' ? 'Inactive' : 'Active';
-                
+
                 if (confirm(`Are you sure you want to change this employee's status to ${newStatus}?`)) {
                     updateEmployeeStatus(empId, newStatus);
                 }
             });
         });
     }
+
     document.addEventListener('DOMContentLoaded', function() {
         fetch('Fetch/fetch_employees.php')
             .then(response => response.json())
@@ -227,11 +286,20 @@ require_once 'includes/session_handler.php';
                 const tbody = document.querySelector('#employeeTable tbody');
                 tbody.innerHTML = `<tr><td colspan="5">Fetch error: ${error}</td></tr>`;
             });
+
+        // Add event listener for name filter
         document.getElementById('searchName').addEventListener('input', function() {
-            renderEmployees(allEmployees, this.value);
+            const statusFilter = document.getElementById('statusFilter').value;
+            renderEmployees(allEmployees, this.value, statusFilter);
+        });
+
+        // Add event listener for status filter
+        document.getElementById('statusFilter').addEventListener('change', function() {
+            const nameFilter = document.getElementById('searchName').value;
+            renderEmployees(allEmployees, nameFilter, this.value);
         });
     });
-    
+
     // Function to update employee status
     function updateEmployeeStatus(empId, newStatus) {
         const formData = new FormData();
