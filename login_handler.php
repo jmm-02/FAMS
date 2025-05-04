@@ -6,17 +6,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    $stmt = $pdo->prepare("SELECT * FROM ADMIN WHERE USERNAME = ?");
-    $stmt->execute([$username]);
-    $user = $stmt->fetch();
+    // Fetch user data from the database
+    $query = "SELECT PASSWORD FROM admin WHERE USERNAME = :username";
+    $stmt = $pdo->prepare($query);
+    $stmt->bindValue(':username', $username);
+    $stmt->execute();
+    $hashedPassword = $stmt->fetchColumn();
 
-    if ($user && password_verify($password, $user['PASSWORD'])) {
-        $_SESSION['user_id'] = $user['ID'];
-        header('Location: index.php');
-        exit();
+    // Verify the password
+    if ($hashedPassword && password_verify($password, $hashedPassword)) {
+        $_SESSION['USERNAME'] = $username; // Store username in session
+        header('Location: index.php'); // Redirect to the dashboard
+        exit;
     } else {
-        // Redirect back to login form with error flag
-        header('Location: login.php?error=1');
-        exit();
+        header('Location: login.php?error=1'); // Redirect back with an error
+        exit;
     }
 }
+?>

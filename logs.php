@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once 'includes/session_handler.php';
 require_once 'includes/db_connect.php';
 
 // Handle filtering

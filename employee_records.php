@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -256,7 +257,7 @@
             <table id="recordsTable" border="0" cellpadding="0" cellspacing="0">
             <thead>
                 <tr class="table-header-title">
-                    <th colspan="5">Attendance Record Details</th>
+                    <th colspan="6">Attendance Record Details</th>
                 </tr>
                 <tr>
                     <th>Date</th>
@@ -264,6 +265,7 @@
                     <th>AM Out</th>
                     <th>PM In</th>
                     <th>PM Out</th>
+                    <th>NOTE</th>
                 </tr>
             </thead>
             <tbody>
@@ -335,20 +337,20 @@
     function renderRecords(records, startDate = null, endDate = null) {
         const tbody = document.querySelector('#recordsTable tbody');
         tbody.innerHTML = '';
-        
+
         // Filter records by date if needed
         let filteredRecords = records;
         if (startDate && endDate) {
             const start = new Date(startDate);
             const end = new Date(endDate);
             end.setHours(23, 59, 59); // Include the entire end day
-            
+
             filteredRecords = records.filter(record => {
                 const recordDate = new Date(record.date);
                 return recordDate >= start && recordDate <= end;
             });
         }
-        
+
         if (filteredRecords.length > 0) {
             filteredRecords.forEach(record => {
                 const row = document.createElement('tr');
@@ -358,14 +360,32 @@
                     <td>${formatTime(record.am_out)}</td>
                     <td>${formatTime(record.pm_in)}</td>
                     <td>${formatTime(record.pm_out)}</td>
+                    <td>
+                        <input type="text" value="${record.note || ''}" 
+                            data-emp-id="${empId}" 
+                            data-date="${record.date}" 
+                            class="note-input">
+                        <button class="save-note-btn" data-emp-id="${empId}" data-date="${record.date}">Save</button>
+                    </td>
                 `;
                 tbody.appendChild(row);
             });
         } else {
             const row = document.createElement('tr');
-            row.innerHTML = '<td colspan="5">No records found.</td>';
+            row.innerHTML = '<td colspan="6">No records found.</td>';
             tbody.appendChild(row);
         }
+
+        // Add event listeners for "Save" buttons
+        document.querySelectorAll('.save-note-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                const empId = this.getAttribute('data-emp-id');
+                const date = this.getAttribute('data-date');
+                const noteInput = this.previousElementSibling.value;
+
+                saveNoteToDatabase(empId, date, noteInput);
+            });
+        });
     }
     
     // Function to export filtered data to Excel
@@ -406,6 +426,42 @@
         XLSX.writeFile(workbook, 'Attendance_Records.xlsx');
     }
 
+    // Save note to database
+    function saveNoteToDatabase(empId, date, note) {
+        fetch('Fetch/save_note.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                emp_id: empId,
+                date: date,
+                note: note,
+            }),
+        })
+            .then(response => {
+                return response.text().then(text => {
+                    console.log("Response Text:", text); // Debugging
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return JSON.parse(text);
+                });
+            })
+            .then(data => {
+                console.log('Save Note Response:', data); // Debugging
+                if (data.success) {
+                    alert('Note saved successfully!');
+                } else {
+                    alert(`Error saving note: ${data.error}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error saving note:', error);
+                alert('Failed to save note. Please try again later.');
+            });
+    }
+
     // Fetch employee data and records
     document.addEventListener('DOMContentLoaded', function() {
         fetch(`Fetch/fetch_employee_records.php?emp_id=${empId}`)
@@ -428,9 +484,11 @@
                 renderRecords(allRecords);
             })
             .catch(error => {
-                console.error('Error fetching data:', error);
-                alert('Failed to fetch employee records. Please try again later.');
-            });
+            console.error('Error fetching data:', error);
+            alert('Failed to fetch employee records. Please try again later.');
+            window.location.href = 'employeeinfo.php'; // Replace with your actual login URL
+        });
+
             
         // Filter button click event
         document.getElementById('filterBtn').addEventListener('click', function() {

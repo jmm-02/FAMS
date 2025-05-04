@@ -1,3 +1,6 @@
+<?php
+require_once 'includes/session_handler.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

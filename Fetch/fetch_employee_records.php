@@ -1,9 +1,7 @@
 <?php
 // Database connection
-$host = 'localhost';
-$dbname = 'famsattendance';
-$username = 'root';
-$password = '';
+include '../includes/db_connect.php';
+require '../includes/session_handler.php';
 
 // Get employee ID from request
 $emp_id = isset($_GET['emp_id']) ? $_GET['emp_id'] : null;
@@ -35,7 +33,8 @@ try {
     // Get attendance records for the employee
     $recQuery = "SELECT ID as record_id, DATE as date, 
                 AM_IN as am_in, AM_OUT as am_out, 
-                PM_IN as pm_in, PM_OUT as pm_out
+                PM_IN as pm_in, PM_OUT as pm_out, 
+                `NOTE` as note
                 FROM emp_rec 
                 WHERE EMP_ID = :emp_id
                 ORDER BY DATE DESC";

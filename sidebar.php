@@ -94,6 +94,28 @@
             font-size: 16px;
         }
 
+        /* General button styling for sidebar */
+        button.nav-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: white;
+            text-decoration: none;
+            padding: 12px 0;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            font-size: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1); /* Optional: Add a border for separation */
+        }
+
+        /* Hover effect for buttons */
+        button.nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
         /* Add bottom border to last nav item */
         .nav-links a:last-of-type {
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -113,6 +135,24 @@
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+        }
+
+        .nav-icon i {
+            font-size: 18px;
+            margin-right: 10px; /* Add spacing between the icon and text */
+        }
+
+        .nav-icon img {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+            margin-right: 10px; /* Add spacing between the icon and text */
+        }
+
+        /* Optional: Add consistent spacing for all nav items */
+        .nav-links a,
+        button.nav-link {
+            margin: 0; /* Remove any extra margin */
         }
 
         /* Hover effect for both nav links and logout */
@@ -217,18 +257,10 @@
             border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .nav-icon {
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;  /* Prevent icon from shrinking */
-        }
-
-        /* Optional: Style for icons */
-        .nav-icon i {
-            font-size: 18px;
+        button {
+            display: inline-block;
+            visibility: visible;
+            z-index: 1000;
         }
     </style>
 </head>
@@ -270,14 +302,43 @@
                 </span>
                 <span class="nav-text">Add Employee</span>
             </a> -->
+
+            <a href="change_password.php" class="nav-link">
+                <span class="nav-icon">
+                    <i class="fas fa-key"></i> <!-- Font Awesome Key Icon -->
+                </span>
+                <span class="nav-text">Change Password</span>
+            </a>
             
-            <button class="logout-btn" onclick="window.location.href='login.php'">
+            <button class="logout-btn" onclick="window.location.href='logout.php'">
                 <span class="nav-icon">
                     <i class="fas fa-sign-out-alt"></i>
                 </span>
                 <span class="nav-text">Logout</span>
             </button>
         </div>
+    </div>
+
+
+    <!-- Change Password Modal -->
+    <div id="changePasswordModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:10px; box-shadow:0 4px 15px rgba(0,0,0,0.2); z-index:1000;">
+        <form method="POST" action="change_password.php">
+            <h3>Change Password</h3>
+            <div class="form-group">
+                <label for="current_password">Current Password</label>
+                <input type="password" id="current_password" name="current_password" placeholder="Enter Current Password" required>
+            </div>
+            <div class="form-group">
+                <label for="new_password">New Password</label>
+                <input type="password" id="new_password" name="new_password" placeholder="Enter New Password" required>
+            </div>
+            <div class="form-group">
+                <label for="confirm_password">Confirm New Password</label>
+                <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm New Password" required>
+            </div>
+            <button type="submit">Change Password</button>
+            <button type="button" onclick="closeChangePasswordModal()">Cancel</button>
+        </form>
     </div>
 
     <script>
@@ -287,6 +348,14 @@
         burgerMenu.addEventListener('click', () => {
             sidebar.classList.toggle('collapsed');
         });
+
+        function openChangePasswordModal() {
+            document.getElementById('changePasswordModal').style.display = 'block';
+        }
+
+        function closeChangePasswordModal() {
+            document.getElementById('changePasswordModal').style.display = 'none';
+        }
     </script>
 </body>
 </html>
