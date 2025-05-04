@@ -227,6 +227,31 @@
                 flex-direction: column;
             }
         }
+
+        /* Style for the "Save" button */
+        .save-note-btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: 1px solid #4CAF50;
+            background: #e8f5e9;
+            color: #2d3a4b;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .save-note-btn:hover {
+            background: #c8e6c9;
+            border-color: #388E3C;
+            color: #1b5e20;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .save-note-btn:active {
+            background: #a5d6a7;
+            border-color: #2E7D32;
+        }
     </style>
 </head>
 <body>
