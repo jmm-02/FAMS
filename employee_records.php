@@ -329,7 +329,18 @@
     // Format time function
     function formatTime(timeStr) {
         if (!timeStr) return '—';
-        return timeStr;
+        
+        // Split the time string into hours and minutes
+        const [hours, minutes] = timeStr.split(':');
+        
+        // Convert to 12-hour format
+        let hour = parseInt(hours);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        hour = hour % 12;
+        hour = hour ? hour : 12; // Convert 0 to 12
+        
+        // Return formatted time with AM/PM
+        return `${hour}:${minutes} ${ampm}`;
     }
     
     // Format date function

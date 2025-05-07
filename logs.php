@@ -3,6 +3,12 @@ session_start();
 require_once 'includes/session_handler.php';
 require_once 'includes/db_connect.php';
 
+// Function to convert 24-hour time to 12-hour format
+function convertTo12Hour($time) {
+    if (empty($time)) return '';
+    return date('h:i A', strtotime($time));
+}
+
 // Handle filtering
 $filter_start_date = isset($_GET['start_date']) ? $_GET['start_date'] : '';
 $filter_end_date = isset($_GET['end_date']) ? $_GET['end_date'] : '';
@@ -445,10 +451,10 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <td><?php echo htmlspecialchars($record['Name']); ?></td>
                         <td><?php echo htmlspecialchars($record['DEPT']); ?></td>
                         <td><?php echo htmlspecialchars($record['DATE']); ?></td>
-                        <td><?php echo htmlspecialchars($record['AM_IN'] ?? ''); ?></td>
-                        <td><?php echo htmlspecialchars($record['AM_OUT'] ?? ''); ?></td>
-                        <td><?php echo htmlspecialchars($record['PM_IN'] ?? ''); ?></td>
-                        <td><?php echo htmlspecialchars($record['PM_OUT'] ?? ''); ?></td>
+                        <td><?php echo convertTo12Hour($record['AM_IN']); ?></td>
+                        <td><?php echo convertTo12Hour($record['AM_OUT']); ?></td>
+                        <td><?php echo convertTo12Hour($record['PM_IN']); ?></td>
+                        <td><?php echo convertTo12Hour($record['PM_OUT']); ?></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>

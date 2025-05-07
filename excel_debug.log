@@ -1,37 +1,44 @@
 Starting Excel Import...
-Database connected successfully
-Skipping header row: Stat.Date:, 2025-04-01 ~ 2025-04-30
+Skipping header row: Stat.Date:, 2025-05-01 ~ 2025-05-05
 Skipping header row: ID, Name
-Found 1 unique employees and 30 attendance records.
+Database connected successfully
+Skipping header row: Stat.Date:, 2025-05-01 ~ 2025-05-05
+Skipping header row: ID, Name
+Found 6 unique employees and 30 attendance records.
 Updated employee: ID=1, Name=JM
-Skipping duplicate attendance: ID=1, Date=2025-04-01
-Skipping duplicate attendance: ID=1, Date=2025-04-02
-Skipping duplicate attendance: ID=1, Date=2025-04-03
-Skipping duplicate attendance: ID=1, Date=2025-04-04
-Skipping duplicate attendance: ID=1, Date=2025-04-05
-Skipping duplicate attendance: ID=1, Date=2025-04-06
-Skipping duplicate attendance: ID=1, Date=2025-04-07
-Skipping duplicate attendance: ID=1, Date=2025-04-08
-Skipping duplicate attendance: ID=1, Date=2025-04-09
-Skipping duplicate attendance: ID=1, Date=2025-04-10
-Skipping duplicate attendance: ID=1, Date=2025-04-11
-Skipping duplicate attendance: ID=1, Date=2025-04-12
-Skipping duplicate attendance: ID=1, Date=2025-04-13
-Skipping duplicate attendance: ID=1, Date=2025-04-14
-Skipping duplicate attendance: ID=1, Date=2025-04-15
-Skipping duplicate attendance: ID=1, Date=2025-04-16
-Skipping duplicate attendance: ID=1, Date=2025-04-17
-Skipping duplicate attendance: ID=1, Date=2025-04-18
-Skipping duplicate attendance: ID=1, Date=2025-04-19
-Skipping duplicate attendance: ID=1, Date=2025-04-20
-Skipping duplicate attendance: ID=1, Date=2025-04-21
-Skipping duplicate attendance: ID=1, Date=2025-04-22
-Skipping duplicate attendance: ID=1, Date=2025-04-23
-Skipping duplicate attendance: ID=1, Date=2025-04-24
-Skipping duplicate attendance: ID=1, Date=2025-04-25
-Skipping duplicate attendance: ID=1, Date=2025-04-26
-Skipping duplicate attendance: ID=1, Date=2025-04-27
-Skipping duplicate attendance: ID=1, Date=2025-04-28
-Skipping duplicate attendance: ID=1, Date=2025-04-29
-Skipping duplicate attendance: ID=1, Date=2025-04-30
-Import successful: Added 0 new employees, updated 1 existing employees, added 0 new attendance records, skipped 30 duplicate records.
+Updated employee: ID=821, Name=85
+Updated employee: ID=00, Name=mnfv, jhf mhf
+Updated employee: ID=2, Name=Mara
+Updated employee: ID=3, Name=Mj
+Updated employee: ID=4444, Name=Mark
+Inserted attendance record: ID=1, Date=2025-05-01
+Inserted attendance record: ID=1, Date=2025-05-02
+Inserted attendance record: ID=1, Date=2025-05-03
+Inserted attendance record: ID=1, Date=2025-05-04
+Inserted attendance record: ID=1, Date=2025-05-05
+Inserted attendance record: ID=821, Date=2025-05-01
+Inserted attendance record: ID=821, Date=2025-05-02
+Inserted attendance record: ID=821, Date=2025-05-03
+Inserted attendance record: ID=821, Date=2025-05-04
+Inserted attendance record: ID=821, Date=2025-05-05
+Inserted attendance record: ID=00, Date=2025-05-01
+Inserted attendance record: ID=00, Date=2025-05-02
+Inserted attendance record: ID=00, Date=2025-05-03
+Inserted attendance record: ID=00, Date=2025-05-04
+Inserted attendance record: ID=00, Date=2025-05-05
+Inserted attendance record: ID=2, Date=2025-05-01
+Inserted attendance record: ID=2, Date=2025-05-02
+Inserted attendance record: ID=2, Date=2025-05-03
+Inserted attendance record: ID=2, Date=2025-05-04
+Inserted attendance record: ID=2, Date=2025-05-05
+Inserted attendance record: ID=3, Date=2025-05-01
+Inserted attendance record: ID=3, Date=2025-05-02
+Inserted attendance record: ID=3, Date=2025-05-03
+Inserted attendance record: ID=3, Date=2025-05-04
+Inserted attendance record: ID=3, Date=2025-05-05
+Inserted attendance record: ID=4444, Date=2025-05-01
+Inserted attendance record: ID=4444, Date=2025-05-02
+Inserted attendance record: ID=4444, Date=2025-05-03
+Inserted attendance record: ID=4444, Date=2025-05-04
+Inserted attendance record: ID=4444, Date=2025-05-05
+Import successful: Added 0 new employees, updated 6 existing employees, added 30 new attendance records.

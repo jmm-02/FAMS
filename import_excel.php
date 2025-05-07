@@ -261,10 +261,11 @@ try {
             }
         }
 
-        $amIn = formatTime($amIn);
-        $amOut = formatTime($amOut);
-        $pmIn = formatTime($pmIn);
-        $pmOut = formatTime($pmOut);
+        // Only format time if there's actual data
+        $amIn = !empty($row['E']) ? formatTime($amIn) : null;
+        $amOut = !empty($row['F']) ? formatTime($amOut) : null;
+        $pmIn = !empty($row['G']) ? formatTime($pmIn) : null;
+        $pmOut = !empty($row['H']) ? formatTime($pmOut) : null;
 
         // Store employee and attendance data (reuse existing logic)
         if (!empty($empId) && !empty($name)) {
