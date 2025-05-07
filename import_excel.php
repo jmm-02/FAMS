@@ -164,12 +164,13 @@ if ($fileExtension === 'csv') {
         $empId = trim($row['A']); // Column A
         $name = trim($row['B']); // Column B
         $dept = trim($row['C']); // Column C
-        $date = parseExcelDate(trim($row['D'])); // Column D (parse date)
-        $amIn = parseExcelTime(trim($row['E'])); // Column E (parse time)
-        $amOut = parseExcelTime(trim($row['F'])); // Column F (parse time)
-        $pmIn = parseExcelTime(trim($row['G'])); // Column G (parse time)
-        $pmOut = parseExcelTime(trim($row['H'])); // Column H (parse time)
-        $late = trim($row['I']); // Column I - LATE value
+        $date = parseExcelDate(trim($row['D']));
+        $amIn = parseExcelTime(trim($row['E']));
+        $amOut = parseExcelTime(trim($row['F']));
+        $pmIn = parseExcelTime(trim($row['G']));
+        $pmOut = parseExcelTime(trim($row['H']));
+        $late = trim($row['I']);
+        $undertime = trim($row['L']); // Column L - UNDERTIME
 
         // Skip header rows
         if ($empId == 'ID' || $name == 'Name' || $dept == 'Department' || 
@@ -198,6 +199,7 @@ if ($fileExtension === 'csv') {
                 'pm_in' => $pmIn,
                 'pm_out' => $pmOut,
                 'late' => $late,
+                'undertime' => $undertime,
                 'row' => $rowCount
             ];
         }
@@ -231,16 +233,15 @@ try {
         }
 
         // Map columns (adjust based on your Excel structure)
-        $empId = trim($row['A']); // Column A
-        $name = trim($row['B']); // Column B
-        $dept = trim($row['C']); // Column C
-        $date = trim($row['D']); // Column D
-        $amIn = trim($row['E']); // Column E
-        $amOut = trim($row['F']); // Column F
-        $pmIn = trim($row['G']); // Column G
-        $pmOut = trim($row['H']); // Column H
-        $late = trim($row['I']); // Column I - LATE value
-
+        $empId = trim($row['A']);
+        $name = trim($row['B']);
+        $dept = trim($row['C']);
+        $date = trim($row['D']);
+        $amIn = trim($row['E']);
+        $amOut = trim($row['F']);
+        $pmIn = trim($row['G']); 
+        $late = trim($row['I']); 
+        $undertime = trim($row['L']); // Column L - UNDERTIME
         // Skip header rows
         if ($empId == 'ID' || $name == 'Name' || $dept == 'Department' || 
             strpos($empId, 'Stat.Date') !== false) {
@@ -290,6 +291,7 @@ try {
                 'pm_in' => $pmIn,
                 'pm_out' => $pmOut,
                 'late' => $late,
+                'undertime' => $undertime,
                 'row' => $rowCount
             ];
         }
@@ -342,7 +344,7 @@ try {
         $pmIn = $record['pm_in'];
         $pmOut = $record['pm_out'];
         $late = $record['late'];
-        
+        $undertime = $record['undertime'];
         // Skip if missing critical data
         if (empty($empId) || empty($date)) {
             file_put_contents(__DIR__ . '/excel_debug.log', "Skipping attendance without ID or date: Name=$name, Date=$date\n", FILE_APPEND);
@@ -357,8 +359,8 @@ try {
             // This is an exact ID+DATE duplicate
             if (isset($_POST['update_existing']) && $_POST['update_existing'] == 'yes') {
                 // Only update if user specifically requested updates
-                $stmt = $pdo->prepare("UPDATE emp_rec SET AM_IN = ?, AM_OUT = ?, PM_IN = ?, PM_OUT = ?, LATE = ? WHERE EMP_ID = ? AND DATE = ?");
-                $stmt->execute([$amIn, $amOut, $pmIn, $pmOut, $late, $empId, $date]);
+                $stmt = $pdo->prepare("UPDATE emp_rec SET AM_IN = ?, AM_OUT = ?, PM_IN = ?, PM_OUT = ?, LATE = ?, UNDERTIME = ? WHERE EMP_ID = ? AND DATE = ?");
+                $stmt->execute([$amIn, $amOut, $pmIn, $pmOut, $late, $undertime, $empId, $date]);
                 $attendanceUpdated++;
                 file_put_contents(__DIR__ . '/excel_debug.log', "Updated attendance: ID=$empId, Date=$date\n", FILE_APPEND);
             } else {
@@ -368,8 +370,8 @@ try {
             }
         } else {
             // No duplicate - insert new record with REAL Excel data
-            $stmt = $pdo->prepare("INSERT INTO emp_rec (EMP_ID, DATE, AM_IN, AM_OUT, PM_IN, PM_OUT, LATE) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$empId, $date, $amIn, $amOut, $pmIn, $pmOut, $late]);
+            $stmt = $pdo->prepare("INSERT INTO emp_rec (EMP_ID, DATE, AM_IN, AM_OUT, PM_IN, PM_OUT, LATE, UNDERTIME) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$empId, $date, $amIn, $amOut, $pmIn, $pmOut, $late, $undertime]);
             $attendanceInserted++;
             file_put_contents(__DIR__ . '/excel_debug.log', "Inserted attendance record: ID=$empId, Date=$date\n", FILE_APPEND);
         }

@@ -281,7 +281,7 @@
             <table id="recordsTable" border="0" cellpadding="0" cellspacing="0">
             <thead>
                 <tr class="table-header-title">
-                    <th colspan="7">Attendance Record Details</th>
+                    <th colspan="8">Attendance Record Details</th>
                 </tr>
                 <tr>
                     <th>Date</th>
@@ -290,6 +290,7 @@
                     <th>PM In</th>
                     <th>PM Out</th>
                     <th>Late(min)</th>
+                    <th>Undertime(min)</th>
                     <th>NOTE</th>
                 </tr>
             </thead>
@@ -397,6 +398,7 @@
                     <td>${formatTime(record.pm_in)}</td>
                     <td>${formatTime(record.pm_out)}</td>
                     <td>${record.late == 0 || record.late === '0' ? '' : record.late}</td>
+                    <td>${(!record.am_in && !record.am_out && !record.pm_in && !record.pm_out) ? '' : (record.undertime == 0 || record.undertime === '0' ? '' : record.undertime)}</td>
                     <td>
                         <input type="text" class="note-input" value="${record.note || ''}" data-date="${record.date}" />
                         <button class="save-note-btn" data-emp-id="${empId}" data-date="${record.date}">Save</button>
@@ -448,13 +450,15 @@
 
         // Prepare attendance records
         const attendanceData = [
-            ['Date', 'AM In', 'AM Out', 'PM In', 'PM Out', 'Note'], // Header row
+            ['Date', 'AM In', 'AM Out', 'PM In', 'PM Out', 'Late(min)', 'Undertime(min)', 'Note'], // Header row
             ...records.map(record => [
                 formatDate(record.date),
                 formatTime(record.am_in),
                 formatTime(record.am_out),
                 formatTime(record.pm_in),
                 formatTime(record.pm_out),
+                record.late == 0 || record.late === '0' ? '' : record.late,
+                (!record.am_in && !record.am_out && !record.pm_in && !record.pm_out) ? '' : (record.undertime == 0 || record.undertime === '0' ? '' : record.undertime),
                 record.note || '—' // Include the updated "Note" field
             ])
         ];
