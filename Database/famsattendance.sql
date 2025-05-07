@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 27, 2025 at 08:42 AM
+-- Generation Time: May 07, 2025 at 04:29 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -38,7 +38,7 @@ CREATE TABLE `admin` (
 --
 
 INSERT INTO `admin` (`ID`, `USERNAME`, `PASSWORD`) VALUES
-(1, 'admin', '$2a$05$Ut9rp1AtP5e.qb/wplcSnebY1PpffCFbYufDN3MGPJ1iKGx46CDDS');
+(1, 'admin', '$2y$10$ZlfrUEK9PJE9EKtE9/6CouvKM8uI.vBTjW8xLPyUjE3qnZecew/AK');
 
 -- --------------------------------------------------------
 
@@ -48,8 +48,8 @@ INSERT INTO `admin` (`ID`, `USERNAME`, `PASSWORD`) VALUES
 
 CREATE TABLE `emp_info` (
   `ID` varchar(20) NOT NULL,
-  `FIRST_NAME` varchar(50) NOT NULL,
-  `LAST_NAME` varchar(50) NOT NULL,
+  `Name` varchar(50) NOT NULL,
+  `DEPT` varchar(255) NOT NULL,
   `STATUS` varchar(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -57,35 +57,13 @@ CREATE TABLE `emp_info` (
 -- Dumping data for table `emp_info`
 --
 
-INSERT INTO `emp_info` (`ID`, `FIRST_NAME`, `LAST_NAME`, `STATUS`) VALUES
-('1', 'Mara Joy', 'Montecillo', 'Active'),
-('2', 'JM', 'Montecillo', 'Active'),
-('3', 'sad', 'asd', 'Active'),
-('asd123', 'asd', 'asd', 'Active'),
-('asd12333', 'asd', 'asd', 'Active');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `emp_position`
---
-
-CREATE TABLE `emp_position` (
-  `ID` int(11) NOT NULL,
-  `EMP_ID` varchar(20) DEFAULT NULL,
-  `POSITION` varchar(50) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `emp_position`
---
-
-INSERT INTO `emp_position` (`ID`, `EMP_ID`, `POSITION`) VALUES
-(1, '1', 'Instructor'),
-(2, '2', 'Instructor'),
-(3, '3', 'Faculty Member'),
-(4, 'asd123', 'Caregiver'),
-(5, 'asd12333', 'Other Personnel');
+INSERT INTO `emp_info` (`ID`, `Name`, `DEPT`, `STATUS`) VALUES
+('00', 'mnfv, jhf mhf', 'Administrator', 'Active'),
+('1', 'JM', 'Administrator', 'Active'),
+('2', 'Mara', 'Administrator', 'Active'),
+('3', 'Mj', 'Test', 'Inactive'),
+('4444', 'Mark', 'Administrator', 'Active'),
+('821', '85', 'Administrator', 'Active');
 
 -- --------------------------------------------------------
 
@@ -100,57 +78,11 @@ CREATE TABLE `emp_rec` (
   `AM_OUT` time DEFAULT NULL,
   `PM_IN` time DEFAULT NULL,
   `PM_OUT` time DEFAULT NULL,
-  `DATE` date NOT NULL
+  `DATE` date NOT NULL,
+  `LATE` int(255) DEFAULT NULL,
+  `UNDERTIME` int(255) DEFAULT NULL,
+  `NOTE` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `info`
---
-
-CREATE TABLE `info` (
-  `id` int(11) NOT NULL,
-  `Fname` varchar(55) NOT NULL,
-  `Lname` varchar(55) NOT NULL,
-  `email` varchar(55) NOT NULL,
-  `Phone_Number` varchar(55) NOT NULL,
-  `username` varchar(55) NOT NULL,
-  `password` varchar(55) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `info`
---
-
-INSERT INTO `info` (`id`, `Fname`, `Lname`, `email`, `Phone_Number`, `username`, `password`) VALUES
-(1, 'dsdas', 'fasfasfafasf', 'asfadsf@gmail.com', '093423526243', 'haha', '$2y$10$ZRAZ64SC4H9d8IvmyJNSGOIw6HRWyxnDMp5t97x1CtAYVVFt'),
-(2, 'dsdas', 'fasfasfafasf', 'asfadsf@gmail.com', '093423526243', 'haha', '$2y$10$931TeIjG64Ol0ybV3n2xRe1bmGqXCVJufWHBdnAetj3kKyyz'),
-(3, 'trty', 'modal', 'echo@gmail.com', '0985982605', 'haha', '$2y$10$bTz88nD/.XdzuRy.eyvMgOIOMEchLsGN0FgMap8ZVWhuX8Dv');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `pass_key`
---
-
-CREATE TABLE `pass_key` (
-  `ID` int(11) NOT NULL,
-  `EMP_ID` varchar(20) DEFAULT NULL,
-  `FINGERPRINT` varchar(255) DEFAULT NULL,
-  `PIN_CODE` varchar(4) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `pass_key`
---
-
-INSERT INTO `pass_key` (`ID`, `EMP_ID`, `FINGERPRINT`, `PIN_CODE`) VALUES
-(1, '1', NULL, '0717'),
-(2, '2', NULL, '0717'),
-(3, '3', NULL, '324'),
-(4, 'asd123', NULL, '2133'),
-(5, 'asd12333', NULL, '213');
 
 --
 -- Indexes for dumped tables
@@ -169,31 +101,11 @@ ALTER TABLE `emp_info`
   ADD PRIMARY KEY (`ID`);
 
 --
--- Indexes for table `emp_position`
---
-ALTER TABLE `emp_position`
-  ADD PRIMARY KEY (`ID`),
-  ADD KEY `emp_position_ibfk_1` (`EMP_ID`);
-
---
 -- Indexes for table `emp_rec`
 --
 ALTER TABLE `emp_rec`
   ADD PRIMARY KEY (`ID`),
   ADD KEY `emp_rec_ibfk_1` (`EMP_ID`);
-
---
--- Indexes for table `info`
---
-ALTER TABLE `info`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `pass_key`
---
-ALTER TABLE `pass_key`
-  ADD PRIMARY KEY (`ID`),
-  ADD KEY `pass_key_ibfk_1` (`EMP_ID`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -206,50 +118,20 @@ ALTER TABLE `admin`
   MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
--- AUTO_INCREMENT for table `emp_position`
---
-ALTER TABLE `emp_position`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
-
---
 -- AUTO_INCREMENT for table `emp_rec`
 --
 ALTER TABLE `emp_rec`
   MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `info`
---
-ALTER TABLE `info`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- AUTO_INCREMENT for table `pass_key`
---
-ALTER TABLE `pass_key`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
-
---
 -- Constraints for dumped tables
 --
-
---
--- Constraints for table `emp_position`
---
-ALTER TABLE `emp_position`
-  ADD CONSTRAINT `emp_position_ibfk_1` FOREIGN KEY (`EMP_ID`) REFERENCES `emp_info` (`ID`);
 
 --
 -- Constraints for table `emp_rec`
 --
 ALTER TABLE `emp_rec`
   ADD CONSTRAINT `emp_rec_ibfk_1` FOREIGN KEY (`EMP_ID`) REFERENCES `emp_info` (`ID`);
-
---
--- Constraints for table `pass_key`
---
-ALTER TABLE `pass_key`
-  ADD CONSTRAINT `pass_key_ibfk_1` FOREIGN KEY (`EMP_ID`) REFERENCES `emp_info` (`ID`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
