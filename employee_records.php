@@ -281,7 +281,7 @@
             <table id="recordsTable" border="0" cellpadding="0" cellspacing="0">
             <thead>
                 <tr class="table-header-title">
-                    <th colspan="6">Attendance Record Details</th>
+                    <th colspan="7">Attendance Record Details</th>
                 </tr>
                 <tr>
                     <th>Date</th>
@@ -289,6 +289,7 @@
                     <th>AM Out</th>
                     <th>PM In</th>
                     <th>PM Out</th>
+                    <th>Late(min)</th>
                     <th>NOTE</th>
                 </tr>
             </thead>
@@ -395,6 +396,7 @@
                     <td>${formatTime(record.am_out)}</td>
                     <td>${formatTime(record.pm_in)}</td>
                     <td>${formatTime(record.pm_out)}</td>
+                    <td>${record.late == 0 || record.late === '0' ? '' : record.late}</td>
                     <td>
                         <input type="text" class="note-input" value="${record.note || ''}" data-date="${record.date}" />
                         <button class="save-note-btn" data-emp-id="${empId}" data-date="${record.date}">Save</button>

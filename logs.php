@@ -13,9 +13,10 @@ function convertTo12Hour($time) {
 $filter_start_date = isset($_GET['start_date']) ? $_GET['start_date'] : '';
 $filter_end_date = isset($_GET['end_date']) ? $_GET['end_date'] : '';
 $filter_name = isset($_GET['employee_name']) ? $_GET['employee_name'] : '';
+$filter_status = isset($_GET['status']) ? $_GET['status'] : '';
 
 // Build query based on filters
-$query = "SELECT e.ID as EMP_ID, e.Name, e.DEPT, r.DATE, r.AM_IN, r.AM_OUT, r.PM_IN, r.PM_OUT 
+$query = "SELECT e.ID as EMP_ID, e.Name, e.DEPT, e.STATUS, r.DATE, r.AM_IN, r.AM_OUT, r.PM_IN, r.PM_OUT, r.LATE
           FROM emp_info e 
           LEFT JOIN emp_rec r ON e.ID = r.EMP_ID 
           WHERE 1=1";
@@ -29,6 +30,14 @@ if ($filter_start_date && $filter_end_date) {
 if ($filter_name) {
     $query .= " AND e.Name LIKE ?";
     $params[] = "%$filter_name%";
+}
+if ($filter_status !== '') {
+    if ($filter_status === 'Not Set') {
+        $query .= " AND (e.STATUS IS NULL OR e.STATUS = '')";
+    } else {
+        $query .= " AND e.STATUS = ?";
+        $params[] = $filter_status;
+    }
 }
 
 $query .= " ORDER BY e.ID, r.DATE DESC";
@@ -417,6 +426,14 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <label class="filter-label">End Date</label>
                         <input type="date" name="end_date" class="filter-input" value="<?php echo htmlspecialchars($filter_end_date); ?>">
                     </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Status</label>
+                        <select name="status" class="filter-input" <?php echo htmlspecialchars($filter_status); ?>>
+                            <option value="">Status</option">   
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
                     <div class="filter-actions">
                         <button type="submit" class="filter-button">Apply Filters</button>
                         <a href="logs.php" class="filter-button reset-button">Reset</a>
@@ -442,6 +459,7 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <th>AM OUT</th>
                         <th>PM IN</th>
                         <th>PM OUT</th>
+                        <th>Late(min)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -455,6 +473,7 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <td><?php echo convertTo12Hour($record['AM_OUT']); ?></td>
                         <td><?php echo convertTo12Hour($record['PM_IN']); ?></td>
                         <td><?php echo convertTo12Hour($record['PM_OUT']); ?></td>
+                        <td><?php echo (isset($record['LATE']) && ($record['LATE'] === '0' || $record['LATE'] == 0)) ? '' : htmlspecialchars($record['LATE']); ?></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>

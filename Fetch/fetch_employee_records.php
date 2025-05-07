@@ -34,6 +34,7 @@ try {
     $recQuery = "SELECT ID as record_id, DATE as date, 
                 AM_IN as am_in, AM_OUT as am_out, 
                 PM_IN as pm_in, PM_OUT as pm_out, 
+                LATE as late, 
                 `NOTE` as note
                 FROM emp_rec 
                 WHERE EMP_ID = :emp_id
