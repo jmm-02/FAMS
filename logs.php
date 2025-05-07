@@ -16,7 +16,7 @@ $filter_name = isset($_GET['employee_name']) ? $_GET['employee_name'] : '';
 $filter_status = isset($_GET['status']) ? $_GET['status'] : '';
 
 // Build query based on filters
-$query = "SELECT e.ID as EMP_ID, e.Name, e.DEPT, e.STATUS, r.DATE, r.AM_IN, r.AM_OUT, r.PM_IN, r.PM_OUT, r.LATE
+$query = "SELECT e.ID as EMP_ID, e.Name, e.DEPT, e.STATUS, r.DATE, r.AM_IN, r.AM_OUT, r.PM_IN, r.PM_OUT, r.LATE, r.UNDERTIME
           FROM emp_info e 
           LEFT JOIN emp_rec r ON e.ID = r.EMP_ID 
           WHERE 1=1";
@@ -460,6 +460,7 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <th>PM IN</th>
                         <th>PM OUT</th>
                         <th>Late(min)</th>
+                        <th>Undertime(min)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -474,6 +475,14 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <td><?php echo convertTo12Hour($record['PM_IN']); ?></td>
                         <td><?php echo convertTo12Hour($record['PM_OUT']); ?></td>
                         <td><?php echo (isset($record['LATE']) && ($record['LATE'] === '0' || $record['LATE'] == 0)) ? '' : htmlspecialchars($record['LATE']); ?></td>
+                        <td><?php 
+                            // Only show undertime if there are time entries
+                            if (empty($record['AM_IN']) && empty($record['AM_OUT']) && empty($record['PM_IN']) && empty($record['PM_OUT'])) {
+                                echo '';
+                            } else {
+                                echo (isset($record['UNDERTIME']) && ($record['UNDERTIME'] === '0' || $record['UNDERTIME'] == 0)) ? '' : htmlspecialchars($record['UNDERTIME']);
+                            }
+                        ?></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
