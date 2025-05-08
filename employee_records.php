@@ -260,6 +260,12 @@
             background: #a5d6a7;
             border-color: #2E7D32;
         }
+
+        /* Style for late minutes */
+        #recordsTable td.late-minutes {
+            color: #d32f2f !important;
+            font-weight: 700;
+        }
     </style>
 </head>
 <body>
@@ -406,7 +412,7 @@
                     <td>${formatTime(record.am_out)}</td>
                     <td>${formatTime(record.pm_in)}</td>
                     <td>${formatTime(record.pm_out)}</td>
-                    <td>${record.late == 0 || record.late === '0' ? '' : record.late}</td>
+                    <td class="${(Number(record.late) > 0) ? 'late-minutes' : ''}">${record.late == 0 || record.late === '0' ? '' : record.late}</td>
                     <td>${(!record.am_in && !record.am_out && !record.pm_in && !record.pm_out) ? '' : (record.undertime == 0 || record.undertime === '0' ? '' : record.undertime)}</td>
                     <td>${computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out)}</td>
                     <td>
