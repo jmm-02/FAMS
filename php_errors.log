@@ -1,0 +1,10 @@
+[08-May-2025 12:34:57 Europe/Berlin] PHP Error [2]: require_once(../include/db_connect.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\attendance-monitoring\Fetch\mark_ob.php on line 38
+[08-May-2025 12:34:57 Europe/Berlin] PHP Fatal error:  Uncaught Error: Failed opening required '../include/db_connect.php' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\attendance-monitoring\Fetch\mark_ob.php:38
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\attendance-monitoring\Fetch\mark_ob.php on line 38
+[08-May-2025 12:36:24 Europe/Berlin] PHP Error [2]: require_once(../include/db_connect.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\attendance-monitoring\Fetch\mark_ob.php on line 38
+[08-May-2025 12:36:24 Europe/Berlin] PHP Fatal error:  Uncaught Error: Failed opening required '../include/db_connect.php' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\attendance-monitoring\Fetch\mark_ob.php:38
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\attendance-monitoring\Fetch\mark_ob.php on line 38

@@ -36,7 +36,8 @@ try {
                 PM_IN as pm_in, PM_OUT as pm_out, 
                 LATE as late, 
                 UNDERTIME as undertime,
-                `NOTE` as note
+                `NOTE` as note,
+                OB
                 FROM emp_rec 
                 WHERE EMP_ID = :emp_id
                 ORDER BY DATE DESC";

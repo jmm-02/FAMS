@@ -266,12 +266,6 @@
             color: #d32f2f !important;
             font-weight: 700;
         }
-
-        /* Style for undertime minutes */
-        #recordsTable td.undertime-minutes {
-            color: #d32f2f !important;
-            font-weight: 700;
-        }
     </style>
 </head>
 <body>
@@ -409,21 +403,8 @@
             });
         }
 
-        // Get department from employeeData
-        const department = employeeData && employeeData.department ? employeeData.department : '';
-
         if (filteredRecords.length > 0) {
             filteredRecords.forEach(record => {
-                console.log('OB value for', record.date, ':', record.OB, typeof record.OB);
-                let totalTime = computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out);
-
-                const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
-                if (record.OB == 1) {
-                    totalTime = isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
-                }
-
-                const undertime = computeUndertime(totalTime, department);
-                
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${formatDate(record.date)}</td>
@@ -432,16 +413,11 @@
                     <td>${formatTime(record.pm_in)}</td>
                     <td>${formatTime(record.pm_out)}</td>
                     <td class="${(Number(record.late) > 0) ? 'late-minutes' : ''}">${record.late == 0 || record.late === '0' ? '' : record.late}</td>
-                    <td class="${undertime ? 'undertime-minutes' : ''}">${undertime}</td>
-                    <td>${totalTime}</td>
+                    <td>${(!record.am_in && !record.am_out && !record.pm_in && !record.pm_out) ? '' : (record.undertime == 0 || record.undertime === '0' ? '' : record.undertime)}</td>
+                    <td>${computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out)}</td>
                     <td>
                         <input type="text" class="note-input" value="${record.note || ''}" data-date="${record.date}" />
                         <button class="save-note-btn" data-emp-id="${empId}" data-date="${record.date}">Save</button>
-                        ${
-                          record.OB == 1
-                            ? `<button class="deny-ob-btn" data-emp-id="${empId}" data-date="${record.date}">Deny OB</button>`
-                            : (totalTime === '—' ? `<button class="mark-ob-btn" data-emp-id="${empId}" data-date="${record.date}">Mark OB</button>` : '')
-                        }
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -449,45 +425,41 @@
 
             // Calculate total minutes for all records
             let totalMinutes = 0;
-            let totalLateMinutes = 0;
-            let totalUndertimeMinutes = 0;
-
             filteredRecords.forEach(record => {
-                let totalTime = computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out);
-
-                const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
-                if (record.OB == 1) {
-                    totalTime = isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
+                function toMinutes(time) {
+                    if (!time) return null;
+                    const [h, m] = time.split(':').map(Number);
+                    return h * 60 + m;
                 }
-
-                if (totalTime !== '—') {
-                    const [hours, minutes] = totalTime.replace(' hrs.', '').split(':').map(Number);
-                    totalMinutes += (hours * 60) + minutes;
+                let dayTotal = 0;
+                const amInMin = toMinutes(record.am_in);
+                const amOutMin = toMinutes(record.am_out);
+                const pmInMin = toMinutes(record.pm_in);
+                const pmOutMin = toMinutes(record.pm_out);
+                if (amInMin !== null && amOutMin !== null && amOutMin > amInMin) {
+                    dayTotal += amOutMin - amInMin;
                 }
-                // Calculate total late minutes
-                totalLateMinutes += Number(record.late) || 0;
-                // Calculate total undertime minutes
-                const undertime = computeUndertime(totalTime, department);
-                totalUndertimeMinutes += Number(undertime) || 0;
+                if (pmInMin !== null && pmOutMin !== null && pmOutMin > pmInMin) {
+                    dayTotal += pmOutMin - pmInMin;
+                }
+                totalMinutes += dayTotal;
             });
-
-            const totalHours = Math.floor(totalMinutes / 60);
-            const totalMins = totalMinutes % 60;
-            const totalTimeStr = totalMinutes === 0 ? '—' : `${totalHours}:${totalMins.toString().padStart(2, '0')} hrs.`;
-            
-            const totalRow = document.createElement('tr');
-            totalRow.style.fontWeight = 'bold';
-            totalRow.innerHTML = `
-                <td colspan="5" style="text-align:right;">Total</td>
-                <td class="${totalLateMinutes ? 'late-minutes' : ''}">${totalLateMinutes || ''}</td>
-                <td class="${totalUndertimeMinutes ? 'undertime-minutes' : ''}">${totalUndertimeMinutes || ''}</td>
-                <td>${totalTimeStr}</td>
-                <td></td>
-            `;
-            tbody.appendChild(totalRow);
+            if (filteredRecords.length > 0) {
+                const totalHours = Math.floor(totalMinutes / 60);
+                const totalMins = totalMinutes % 60;
+                const totalTimeStr = totalMinutes === 0 ? '—' : `${totalHours}:${totalMins.toString().padStart(2, '0')} hrs.`;
+                const totalRow = document.createElement('tr');
+                totalRow.style.fontWeight = 'bold';
+                totalRow.innerHTML = `
+                    <td colspan="7" style="text-align:right;">Total</td>
+                    <td>${totalTimeStr}</td>
+                    <td></td>
+                `;
+                tbody.appendChild(totalRow);
+            }
         } else {
             const row = document.createElement('tr');
-            row.innerHTML = '<td colspan="9">No records found.</td>';
+            row.innerHTML = '<td colspan="6">No records found.</td>';
             tbody.appendChild(row);
         }
 
@@ -501,24 +473,6 @@
                 saveNoteToDatabase(empId, date, noteInput);
             });
         });
-
-        // Add event listeners for "Mark OB" buttons
-        document.querySelectorAll('.mark-ob-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const empId = this.getAttribute('data-emp-id');
-                const date = this.getAttribute('data-date');
-                markAsOB(empId, date);
-            });
-        });
-
-        // Add event listeners for "Deny OB" buttons
-        document.querySelectorAll('.deny-ob-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const empId = this.getAttribute('data-emp-id');
-                const date = this.getAttribute('data-date');
-                denyOB(empId, date);
-            });
-        });
     }
     
     // Function to export filtered data to Excel
@@ -529,7 +483,7 @@
             const note = input.value;
             const record = records.find(r => r.date === date);
             if (record) {
-                record.note = note;
+                record.note = note; // Update the note in the records array
             }
         });
 
@@ -545,66 +499,49 @@
             [], // Empty row for spacing
         ];
 
-        // Get department from employee
-        const department = employee && employee.department ? employee.department : '';
-
         // Prepare attendance records
         const attendanceData = [
             ['Date', 'AM In', 'AM Out', 'PM In', 'PM Out', 'Late(min)', 'Undertime(min)', 'Total Time', 'Note'],
-            ...records.map(record => {
-                let totalTime = computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out);
-                const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
-                if (record.OB == 1) {
-                    totalTime = isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
-                }
-                const undertime = computeUndertime(totalTime, department);
-                return [
-                    formatDate(record.date),
-                    formatTime(record.am_in),
-                    formatTime(record.am_out),
-                    formatTime(record.pm_in),
-                    formatTime(record.pm_out),
-                    record.late == 0 || record.late === '0' ? '' : record.late,
-                    undertime,
-                    totalTime,
-                    record.note || '—'
-                ];
-            })
+            ...records.map(record => [
+                formatDate(record.date),
+                formatTime(record.am_in),
+                formatTime(record.am_out),
+                formatTime(record.pm_in),
+                formatTime(record.pm_out),
+                record.late == 0 || record.late === '0' ? '' : record.late,
+                (!record.am_in && !record.am_out && !record.pm_in && !record.pm_out) ? '' : (record.undertime == 0 || record.undertime === '0' ? '' : record.undertime),
+                computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out),
+                record.note || '—'
+            ])
         ];
 
-        // Calculate totals
+        // Calculate total minutes for all records
         let totalMinutes = 0;
-        let totalLateMinutes = 0;
-        let totalUndertimeMinutes = 0;
-
         records.forEach(record => {
-            let totalTime = computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out);
-            const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
-            if (record.OB == 1) {
-                totalTime = isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
+            function toMinutes(time) {
+                if (!time) return null;
+                const [h, m] = time.split(':').map(Number);
+                return h * 60 + m;
             }
-            if (totalTime !== '—') {
-                const [hours, minutes] = totalTime.replace(' hrs.', '').split(':').map(Number);
-                totalMinutes += (hours * 60) + minutes;
+            let dayTotal = 0;
+            const amInMin = toMinutes(record.am_in);
+            const amOutMin = toMinutes(record.am_out);
+            const pmInMin = toMinutes(record.pm_in);
+            const pmOutMin = toMinutes(record.pm_out);
+            if (amInMin !== null && amOutMin !== null && amOutMin > amInMin) {
+                dayTotal += amOutMin - amInMin;
             }
-            // Calculate total late minutes
-            totalLateMinutes += Number(record.late) || 0;
-            // Calculate total undertime minutes
-            const undertime = computeUndertime(totalTime, department);
-            totalUndertimeMinutes += Number(undertime) || 0;
+            if (pmInMin !== null && pmOutMin !== null && pmOutMin > pmInMin) {
+                dayTotal += pmOutMin - pmInMin;
+            }
+            totalMinutes += dayTotal;
         });
-
         const totalHours = Math.floor(totalMinutes / 60);
         const totalMins = totalMinutes % 60;
         const totalTimeStr = totalMinutes === 0 ? '—' : `${totalHours}:${totalMins.toString().padStart(2, '0')} hrs.`;
-        
         // Add the total row to the attendanceData
         attendanceData.push([
-            '', '', '', '', '', 
-            totalLateMinutes || '', 
-            totalUndertimeMinutes || '', 
-            totalTimeStr, 
-            ''
+            '', '', '', '', '', '', 'Total', totalTimeStr, ''
         ]);
 
         // Combine employee info and attendance data
@@ -653,96 +590,6 @@
                 console.error('Error saving note:', error);
                 alert('Failed to save note. Please try again later.');
             });
-    }
-
-    // Add the markAsOB function
-    function markAsOB(empId, date) {
-        fetch('Fetch/mark_ob.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                emp_id: empId,
-                date: date
-            }),
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Mark OB Response:', data); // Debug log
-            if (data.success) {
-                alert('Successfully marked as OB!');
-                // Refresh the records
-                fetch(`Fetch/fetch_employee_records.php?emp_id=${empId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.error) {
-                            alert(`Error: ${data.error}`);
-                            return;
-                        }
-                        allRecords = data.records;
-                        renderRecords(allRecords);
-                    })
-                    .catch(error => {
-                        console.error('Error refreshing records:', error);
-                        alert('Failed to refresh records. Please refresh the page manually.');
-                    });
-            } else {
-                alert(`Error marking as OB: ${data.error || 'Unknown error occurred'}`);
-            }
-        })
-        .catch(error => {
-            console.error('Error marking as OB:', error);
-            alert(`Failed to mark as OB: ${error.message}`);
-        });
-    }
-
-    // Add the denyOB function
-    function denyOB(empId, date) {
-        fetch('Fetch/mark_ob.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                emp_id: empId,
-                date: date,
-                ob_value: 0 // Set OB to 0
-            }),
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                alert('OB denied successfully!');
-                // Refresh the records
-                fetch(`Fetch/fetch_employee_records.php?emp_id=${empId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.error) {
-                            alert(`Error: ${data.error}`);
-                            return;
-                        }
-                        allRecords = data.records;
-                        renderRecords(allRecords);
-                    });
-            } else {
-                alert(`Error denying OB: ${data.error || 'Unknown error occurred'}`);
-            }
-        })
-        .catch(error => {
-            console.error('Error denying OB:', error);
-            alert(`Failed to deny OB: ${error.message}`);
-        });
     }
 
     // Fetch employee data and records
@@ -851,21 +698,6 @@
         const hours = Math.floor(total / 60);
         const minutes = total % 60;
         return `${hours}:${minutes.toString().padStart(2, '0')} hrs.`;
-    }
-
-    function computeUndertime(totalTime, department) {
-        if (totalTime === '—') return '';
-        // Remove ' hrs.' suffix if present
-        const timeStr = totalTime.replace(' hrs.', '');
-        const [hours, minutes] = timeStr.split(':').map(Number);
-        const totalMinutes = (hours * 60) + minutes;
-        // Standard working time: 12 hours for 'Other_Perssonel', else 8 hours (case-insensitive)
-        const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
-        const standardMinutes = isOtherPersonnel ? 720 : 480;
-        // Calculate undertime
-        const undertime = standardMinutes - totalMinutes;
-        // Return empty string if no undertime, otherwise return the undertime in minutes
-        return undertime <= 0 ? '' : undertime.toString();
     }
     </script>
 </body>
