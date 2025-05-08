@@ -16,14 +16,22 @@
         }
         .container {
             max-width: 1000px;
-            margin: 20px auto;
+            margin: auto;
+            margin-right: 150px; /* Slightly to the right */
             background: #fff;
             border-radius: 12px;
             box-shadow: 0 4px 24px rgba(0,0,0,0.08);
             padding: 32px 24px 24px 24px;
-            overflow: visible; /* Change from auto to visible */
-            max-height: none; /* Remove fixed height */
+            overflow: visible;
+            max-height: none;
             position: relative;
+        }
+        @media (max-width: 900px) {
+            .container {
+                margin: 20px auto; /* Center on mobile/tablet */
+                width: 98vw;
+                max-width: 99vw;
+            }
         }
         .employee-info {
             margin-bottom: 24px;
@@ -281,7 +289,7 @@
             <table id="recordsTable" border="0" cellpadding="0" cellspacing="0">
             <thead>
                 <tr class="table-header-title">
-                    <th colspan="8">Attendance Record Details</th>
+                    <th colspan="9">Attendance Record Details</th>
                 </tr>
                 <tr>
                     <th>Date</th>
@@ -291,6 +299,7 @@
                     <th>PM Out</th>
                     <th>Late(min)</th>
                     <th>Undertime(min)</th>
+                    <th>Total Time</th>
                     <th>NOTE</th>
                 </tr>
             </thead>
@@ -399,6 +408,7 @@
                     <td>${formatTime(record.pm_out)}</td>
                     <td>${record.late == 0 || record.late === '0' ? '' : record.late}</td>
                     <td>${(!record.am_in && !record.am_out && !record.pm_in && !record.pm_out) ? '' : (record.undertime == 0 || record.undertime === '0' ? '' : record.undertime)}</td>
+                    <td>${computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out)}</td>
                     <td>
                         <input type="text" class="note-input" value="${record.note || ''}" data-date="${record.date}" />
                         <button class="save-note-btn" data-emp-id="${empId}" data-date="${record.date}">Save</button>
@@ -406,6 +416,41 @@
                 `;
                 tbody.appendChild(row);
             });
+
+            // Calculate total minutes for all records
+            let totalMinutes = 0;
+            filteredRecords.forEach(record => {
+                function toMinutes(time) {
+                    if (!time) return null;
+                    const [h, m] = time.split(':').map(Number);
+                    return h * 60 + m;
+                }
+                let dayTotal = 0;
+                const amInMin = toMinutes(record.am_in);
+                const amOutMin = toMinutes(record.am_out);
+                const pmInMin = toMinutes(record.pm_in);
+                const pmOutMin = toMinutes(record.pm_out);
+                if (amInMin !== null && amOutMin !== null && amOutMin > amInMin) {
+                    dayTotal += amOutMin - amInMin;
+                }
+                if (pmInMin !== null && pmOutMin !== null && pmOutMin > pmInMin) {
+                    dayTotal += pmOutMin - pmInMin;
+                }
+                totalMinutes += dayTotal;
+            });
+            if (filteredRecords.length > 0) {
+                const totalHours = Math.floor(totalMinutes / 60);
+                const totalMins = totalMinutes % 60;
+                const totalTimeStr = totalMinutes === 0 ? '—' : `${totalHours}:${totalMins.toString().padStart(2, '0')} hrs.`;
+                const totalRow = document.createElement('tr');
+                totalRow.style.fontWeight = 'bold';
+                totalRow.innerHTML = `
+                    <td colspan="7" style="text-align:right;">Total</td>
+                    <td>${totalTimeStr}</td>
+                    <td></td>
+                `;
+                tbody.appendChild(totalRow);
+            }
         } else {
             const row = document.createElement('tr');
             row.innerHTML = '<td colspan="6">No records found.</td>';
@@ -450,7 +495,7 @@
 
         // Prepare attendance records
         const attendanceData = [
-            ['Date', 'AM In', 'AM Out', 'PM In', 'PM Out', 'Late(min)', 'Undertime(min)', 'Note'], // Header row
+            ['Date', 'AM In', 'AM Out', 'PM In', 'PM Out', 'Late(min)', 'Undertime(min)', 'Total Time', 'Note'],
             ...records.map(record => [
                 formatDate(record.date),
                 formatTime(record.am_in),
@@ -459,9 +504,39 @@
                 formatTime(record.pm_out),
                 record.late == 0 || record.late === '0' ? '' : record.late,
                 (!record.am_in && !record.am_out && !record.pm_in && !record.pm_out) ? '' : (record.undertime == 0 || record.undertime === '0' ? '' : record.undertime),
-                record.note || '—' // Include the updated "Note" field
+                computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out),
+                record.note || '—'
             ])
         ];
+
+        // Calculate total minutes for all records
+        let totalMinutes = 0;
+        records.forEach(record => {
+            function toMinutes(time) {
+                if (!time) return null;
+                const [h, m] = time.split(':').map(Number);
+                return h * 60 + m;
+            }
+            let dayTotal = 0;
+            const amInMin = toMinutes(record.am_in);
+            const amOutMin = toMinutes(record.am_out);
+            const pmInMin = toMinutes(record.pm_in);
+            const pmOutMin = toMinutes(record.pm_out);
+            if (amInMin !== null && amOutMin !== null && amOutMin > amInMin) {
+                dayTotal += amOutMin - amInMin;
+            }
+            if (pmInMin !== null && pmOutMin !== null && pmOutMin > pmInMin) {
+                dayTotal += pmOutMin - pmInMin;
+            }
+            totalMinutes += dayTotal;
+        });
+        const totalHours = Math.floor(totalMinutes / 60);
+        const totalMins = totalMinutes % 60;
+        const totalTimeStr = totalMinutes === 0 ? '—' : `${totalHours}:${totalMins.toString().padStart(2, '0')} hrs.`;
+        // Add the total row to the attendanceData
+        attendanceData.push([
+            '', '', '', '', '', '', 'Total', totalTimeStr, ''
+        ]);
 
         // Combine employee info and attendance data
         const worksheetData = [...employeeInfo, ...attendanceData];
@@ -581,6 +656,30 @@
             exportToExcel(filteredRecords, employeeData);
         });
     });
+
+    function computeTotalTime(am_in, am_out, pm_in, pm_out) {
+        function toMinutes(time) {
+            if (!time) return null;
+            const [h, m] = time.split(':').map(Number);
+            return h * 60 + m;
+        }
+        let total = 0;
+        const amInMin = toMinutes(am_in);
+        const amOutMin = toMinutes(am_out);
+        const pmInMin = toMinutes(pm_in);
+        const pmOutMin = toMinutes(pm_out);
+
+        if (amInMin !== null && amOutMin !== null && amOutMin > amInMin) {
+            total += amOutMin - amInMin;
+        }
+        if (pmInMin !== null && pmOutMin !== null && pmOutMin > pmInMin) {
+            total += pmOutMin - pmInMin;
+        }
+        if (total === 0) return '—';
+        const hours = Math.floor(total / 60);
+        const minutes = total % 60;
+        return `${hours}:${minutes.toString().padStart(2, '0')} hrs.`;
+    }
     </script>
 </body>
 </html>
