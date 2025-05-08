@@ -312,7 +312,7 @@
                     <th>Late(min)</th>
                     <th>Undertime(min)</th>
                     <th>Total Time</th>
-                    <th>NOTE</th>
+                    <th>Remarks</th>
                 </tr>
             </thead>
             <tbody>
@@ -822,18 +822,36 @@
             const [h, m] = time.split(':').map(Number);
             return h * 60 + m;
         }
-        let total = 0;
         const amInMin = toMinutes(am_in);
         const amOutMin = toMinutes(am_out);
         const pmInMin = toMinutes(pm_in);
         const pmOutMin = toMinutes(pm_out);
 
-        // If we have both AM in and PM out, and either AM out or PM in is missing,
-        // count straight through from AM in to PM out
-        if (amInMin !== null && pmOutMin !== null && (amOutMin === null || pmInMin === null)) {
-            total = pmOutMin - amInMin;
-        } else {
-            // Normal calculation if all times are present
+        let total = 0;
+
+        // Case 1: All four times present
+        if (
+            amInMin !== null && amOutMin !== null &&
+            pmInMin !== null && pmOutMin !== null
+        ) {
+            total = (amOutMin - amInMin) + (pmOutMin - pmInMin);
+        }
+        // Case 2: Only AM In and PM Out present (no AM Out, no PM In)
+        else if (
+            amInMin !== null && pmOutMin !== null &&
+            amOutMin === null && pmInMin === null
+        ) {
+            total = pmOutMin - amInMin - 60; // Subtract 1 hour break
+        }
+        // Case 3: AM In, AM Out, and PM In present, PM Out missing
+        else if (
+            amInMin !== null && amOutMin !== null &&
+            pmInMin !== null && pmOutMin === null
+        ) {
+            total = (amOutMin - amInMin) + 60; // Add 1 hour for lunch
+        }
+        // Case 4: Sum all valid pairs
+        else {
             if (amInMin !== null && amOutMin !== null && amOutMin > amInMin) {
                 total += amOutMin - amInMin;
             }
@@ -842,12 +860,7 @@
             }
         }
 
-        // Subtract 1 hour (60 minutes) for break time
-        if (total > 0) {
-            total = Math.max(0, total - 60);
-        }
-
-        if (total === 0) return '—';
+        if (total <= 0) return '—';
         const hours = Math.floor(total / 60);
         const minutes = total % 60;
         return `${hours}:${minutes.toString().padStart(2, '0')} hrs.`;

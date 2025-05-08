@@ -1,44 +1,51 @@
 Starting Excel Import...
-Skipping header row: Stat.Date:, 2025-05-01 ~ 2025-05-05
+Skipping header row: Stat.Date:, 2025-05-01 ~ 2025-05-10
 Skipping header row: ID, Name
 Database connected successfully
-Skipping header row: Stat.Date:, 2025-05-01 ~ 2025-05-05
+Skipping header row: Stat.Date:, 2025-05-01 ~ 2025-05-10
 Skipping header row: ID, Name
-Found 6 unique employees and 30 attendance records.
+Found 4 unique employees and 39 attendance records.
 Updated employee: ID=1, Name=JM
-Updated employee: ID=821, Name=85
-Updated employee: ID=00, Name=mnfv, jhf mhf
-Updated employee: ID=2, Name=Mara
 Updated employee: ID=3, Name=Mj
 Updated employee: ID=4444, Name=Mark
+Updated employee: ID=4, Name=Corpuz
 Inserted attendance record: ID=1, Date=2025-05-01
 Inserted attendance record: ID=1, Date=2025-05-02
 Inserted attendance record: ID=1, Date=2025-05-03
 Inserted attendance record: ID=1, Date=2025-05-04
 Inserted attendance record: ID=1, Date=2025-05-05
-Inserted attendance record: ID=821, Date=2025-05-01
-Inserted attendance record: ID=821, Date=2025-05-02
-Inserted attendance record: ID=821, Date=2025-05-03
-Inserted attendance record: ID=821, Date=2025-05-04
-Inserted attendance record: ID=821, Date=2025-05-05
-Inserted attendance record: ID=00, Date=2025-05-01
-Inserted attendance record: ID=00, Date=2025-05-02
-Inserted attendance record: ID=00, Date=2025-05-03
-Inserted attendance record: ID=00, Date=2025-05-04
-Inserted attendance record: ID=00, Date=2025-05-05
-Inserted attendance record: ID=2, Date=2025-05-01
-Inserted attendance record: ID=2, Date=2025-05-02
-Inserted attendance record: ID=2, Date=2025-05-03
-Inserted attendance record: ID=2, Date=2025-05-04
-Inserted attendance record: ID=2, Date=2025-05-05
+Inserted attendance record: ID=1, Date=2025-05-06
+Inserted attendance record: ID=1, Date=2025-05-07
+Inserted attendance record: ID=1, Date=2025-05-08
+Inserted attendance record: ID=1, Date=2025-05-09
+Inserted attendance record: ID=1, Date=2025-05-10
 Inserted attendance record: ID=3, Date=2025-05-01
 Inserted attendance record: ID=3, Date=2025-05-02
 Inserted attendance record: ID=3, Date=2025-05-03
 Inserted attendance record: ID=3, Date=2025-05-04
 Inserted attendance record: ID=3, Date=2025-05-05
+Inserted attendance record: ID=3, Date=2025-05-06
+Inserted attendance record: ID=3, Date=2025-05-07
+Inserted attendance record: ID=3, Date=2025-05-08
+Inserted attendance record: ID=3, Date=2025-05-09
 Inserted attendance record: ID=4444, Date=2025-05-01
 Inserted attendance record: ID=4444, Date=2025-05-02
 Inserted attendance record: ID=4444, Date=2025-05-03
 Inserted attendance record: ID=4444, Date=2025-05-04
 Inserted attendance record: ID=4444, Date=2025-05-05
-Import successful: Added 0 new employees, updated 6 existing employees, added 30 new attendance records.
+Inserted attendance record: ID=4444, Date=2025-05-06
+Inserted attendance record: ID=4444, Date=2025-05-07
+Inserted attendance record: ID=4444, Date=2025-05-08
+Inserted attendance record: ID=4444, Date=2025-05-09
+Inserted attendance record: ID=4444, Date=2025-05-10
+Inserted attendance record: ID=4, Date=2025-05-01
+Inserted attendance record: ID=4, Date=2025-05-02
+Inserted attendance record: ID=4, Date=2025-05-03
+Inserted attendance record: ID=4, Date=2025-05-04
+Inserted attendance record: ID=4, Date=2025-05-05
+Inserted attendance record: ID=4, Date=2025-05-06
+Inserted attendance record: ID=4, Date=2025-05-07
+Inserted attendance record: ID=4, Date=2025-05-08
+Inserted attendance record: ID=4, Date=2025-05-09
+Inserted attendance record: ID=4, Date=2025-05-10
+Import successful: Added 0 new employees, updated 4 existing employees, added 39 new attendance records.
