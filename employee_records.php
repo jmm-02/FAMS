@@ -272,6 +272,58 @@
             color: #d32f2f !important;
             font-weight: 700;
         }
+
+        /* Style for Mark OB button */
+        .mark-ob-btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: 1px solid #2196F3;
+            background: #E3F2FD;
+            color: #1976D2;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: 8px;
+        }
+
+        .mark-ob-btn:hover {
+            background: #BBDEFB;
+            border-color: #1976D2;
+            color: #1565C0;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .mark-ob-btn:active {
+            background: #90CAF9;
+            border-color: #1565C0;
+        }
+
+        /* Style for Deny OB button */
+        .deny-ob-btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: 1px solid #F44336;
+            background: #FFEBEE;
+            color: #D32F2F;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: 8px;
+        }
+
+        .deny-ob-btn:hover {
+            background: #FFCDD2;
+            border-color: #D32F2F;
+            color: #B71C1C;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .deny-ob-btn:active {
+            background: #EF9A9A;
+            border-color: #B71C1C;
+        }
     </style>
 </head>
 <body>

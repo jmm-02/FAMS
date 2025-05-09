@@ -5,10 +5,10 @@ Database connected successfully
 Skipping header row: Stat.Date:, 2025-05-01 ~ 2025-05-10
 Skipping header row: ID, Name
 Found 4 unique employees and 39 attendance records.
-Updated employee: ID=1, Name=JM
-Updated employee: ID=3, Name=Mj
-Updated employee: ID=4444, Name=Mark
-Updated employee: ID=4, Name=Corpuz
+Inserted employee: ID=1, Name=JM
+Inserted employee: ID=3, Name=Mj
+Inserted employee: ID=4444, Name=Mark
+Inserted employee: ID=4, Name=Corpuz
 Inserted attendance record: ID=1, Date=2025-05-01
 Inserted attendance record: ID=1, Date=2025-05-02
 Inserted attendance record: ID=1, Date=2025-05-03
@@ -48,4 +48,4 @@ Inserted attendance record: ID=4, Date=2025-05-07
 Inserted attendance record: ID=4, Date=2025-05-08
 Inserted attendance record: ID=4, Date=2025-05-09
 Inserted attendance record: ID=4, Date=2025-05-10
-Import successful: Added 0 new employees, updated 4 existing employees, added 39 new attendance records.
+Import successful: Added 4 new employees, updated 0 existing employees, added 39 new attendance records.

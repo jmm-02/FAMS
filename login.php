@@ -144,8 +144,6 @@
             </div>
             <button type="submit">LOGIN</button>
         </form>
-            <br>
-        <a href="regestration.php">Click here to Register
     </div>
 </body>
 </html> 
