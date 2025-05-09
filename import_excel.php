@@ -240,6 +240,7 @@ try {
         $amIn = trim($row['E']);
         $amOut = trim($row['F']);
         $pmIn = trim($row['G']); 
+        $pmOut = trim($row['H']); // Add PM OUT from column H
         $late = trim($row['I']); 
         $undertime = trim($row['L']); // Column L - UNDERTIME
         // Skip header rows
@@ -269,7 +270,7 @@ try {
         $amIn = !empty($row['E']) ? formatTime($amIn) : null;
         $amOut = !empty($row['F']) ? formatTime($amOut) : null;
         $pmIn = !empty($row['G']) ? formatTime($pmIn) : null;
-        $pmOut = !empty($row['H']) ? formatTime($pmOut) : null;
+        $pmOut = !empty($row['H']) ? formatTime($pmOut) : null; // Format PM OUT time
 
         // Store employee and attendance data (reuse existing logic)
         if (!empty($empId) && !empty($name)) {
