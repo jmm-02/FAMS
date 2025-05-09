@@ -483,8 +483,8 @@
                     <td>${formatTime(record.am_out)}</td>
                     <td>${formatTime(record.pm_in)}</td>
                     <td>${formatTime(record.pm_out)}</td>
-                    <td class="${(Number(record.late) > 0) ? 'late-minutes' : ''}">${record.late == 0 || record.late === '0' ? '' : record.late}</td>
-                    <td class="${undertime ? 'undertime-minutes' : ''}">${undertime}</td>
+                    <td class="${(Number(record.late) > 0 && record.OB != 1) ? 'late-minutes' : ''}">${record.OB == 1 ? '' : (record.late == 0 || record.late === '0' ? '' : `${Math.floor(record.late/60)}h ${record.late%60}m (${record.late} mins)`)}</td>
+                    <td class="${undertime && record.OB != 1 ? 'undertime-minutes' : ''}">${record.OB == 1 ? '' : undertime ? `${Math.floor(undertime/60)}h ${undertime%60}m (${undertime} mins)` : ''}</td>
                     <td>${totalTime}</td>
                     <td>
                         <input type="text" class="note-input" value="${record.note || ''}" data-date="${record.date}" />
@@ -492,7 +492,7 @@
                         ${
                           record.OB == 1
                             ? `<button class="deny-ob-btn" data-emp-id="${empId}" data-date="${record.date}">Deny OB</button>`
-                            : (totalTime === '—' ? `<button class="mark-ob-btn" data-emp-id="${empId}" data-date="${record.date}">Mark OB</button>` : '')
+                            : `<button class="mark-ob-btn" data-emp-id="${empId}" data-date="${record.date}">Mark OB</button>`
                         }
                     </td>
                 `;
@@ -516,8 +516,10 @@
                     const [hours, minutes] = totalTime.replace(' hrs.', '').split(':').map(Number);
                     totalMinutes += (hours * 60) + minutes;
                 }
-                // Calculate total late minutes
-                totalLateMinutes += Number(record.late) || 0;
+                // Only add late minutes if the record is not marked as OB
+                if (record.OB != 1) {
+                    totalLateMinutes += Number(record.late) || 0;
+                }
                 // Calculate total undertime minutes
                 const undertime = computeUndertime(totalTime, department);
                 totalUndertimeMinutes += Number(undertime) || 0;
@@ -531,8 +533,8 @@
             totalRow.style.fontWeight = 'bold';
             totalRow.innerHTML = `
                 <td colspan="5" style="text-align:right;">Total</td>
-                <td class="${totalLateMinutes ? 'late-minutes' : ''}">${totalLateMinutes || ''}</td>
-                <td class="${totalUndertimeMinutes ? 'undertime-minutes' : ''}">${totalUndertimeMinutes || ''}</td>
+                <td class="${totalLateMinutes ? 'late-minutes' : ''}">${totalLateMinutes ? `${Math.floor(totalLateMinutes/60)}h ${totalLateMinutes%60}m (${totalLateMinutes} mins)` : ''}</td>
+                <td class="${totalUndertimeMinutes ? 'undertime-minutes' : ''}">${totalUndertimeMinutes ? `${Math.floor(totalUndertimeMinutes/60)}h ${totalUndertimeMinutes%60}m (${totalUndertimeMinutes} mins)` : ''}</td>
                 <td>${totalTimeStr}</td>
                 <td></td>
             `;
@@ -616,8 +618,8 @@
                     formatTime(record.am_out),
                     formatTime(record.pm_in),
                     formatTime(record.pm_out),
-                    record.late == 0 || record.late === '0' ? '' : record.late,
-                    undertime,
+                    record.late == 0 || record.late === '0' ? '' : `${Math.floor(record.late/60)}h ${record.late%60}m (${record.late} mins)`,
+                    undertime ? `${Math.floor(undertime/60)}h ${undertime%60}m (${undertime} mins)` : '',
                     totalTime,
                     record.note || '—'
                 ];
@@ -639,8 +641,10 @@
                 const [hours, minutes] = totalTime.replace(' hrs.', '').split(':').map(Number);
                 totalMinutes += (hours * 60) + minutes;
             }
-            // Calculate total late minutes
-            totalLateMinutes += Number(record.late) || 0;
+            // Only add late minutes if the record is not marked as OB
+            if (record.OB != 1) {
+                totalLateMinutes += Number(record.late) || 0;
+            }
             // Calculate total undertime minutes
             const undertime = computeUndertime(totalTime, department);
             totalUndertimeMinutes += Number(undertime) || 0;
@@ -653,8 +657,8 @@
         // Add the total row to the attendanceData
         attendanceData.push([
             '', '', '', '', '', 
-            totalLateMinutes || '', 
-            totalUndertimeMinutes || '', 
+            totalLateMinutes ? `${Math.floor(totalLateMinutes/60)}h ${totalLateMinutes%60}m (${totalLateMinutes} mins)` : '', 
+            totalUndertimeMinutes ? `${Math.floor(totalUndertimeMinutes/60)}h ${totalUndertimeMinutes%60}m (${totalUndertimeMinutes} mins)` : '', 
             totalTimeStr, 
             ''
         ]);
