@@ -3,6 +3,67 @@ session_start();
 require_once 'includes/session_handler.php';
 require_once 'includes/db_connect.php';
 
+// Function to convert time to minutes
+function toMinutes($time) {
+    if (!$time) return null;
+    $time = date('H:i', strtotime($time));
+    list($h, $m) = explode(':', $time);
+    return $h * 60 + $m;
+}
+
+// Function to compute total time
+function computeTotalTime($am_in, $am_out, $pm_in, $pm_out) {
+    $amInMin = toMinutes($am_in);
+    $amOutMin = toMinutes($am_out);
+    $pmInMin = toMinutes($pm_in);
+    $pmOutMin = toMinutes($pm_out);
+
+    $total = 0;
+
+    // Case 1: All four times present
+    if ($amInMin !== null && $amOutMin !== null && $pmInMin !== null && $pmOutMin !== null) {
+        $total = ($amOutMin - $amInMin) + ($pmOutMin - $pmInMin);
+    }
+    // Case 2: Only AM In and PM Out present (no AM Out, no PM In)
+    else if ($amInMin !== null && $pmOutMin !== null && $amOutMin === null && $pmInMin === null) {
+        $total = $pmOutMin - $amInMin - 60; // Subtract 1 hour break
+    }
+    // Case 3: AM In, AM Out, and PM In present, PM Out missing
+    else if ($amInMin !== null && $amOutMin !== null && $pmInMin !== null && $pmOutMin === null) {
+        $total = ($amOutMin - $amInMin) + 60; // Add 1 hour for lunch
+    }
+    // Case 4: Sum all valid pairs
+    else {
+        if ($amInMin !== null && $amOutMin !== null && $amOutMin > $amInMin) {
+            $total += $amOutMin - $amInMin;
+        }
+        if ($pmInMin !== null && $pmOutMin !== null && $pmOutMin > $pmInMin) {
+            $total += $pmOutMin - $pmInMin;
+        }
+    }
+
+    if ($total <= 0) return '—';
+    $hours = floor($total / 60);
+    $minutes = $total % 60;
+    return sprintf("%d:%02d hrs.", $hours, $minutes);
+}
+
+// Function to compute undertime
+function computeUndertime($totalTime, $department) {
+    if ($totalTime === '—') return '';
+    // Remove ' hrs.' suffix if present
+    $timeStr = str_replace(' hrs.', '', $totalTime);
+    list($hours, $minutes) = explode(':', $timeStr);
+    $totalMinutes = ($hours * 60) + $minutes;
+    // Standard working time: 12 hours for 'Other_Personnel', else 8 hours (case-insensitive)
+    $isOtherPersonnel = $department && strtolower(trim($department)) === 'other_personnel';
+    $standardMinutes = $isOtherPersonnel ? 720 : 480;
+    // Calculate undertime
+    $undertime = $standardMinutes - $totalMinutes;
+    // Return empty string if no undertime, otherwise return the undertime in minutes
+    return $undertime <= 0 ? '' : $undertime;
+}
+
 // Function to convert 24-hour time to 12-hour format
 function convertTo12Hour($time) {
     if (empty($time)) return '';
@@ -16,7 +77,7 @@ $filter_name = isset($_GET['employee_name']) ? $_GET['employee_name'] : '';
 $filter_status = isset($_GET['status']) ? $_GET['status'] : '';
 
 // Build query based on filters
-$query = "SELECT e.ID as EMP_ID, e.Name, e.DEPT, e.STATUS, r.DATE, r.AM_IN, r.AM_OUT, r.PM_IN, r.PM_OUT, r.LATE, r.UNDERTIME
+$query = "SELECT e.ID as EMP_ID, e.Name, e.DEPT, e.STATUS, r.DATE, r.AM_IN, r.AM_OUT, r.PM_IN, r.PM_OUT, r.LATE, r.UNDERTIME, r.OB
           FROM emp_info e 
           LEFT JOIN emp_rec r ON e.ID = r.EMP_ID 
           WHERE 1=1";
@@ -461,10 +522,14 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <th>PM OUT</th>
                         <th>Late(min)</th>
                         <th>Undertime(min)</th>
+                        <th>Total Time</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($records as $record): ?>
+                    <?php foreach ($records as $record): 
+                        $totalTime = computeTotalTime($record['AM_IN'], $record['AM_OUT'], $record['PM_IN'], $record['PM_OUT']);
+                        $undertime = computeUndertime($totalTime, $record['DEPT']);
+                    ?>
                     <tr>
                         <td><?php echo htmlspecialchars($record['EMP_ID']); ?></td>
                         <td><?php echo htmlspecialchars($record['Name']); ?></td>
@@ -475,14 +540,8 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <td><?php echo convertTo12Hour($record['PM_IN']); ?></td>
                         <td><?php echo convertTo12Hour($record['PM_OUT']); ?></td>
                         <td><?php echo (isset($record['LATE']) && ($record['LATE'] === '0' || $record['LATE'] == 0)) ? '' : htmlspecialchars($record['LATE']); ?></td>
-                        <td><?php 
-                            // Only show undertime if there are time entries
-                            if (empty($record['AM_IN']) && empty($record['AM_OUT']) && empty($record['PM_IN']) && empty($record['PM_OUT'])) {
-                                echo '';
-                            } else {
-                                echo (isset($record['UNDERTIME']) && ($record['UNDERTIME'] === '0' || $record['UNDERTIME'] == 0)) ? '' : htmlspecialchars($record['UNDERTIME']);
-                            }
-                        ?></td>
+                        <td><?php echo $undertime; ?></td>
+                        <td><?php echo $totalTime; ?></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
