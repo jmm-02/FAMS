@@ -467,23 +467,59 @@
         if (filteredRecords.length > 0) {
             filteredRecords.forEach(record => {
                 console.log('OB value for', record.date, ':', record.OB, typeof record.OB);
-                let totalTime = computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out);
+                let totalTime = computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out, department);
 
                 const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
                 if (record.OB == 1) {
                     totalTime = isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
                 }
 
-                const undertime = computeUndertime(totalTime, department);
+                const undertime = computeUndertime(totalTime, department, record.am_in);
                 
+                // For regular employees, if AM In is before 8:00, display 8:00 AM
+                // For Other_Personnel, if AM In is before 6:00, display 6:00 AM
+                let displayAmIn = record.am_in;
+                if (isOtherPersonnel && record.am_in) {
+                    const [h, m] = record.am_in.split(':').map(Number);
+                    if (h < 6) {
+                        displayAmIn = '06:00';
+                    }
+                } else if (!isOtherPersonnel && record.am_in) {
+                    const [h, m] = record.am_in.split(':').map(Number);
+                    if (h < 8) {
+                        displayAmIn = '08:00';
+                    }
+                }
+
+                // For AM Out and PM In, always display defaults if both AM In and PM Out are present (full-day attendance)
+                let displayAmOut = record.am_out;
+                let displayPmIn = record.pm_in;
+                if (record.am_in && record.pm_out) {
+                    displayAmOut = '12:00';
+                    displayPmIn = '13:00';
+                }
+
+                // Calculate late based on base time: 8:00 for regular, 6:00 for Other_Personnel
+                let baseHour = isOtherPersonnel ? 6 : 8;
+                let baseMinute = 0;
+                let lateMinutes = 0;
+                if (record.am_in) {
+                    const [h, m] = record.am_in.split(':').map(Number);
+                    if (h > baseHour || (h === baseHour && m > baseMinute)) {
+                        lateMinutes = (h - baseHour) * 60 + (m - baseMinute);
+                    } else {
+                        lateMinutes = 0;
+                    }
+                }
+
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${formatDate(record.date)}</td>
-                    <td>${formatTime(record.am_in)}</td>
-                    <td>${formatTime(record.am_out)}</td>
-                    <td>${formatTime(record.pm_in)}</td>
+                    <td>${formatTime(displayAmIn)}</td>
+                    <td>${formatTime(displayAmOut)}</td>
+                    <td>${formatTime(displayPmIn)}</td>
                     <td>${formatTime(record.pm_out)}</td>
-                    <td class="${(Number(record.late) > 0 && record.OB != 1) ? 'late-minutes' : ''}">${record.OB == 1 ? '' : (record.late == 0 || record.late === '0' ? '' : `${Math.floor(record.late/60)}h ${record.late%60}m (${record.late} mins)`)}</td>
+                    <td class="${(lateMinutes > 0 && record.OB != 1) ? 'late-minutes' : ''}">${record.OB == 1 ? '' : (lateMinutes === 0 ? '' : `${Math.floor(lateMinutes/60)}h ${lateMinutes%60}m (${lateMinutes} mins)`)}</td>
                     <td class="${undertime && record.OB != 1 ? 'undertime-minutes' : ''}">${record.OB == 1 ? '' : undertime ? `${Math.floor(undertime/60)}h ${undertime%60}m (${undertime} mins)` : ''}</td>
                     <td>${totalTime}</td>
                     <td>
@@ -505,7 +541,7 @@
             let totalUndertimeMinutes = 0;
 
             filteredRecords.forEach(record => {
-                let totalTime = computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out);
+                let totalTime = computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out, department);
 
                 const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
                 if (record.OB == 1) {
@@ -521,7 +557,7 @@
                     totalLateMinutes += Number(record.late) || 0;
                 }
                 // Calculate total undertime minutes
-                const undertime = computeUndertime(totalTime, department);
+                const undertime = computeUndertime(totalTime, department, record.am_in);
                 totalUndertimeMinutes += Number(undertime) || 0;
             });
 
@@ -606,12 +642,12 @@
         const attendanceData = [
             ['Date', 'AM In', 'AM Out', 'PM In', 'PM Out', 'Late(min)', 'Undertime(min)', 'Total Time', 'Note'],
             ...records.map(record => {
-                let totalTime = computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out);
+                let totalTime = computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out, department);
                 const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
                 if (record.OB == 1) {
                     totalTime = isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
                 }
-                const undertime = computeUndertime(totalTime, department);
+                const undertime = computeUndertime(totalTime, department, record.am_in);
                 return [
                     formatDate(record.date),
                     formatTime(record.am_in),
@@ -632,7 +668,7 @@
         let totalUndertimeMinutes = 0;
 
         records.forEach(record => {
-            let totalTime = computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out);
+            let totalTime = computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out, department);
             const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
             if (record.OB == 1) {
                 totalTime = isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
@@ -646,7 +682,7 @@
                 totalLateMinutes += Number(record.late) || 0;
             }
             // Calculate total undertime minutes
-            const undertime = computeUndertime(totalTime, department);
+            const undertime = computeUndertime(totalTime, department, record.am_in);
             totalUndertimeMinutes += Number(undertime) || 0;
         });
 
@@ -872,16 +908,33 @@
         });
     });
 
-    function computeTotalTime(am_in, am_out, pm_in, pm_out) {
+    function computeTotalTime(am_in, am_out, pm_in, pm_out, department) {
         function toMinutes(time) {
             if (!time) return null;
             const [h, m] = time.split(':').map(Number);
             return h * 60 + m;
         }
-        const amInMin = toMinutes(am_in);
-        const amOutMin = toMinutes(am_out);
-        const pmInMin = toMinutes(pm_in);
+        const amInMinRaw = toMinutes(am_in);
+        // For AM Out and PM In, always use defaults if both AM In and PM Out are present (full-day attendance)
+        let amOutVal = am_out;
+        let pmInVal = pm_in;
+        if (am_in && pm_out) {
+            amOutVal = '12:00';
+            pmInVal = '13:00';
+        }
+        const amOutMin = toMinutes(amOutVal);
+        const pmInMin = toMinutes(pmInVal);
         const pmOutMin = toMinutes(pm_out);
+
+        // For regular employees, if AM In is before 8:00, treat as 8:00
+        // For Other_Personnel, if AM In is before 6:00, treat as 6:00
+        const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
+        let amInMin = amInMinRaw;
+        if (isOtherPersonnel && amInMinRaw !== null && amInMinRaw < 360) {
+            amInMin = 360; // 6:00 AM in minutes
+        } else if (!isOtherPersonnel && amInMinRaw !== null && amInMinRaw < 480) {
+            amInMin = 480; // 8:00 AM in minutes
+        }
 
         let total = 0;
 
@@ -917,24 +970,53 @@
         }
 
         if (total <= 0) return '—';
-        const hours = Math.floor(total / 60);
-        const minutes = total % 60;
+
+        // Cap total time based on department
+        const capMinutes = isOtherPersonnel ? 720 : 480; // 12 hours or 8 hours
+        const displayMinutes = total > capMinutes ? capMinutes : total;
+        const hours = Math.floor(displayMinutes / 60);
+        const minutes = displayMinutes % 60;
         return `${hours}:${minutes.toString().padStart(2, '0')} hrs.`;
     }
 
-    function computeUndertime(totalTime, department) {
+    function computeUndertime(totalTime, department, am_in) {
         if (totalTime === '—') return '';
         // Remove ' hrs.' suffix if present
         const timeStr = totalTime.replace(' hrs.', '');
         const [hours, minutes] = timeStr.split(':').map(Number);
         const totalMinutes = (hours * 60) + minutes;
-        // Standard working time: 12 hours for 'Other_Perssonel', else 8 hours (case-insensitive)
+        // Check if employee is Other_Personnel
         const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
-        const standardMinutes = isOtherPersonnel ? 720 : 480;
-        // Calculate undertime
-        const undertime = standardMinutes - totalMinutes;
-        // Return empty string if no undertime, otherwise return the undertime in minutes
-        return undertime <= 0 ? '' : undertime.toString();
+
+        // Adjust base time for undertime calculation
+        let baseStart = 0;
+        if (isOtherPersonnel) {
+            baseStart = 360; // 6:00 AM in minutes
+            if (am_in) {
+                const [h, m] = am_in.split(':').map(Number);
+                if (h < 6) baseStart = 360; // Still 6:00 AM
+                else baseStart = h * 60 + m;
+            }
+            // Standard working time: 12 hours (720 minutes)
+            const standardMinutes = 720;
+            const undertime = standardMinutes - totalMinutes;
+            return undertime <= 0 ? '' : undertime.toString();
+        } else {
+            baseStart = 480; // 8:00 AM in minutes
+            if (am_in) {
+                const [h, m] = am_in.split(':').map(Number);
+                if (h < 8) baseStart = 480; // Still 8:00 AM
+                else baseStart = h * 60 + m;
+            }
+            // For regular employees
+            if (totalMinutes >= 480) { // 8 hours or more
+                return ''; // No undertime
+            } else if (totalMinutes >= 360) { // Between 6 and 8 hours
+                return (480 - totalMinutes).toString(); // Calculate undertime from 8 hours
+            } else { // Less than 6 hours
+                return (480 - totalMinutes).toString(); // Calculate undertime from 8 hours
+            }
+        }
     }
     </script>
 </body>
