@@ -592,7 +592,7 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="logs-table">
             <!-- Warning Legend -->
             <div class="warning-legend">
-                <strong>Legend:</strong>
+                <strong>Legend:</strong><br>
                 <span class="legend-box legend-yellow"></span> Only one time entry, cannot compute interval<br>
                 <span class="legend-box legend-orange"></span> Out-of-order time entries detected
             </div>

@@ -416,7 +416,7 @@
         <h2>Employee Attendance Records</h2>
         <!-- Warning Legend -->
         <div class="warning-legend">
-            <strong>Legend:</strong>
+            <strong>Legend:</strong><br>
             <span class="legend-box legend-yellow">&nbsp;</span> Only one time entry, cannot compute interval<br>
             <span class="legend-box legend-orange">&nbsp;</span> Out-of-order time entries detected
         </div>
