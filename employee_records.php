@@ -842,14 +842,11 @@
         
         // For holidays, only credit hours if there are actual time entries
         if (isHoliday == 1) {
-            // Check if there are any time entries
+            // If there are no time entries, show dash
             if (!am_in && !am_out && !pm_in && !pm_out) {
-                return '—'; // No time entries, no hours credited
-            } else {
-                // Has time entries, give standard time
-                const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
-                return isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
+                return '—';
             }
+            // If there are time entries, DO NOT give default hours, just continue to compute actual time below
         }
         
         function toMinutes(time) {
@@ -858,19 +855,10 @@
             return h * 60 + m;
         }
         const amInMinRaw = toMinutes(am_in);
-        // For AM Out and PM In, always use defaults if both AM In and PM Out are present (full-day attendance)
-        let amOutVal = am_out;
-        let pmInVal = pm_in;
-        if (am_in && pm_out) {
-            amOutVal = '12:00';
-            pmInVal = '13:00';
-        }
-        const amOutMin = toMinutes(amOutVal);
-        const pmInMin = toMinutes(pmInVal);
+        const amOutMin = toMinutes(am_out);
+        const pmInMin = toMinutes(pm_in);
         const pmOutMin = toMinutes(pm_out);
 
-        // For regular employees, if AM In is before 8:00, treat as 8:00
-        // For Other_Personnel, if AM In is before 6:00, treat as 6:00
         const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
         let amInMin = amInMinRaw;
         if (isOtherPersonnel && amInMinRaw !== null && amInMinRaw < 360) {
@@ -881,34 +869,40 @@
 
         let total = 0;
 
-        // Case 1: All four times present
-        if (
-            amInMin !== null && amOutMin !== null &&
-            pmInMin !== null && pmOutMin !== null
-        ) {
-            total = (amOutMin - amInMin) + (pmOutMin - pmInMin);
-        }
-        // Case 2: Only AM In and PM Out present (no AM Out, no PM In)
-        else if (
-            amInMin !== null && pmOutMin !== null &&
-            amOutMin === null && pmInMin === null
-        ) {
-            total = pmOutMin - amInMin - 60; // Subtract 1 hour break
-        }
-        // Case 3: AM In, AM Out, and PM In present, PM Out missing
-        else if (
-            amInMin !== null && amOutMin !== null &&
-            pmInMin !== null && pmOutMin === null
-        ) {
-            total = (amOutMin - amInMin) + 60; // Add 1 hour for lunch
-        }
-        // Case 4: Sum all valid pairs
-        else {
-            if (amInMin !== null && amOutMin !== null && amOutMin > amInMin) {
-                total += amOutMin - amInMin;
+        // For regular employees, if both AM In and PM Out are present, always compute (PM Out - AM In) - 1 hour
+        if (!isOtherPersonnel && amInMin !== null && pmOutMin !== null) {
+            total = pmOutMin - amInMin - 60;
+        } else {
+            // For Other_Personnel, keep the original logic
+            // Case 1: All four times present
+            if (
+                amInMin !== null && amOutMin !== null &&
+                pmInMin !== null && pmOutMin !== null
+            ) {
+                total = (amOutMin - amInMin) + (pmOutMin - pmInMin);
             }
-            if (pmInMin !== null && pmOutMin !== null && pmOutMin > pmInMin) {
-                total += pmOutMin - pmInMin;
+            // Case 2: Only AM In and PM Out present (no AM Out, no PM In)
+            else if (
+                amInMin !== null && pmOutMin !== null &&
+                amOutMin === null && pmInMin === null
+            ) {
+                total = pmOutMin - amInMin - 60; // Subtract 1 hour break
+            }
+            // Case 3: AM In, AM Out, and PM In present, PM Out missing
+            else if (
+                amInMin !== null && amOutMin !== null &&
+                pmInMin !== null && pmOutMin === null
+            ) {
+                total = (amOutMin - amInMin) + 60; // Add 1 hour for lunch
+            }
+            // Case 4: Sum all valid pairs
+            else {
+                if (amInMin !== null && amOutMin !== null && amOutMin > amInMin) {
+                    total += amOutMin - amInMin;
+                }
+                if (pmInMin !== null && pmOutMin !== null && pmOutMin > pmInMin) {
+                    total += pmOutMin - pmInMin;
+                }
             }
         }
 

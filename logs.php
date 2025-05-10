@@ -21,48 +21,72 @@ function computeTotalTime($am_in, $am_out, $pm_in, $pm_out, $department = null, 
     
     // For holidays, only credit hours if there are actual time entries
     if ($isHoliday == 1) {
-        // Check if there are any time entries
+        // If there are no time entries, show dash
         if (!$am_in && !$am_out && !$pm_in && !$pm_out) {
-            return '—'; // No time entries, no hours credited
-        } else {
-            // Has time entries, give standard time
-            $isOtherPersonnel = $department && strtolower(trim($department)) === 'other_personnel';
-            return $isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
+            return '—';
         }
+        // If there are time entries, DO NOT give default hours, just continue to compute actual time below
     }
     
-    $amInMin = toMinutes($am_in);
+    $amInMinRaw = toMinutes($am_in);
     $amOutMin = toMinutes($am_out);
     $pmInMin = toMinutes($pm_in);
     $pmOutMin = toMinutes($pm_out);
 
+    $isOtherPersonnel = $department && strtolower(trim($department)) === 'other_personnel';
+    $amInMin = $amInMinRaw;
+    if ($isOtherPersonnel && $amInMinRaw !== null && $amInMinRaw < 360) {
+        $amInMin = 360; // 6:00 AM in minutes
+    } else if (!$isOtherPersonnel && $amInMinRaw !== null && $amInMinRaw < 480) {
+        $amInMin = 480; // 8:00 AM in minutes
+    }
+
     $total = 0;
 
-    // Case 1: All four times present
-    if ($amInMin !== null && $amOutMin !== null && $pmInMin !== null && $pmOutMin !== null) {
-        $total = ($amOutMin - $amInMin) + ($pmOutMin - $pmInMin);
-    }
-    // Case 2: Only AM In and PM Out present (no AM Out, no PM In)
-    else if ($amInMin !== null && $pmOutMin !== null && $amOutMin === null && $pmInMin === null) {
-        $total = $pmOutMin - $amInMin - 60; // Subtract 1 hour break
-    }
-    // Case 3: AM In, AM Out, and PM In present, PM Out missing
-    else if ($amInMin !== null && $amOutMin !== null && $pmInMin !== null && $pmOutMin === null) {
-        $total = ($amOutMin - $amInMin) + 60; // Add 1 hour for lunch
-    }
-    // Case 4: Sum all valid pairs
-    else {
-        if ($amInMin !== null && $amOutMin !== null && $amOutMin > $amInMin) {
-            $total += $amOutMin - $amInMin;
+    // For regular employees, if both AM In and PM Out are present, always compute (PM Out - AM In) - 1 hour
+    if (!$isOtherPersonnel && $amInMin !== null && $pmOutMin !== null) {
+        $total = $pmOutMin - $amInMin - 60;
+    } else {
+        // For Other_Personnel, keep the original logic
+        // Case 1: All four times present
+        if (
+            $amInMin !== null && $amOutMin !== null &&
+            $pmInMin !== null && $pmOutMin !== null
+        ) {
+            $total = ($amOutMin - $amInMin) + ($pmOutMin - $pmInMin);
         }
-        if ($pmInMin !== null && $pmOutMin !== null && $pmOutMin > $pmInMin) {
-            $total += $pmOutMin - $pmInMin;
+        // Case 2: Only AM In and PM Out present (no AM Out, no PM In)
+        else if (
+            $amInMin !== null && $pmOutMin !== null &&
+            $amOutMin === null && $pmInMin === null
+        ) {
+            $total = $pmOutMin - $amInMin - 60; // Subtract 1 hour break
+        }
+        // Case 3: AM In, AM Out, and PM In present, PM Out missing
+        else if (
+            $amInMin !== null && $amOutMin !== null &&
+            $pmInMin !== null && $pmOutMin === null
+        ) {
+            $total = ($amOutMin - $amInMin) + 60; // Add 1 hour for lunch
+        }
+        // Case 4: Sum all valid pairs
+        else {
+            if ($amInMin !== null && $amOutMin !== null && $amOutMin > $amInMin) {
+                $total += $amOutMin - $amInMin;
+            }
+            if ($pmInMin !== null && $pmOutMin !== null && $pmOutMin > $pmInMin) {
+                $total += $pmOutMin - $pmInMin;
+            }
         }
     }
 
     if ($total <= 0) return '—';
-    $hours = floor($total / 60);
-    $minutes = $total % 60;
+
+    // Cap total time based on department
+    $capMinutes = $isOtherPersonnel ? 720 : 480; // 12 hours or 8 hours
+    $displayMinutes = $total > $capMinutes ? $capMinutes : $total;
+    $hours = floor($displayMinutes / 60);
+    $minutes = $displayMinutes % 60;
     return sprintf("%d:%02d hrs.", $hours, $minutes);
 }
 
@@ -582,15 +606,37 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             $remarks[] = 'Holiday';
                         }
                         $remarksText = implode(' | ', $remarks);
+
+                        // Display rule: if both AM_IN and PM_OUT are present, show AM_OUT as 12:00 and PM_IN as 13:00
+                        $displayAmOut = $record['AM_OUT'];
+                        $displayPmIn = $record['PM_IN'];
+                        if (!empty($record['AM_IN']) && !empty($record['PM_OUT'])) {
+                            $displayAmOut = '12:00';
+                            $displayPmIn = '13:00';
+                        }
+
+                        // Display rule: AM IN should not be earlier than 6:00 for Other_Personnel, 8:00 for others
+                        $displayAmIn = $record['AM_IN'];
+                        if (!empty($record['AM_IN'])) {
+                            $isOtherPersonnel = isset($record['DEPT']) && strtolower(trim($record['DEPT'])) === 'other_personnel';
+                            list($h, $m) = explode(':', $record['AM_IN']);
+                            $h = (int)$h;
+                            $m = (int)$m;
+                            if ($isOtherPersonnel && ($h < 6)) {
+                                $displayAmIn = '06:00';
+                            } else if (!$isOtherPersonnel && ($h < 8)) {
+                                $displayAmIn = '08:00';
+                            }
+                        }
                     ?>
                     <tr>
                         <td><?php echo htmlspecialchars($record['EMP_ID']); ?></td>
                         <td><?php echo htmlspecialchars($record['Name']); ?></td>
                         <td><?php echo htmlspecialchars($record['DEPT']); ?></td>
                         <td><?php echo formatDateWithDay($record['DATE']); ?></td>
-                        <td><?php echo convertTo12Hour($record['AM_IN']); ?></td>
-                        <td><?php echo convertTo12Hour($record['AM_OUT']); ?></td>
-                        <td><?php echo convertTo12Hour($record['PM_IN']); ?></td>
+                        <td><?php echo convertTo12Hour($displayAmIn); ?></td>
+                        <td><?php echo convertTo12Hour($displayAmOut); ?></td>
+                        <td><?php echo convertTo12Hour($displayPmIn); ?></td>
                         <td><?php echo convertTo12Hour($record['PM_OUT']); ?></td>
                         <td><?php echo (isset($record['LATE']) && ($record['LATE'] === '0' || $record['LATE'] == 0)) ? '' : htmlspecialchars($record['LATE']); ?></td>
                         <td><?php echo $undertime; ?></td>
