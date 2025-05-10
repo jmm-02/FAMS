@@ -474,11 +474,16 @@
     function formatDate(dateStr) {
         if (!dateStr) return '—';
         const date = new Date(dateStr);
-        return date.toLocaleDateString('en-US', { 
+        
+        // Get day of week
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const dayOfWeek = days[date.getDay()];
+        
+        return `${date.toLocaleDateString('en-US', { 
             year: 'numeric', 
             month: 'short', 
             day: 'numeric' 
-        });
+        })} (${dayOfWeek})`;
     }
     
     // Render employee info

@@ -12,7 +12,25 @@ function toMinutes($time) {
 }
 
 // Function to compute total time
-function computeTotalTime($am_in, $am_out, $pm_in, $pm_out) {
+function computeTotalTime($am_in, $am_out, $pm_in, $pm_out, $department = null, $isHoliday = 0, $isOB = 0, $isSL = 0) {
+    // If it's OB or SL, return standard time based on department
+    if ($isOB == 1 || $isSL == 1) {
+        $isOtherPersonnel = $department && strtolower(trim($department)) === 'other_personnel';
+        return $isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
+    }
+    
+    // For holidays, only credit hours if there are actual time entries
+    if ($isHoliday == 1) {
+        // Check if there are any time entries
+        if (!$am_in && !$am_out && !$pm_in && !$pm_out) {
+            return '—'; // No time entries, no hours credited
+        } else {
+            // Has time entries, give standard time
+            $isOtherPersonnel = $department && strtolower(trim($department)) === 'other_personnel';
+            return $isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
+        }
+    }
+    
     $amInMin = toMinutes($am_in);
     $amOutMin = toMinutes($am_out);
     $pmInMin = toMinutes($pm_in);
@@ -49,7 +67,17 @@ function computeTotalTime($am_in, $am_out, $pm_in, $pm_out) {
 }
 
 // Function to compute undertime
-function computeUndertime($totalTime, $department) {
+function computeUndertime($totalTime, $department, $am_in = null, $isHoliday = 0, $isOB = 0, $isSL = 0) {
+    // If it's a holiday with no time entries (showing as —), there is no undertime
+    if ($isHoliday == 1 && $totalTime === '—') {
+        return '';
+    }
+    
+    // If it's OB or SL, no undertime
+    if ($isOB == 1 || $isSL == 1) {
+        return '';
+    }
+    
     if ($totalTime === '—') return '';
     // Remove ' hrs.' suffix if present
     $timeStr = str_replace(' hrs.', '', $totalTime);
@@ -70,6 +98,14 @@ function convertTo12Hour($time) {
     return date('h:i A', strtotime($time));
 }
 
+// Function to format date with day of week
+function formatDateWithDay($dateStr) {
+    if (empty($dateStr)) return '';
+    $timestamp = strtotime($dateStr);
+    $dayOfWeek = date('l', $timestamp); // Gets the full day name
+    return date('M j, Y', $timestamp) . ' (' . $dayOfWeek . ')';
+}
+
 // Handle filtering
 $filter_start_date = isset($_GET['start_date']) ? $_GET['start_date'] : '';
 $filter_end_date = isset($_GET['end_date']) ? $_GET['end_date'] : '';
@@ -77,7 +113,7 @@ $filter_name = isset($_GET['employee_name']) ? $_GET['employee_name'] : '';
 $filter_status = isset($_GET['status']) ? $_GET['status'] : '';
 
 // Build query based on filters
-$query = "SELECT e.ID as EMP_ID, e.Name, e.DEPT, e.STATUS, r.DATE, r.AM_IN, r.AM_OUT, r.PM_IN, r.PM_OUT, r.LATE, r.UNDERTIME, r.OB
+$query = "SELECT e.ID as EMP_ID, e.Name, e.DEPT, e.STATUS, r.DATE, r.AM_IN, r.AM_OUT, r.PM_IN, r.PM_OUT, r.LATE, r.UNDERTIME, r.OB, r.note, r.HOLIDAY, r.SL
           FROM emp_info e 
           LEFT JOIN emp_rec r ON e.ID = r.EMP_ID 
           WHERE 1=1";
@@ -523,18 +559,35 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <th>Late(min)</th>
                         <th>Undertime(min)</th>
                         <th>Total Time</th>
+                        <th>Remarks</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($records as $record): 
-                        $totalTime = computeTotalTime($record['AM_IN'], $record['AM_OUT'], $record['PM_IN'], $record['PM_OUT']);
-                        $undertime = computeUndertime($totalTime, $record['DEPT']);
+                        $totalTime = computeTotalTime($record['AM_IN'], $record['AM_OUT'], $record['PM_IN'], $record['PM_OUT'], $record['DEPT'], $record['HOLIDAY'], $record['OB'], $record['SL']);
+                        $undertime = computeUndertime($totalTime, $record['DEPT'], $record['AM_IN'], $record['HOLIDAY'], $record['OB'], $record['SL']);
+                        
+                        // Prepare remarks text
+                        $remarks = [];
+                        if (!empty($record['note'])) {
+                            $remarks[] = $record['note'];
+                        }
+                        if (isset($record['OB']) && $record['OB'] == 1) {
+                            $remarks[] = 'Official Business';
+                        }
+                        if (isset($record['SL']) && $record['SL'] == 1) {
+                            $remarks[] = 'Sick Leave';
+                        }
+                        if (isset($record['HOLIDAY']) && $record['HOLIDAY'] == 1) {
+                            $remarks[] = 'Holiday';
+                        }
+                        $remarksText = implode(' | ', $remarks);
                     ?>
                     <tr>
                         <td><?php echo htmlspecialchars($record['EMP_ID']); ?></td>
                         <td><?php echo htmlspecialchars($record['Name']); ?></td>
                         <td><?php echo htmlspecialchars($record['DEPT']); ?></td>
-                        <td><?php echo htmlspecialchars($record['DATE']); ?></td>
+                        <td><?php echo formatDateWithDay($record['DATE']); ?></td>
                         <td><?php echo convertTo12Hour($record['AM_IN']); ?></td>
                         <td><?php echo convertTo12Hour($record['AM_OUT']); ?></td>
                         <td><?php echo convertTo12Hour($record['PM_IN']); ?></td>
@@ -542,6 +595,7 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <td><?php echo (isset($record['LATE']) && ($record['LATE'] === '0' || $record['LATE'] == 0)) ? '' : htmlspecialchars($record['LATE']); ?></td>
                         <td><?php echo $undertime; ?></td>
                         <td><?php echo $totalTime; ?></td>
+                        <td><?php echo htmlspecialchars($remarksText); ?></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -566,8 +620,26 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         Array.from(row.querySelectorAll('th, td')).map(cell => cell.textContent.trim())
                     );
 
-                    // Create a worksheet and workbook
+                    // Create a worksheet with better formatting
                     const worksheet = XLSX.utils.aoa_to_sheet(data);
+                    
+                    // Set column widths
+                    const columnWidths = [
+                        { wch: 15 }, // Employee ID
+                        { wch: 25 }, // Name
+                        { wch: 15 }, // Department
+                        { wch: 15 }, // Date
+                        { wch: 15 }, // AM IN
+                        { wch: 15 }, // AM OUT
+                        { wch: 15 }, // PM IN
+                        { wch: 15 }, // PM OUT
+                        { wch: 15 }, // Late
+                        { wch: 15 }, // Undertime
+                        { wch: 15 }, // Total Time
+                        { wch: 35 }  // Remarks
+                    ];
+                    worksheet['!cols'] = columnWidths;
+                    
                     const workbook = XLSX.utils.book_new();
                     XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendance Records');
 
