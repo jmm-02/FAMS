@@ -38,7 +38,8 @@ try {
                 UNDERTIME as undertime,
                 `NOTE` as note,
                 OB,
-                SL
+                SL,
+                HOLIDAY
                 FROM emp_rec 
                 WHERE EMP_ID = :emp_id
                 ORDER BY DATE DESC";

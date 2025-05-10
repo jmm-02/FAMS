@@ -520,14 +520,14 @@
         if (filteredRecords.length > 0) {
             filteredRecords.forEach(record => {
                 console.log('SL value for', record.date, ':', record.SL, typeof record.SL);
-                let totalTime = computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out, department);
+                let totalTime = computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out, department, record.HOLIDAY, record.OB, record.SL);
 
                 const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
                 if (record.OB == 1) {
                     totalTime = isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
                 }
-
-                const undertime = computeUndertime(totalTime, department, record.am_in);
+                
+                const undertime = computeUndertime(totalTime, department, record.am_in, record.HOLIDAY);
                 
                 // For regular employees, if AM In is before 8:00, display 8:00 AM
                 // For Other_Personnel, if AM In is before 6:00, display 6:00 AM
@@ -564,6 +564,15 @@
                         lateMinutes = 0;
                     }
                 }
+                
+                // Prepare remarks
+                let remarks = '';
+                if (record.HOLIDAY == 1) {
+                    remarks += 'Holiday';
+                }
+                if (record.note) {
+                    remarks += remarks ? ` | ${record.note}` : record.note;
+                }
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -588,6 +597,11 @@
                             ? `<button class="deny-sl-btn" data-emp-id="${empId}" data-date="${record.date}" data-sl-value="0">Deny SL</button>`
                             : `<button class="mark-sl-btn" data-emp-id="${empId}" data-date="${record.date}" data-sl-value="1" ${record.OB == 1 ? 'disabled' : ''}>Mark SL</button>`
                         }
+                        ${
+                          record.HOLIDAY == 1 
+                            ? `<span class="holiday-tag" style="background: #ff9800; color: white; padding: 3px 8px; border-radius: 4px; margin-left: 8px;">Holiday</span>` 
+                            : ''
+                        }
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -599,7 +613,7 @@
             let totalUndertimeMinutes = 0;
 
             filteredRecords.forEach(record => {
-                let totalTime = computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out, department);
+                let totalTime = computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out, department, record.HOLIDAY, record.OB, record.SL);
 
                 const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
                 if (record.OB == 1) {
@@ -615,7 +629,7 @@
                     totalLateMinutes += Number(record.late) || 0;
                 }
                 // Calculate total undertime minutes
-                const undertime = computeUndertime(totalTime, department, record.am_in);
+                const undertime = computeUndertime(totalTime, department, record.am_in, record.HOLIDAY);
                 totalUndertimeMinutes += Number(undertime) || 0;
             });
 
@@ -814,7 +828,25 @@
         });
     });
 
-    function computeTotalTime(am_in, am_out, pm_in, pm_out, department) {
+    function computeTotalTime(am_in, am_out, pm_in, pm_out, department, isHoliday, isOB, isSL) {
+        // If it's OB or SL, return standard time based on department
+        if (isOB == 1 || isSL == 1) {
+            const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
+            return isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
+        }
+        
+        // For holidays, only credit hours if there are actual time entries
+        if (isHoliday == 1) {
+            // Check if there are any time entries
+            if (!am_in && !am_out && !pm_in && !pm_out) {
+                return '—'; // No time entries, no hours credited
+            } else {
+                // Has time entries, give standard time
+                const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
+                return isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
+            }
+        }
+        
         function toMinutes(time) {
             if (!time) return null;
             const [h, m] = time.split(':').map(Number);
@@ -885,7 +917,13 @@
         return `${hours}:${minutes.toString().padStart(2, '0')} hrs.`;
     }
 
-    function computeUndertime(totalTime, department, am_in) {
+    function computeUndertime(totalTime, department, am_in, isHoliday) {
+        // If it's a holiday with no time entries (showing as —), there is no undertime
+        if (isHoliday == 1 && totalTime === '—') {
+            return '';
+        }
+        
+        // If it's a holiday with time entries, calculate normally
         if (totalTime === '—') return '';
         // Remove ' hrs.' suffix if present
         const timeStr = totalTime.replace(' hrs.', '');
@@ -956,12 +994,12 @@
         const attendanceData = [
             ['Date', 'AM In', 'AM Out', 'PM In', 'PM Out', 'Late(min)', 'Undertime(min)', 'Total Time', 'Note'],
             ...records.map(record => {
-                let totalTime = computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out, department);
+                let totalTime = computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out, department, record.HOLIDAY, record.OB, record.SL);
                 const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
                 if (record.OB == 1) {
                     totalTime = isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
                 }
-                const undertime = computeUndertime(totalTime, department, record.am_in);
+                const undertime = computeUndertime(totalTime, department, record.am_in, record.HOLIDAY);
                 
                 // Prepare note field with OB and SL information
                 let noteText = record.note || '';
@@ -973,6 +1011,11 @@
                 
                 if (record.SL == 1) {
                     noteText = noteText ? noteText + ' | Sick Leave' : 'Sick Leave';
+                }
+                
+                // Add Holiday information if applicable
+                if (record.HOLIDAY == 1) {
+                    noteText = noteText ? noteText + ' | Holiday' : 'Holiday';
                 }
                 
                 return [
@@ -995,7 +1038,7 @@
         let totalUndertimeMinutes = 0;
 
         records.forEach(record => {
-            let totalTime = computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out, department);
+            let totalTime = computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out, department, record.HOLIDAY, record.OB, record.SL);
             const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
             if (record.OB == 1) {
                 totalTime = isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
@@ -1009,7 +1052,7 @@
                 totalLateMinutes += Number(record.late) || 0;
             }
             // Calculate total undertime minutes
-            const undertime = computeUndertime(totalTime, department, record.am_in);
+            const undertime = computeUndertime(totalTime, department, record.am_in, record.HOLIDAY);
             totalUndertimeMinutes += Number(undertime) || 0;
         });
 

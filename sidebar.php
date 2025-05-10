@@ -310,12 +310,23 @@
                 <span class="nav-text">Change Password</span>
             </a>
             
-            <button class="logout-btn" onclick="window.location.href='logout.php'">
-                <span class="nav-icon">
-                    <i class="fas fa-sign-out-alt"></i>
-                </span>
-                <span class="nav-text">Logout</span>
-            </button>
+            <!-- Add holiday link before the logout button -->
+            <a href="holidays.php" class="nav-link">
+                <div class="nav-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <span class="nav-text">Manage Holidays</span>
+            </a>
+            
+            <!-- Logout button -->
+            <form action="logout.php" method="post" style="margin-top: auto;">
+                <button type="submit" class="logout-btn">
+                    <div class="nav-icon">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </div>
+                    <span class="nav-text">Logout</span>
+                </button>
+            </form>
         </div>
     </div>
 

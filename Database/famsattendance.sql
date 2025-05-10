@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.0
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 08, 2025 at 02:04 PM
--- Server version: 10.4.27-MariaDB
--- PHP Version: 8.2.0
+-- Generation Time: May 10, 2025 at 04:19 AM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -58,12 +58,10 @@ CREATE TABLE `emp_info` (
 --
 
 INSERT INTO `emp_info` (`ID`, `Name`, `DEPT`, `STATUS`) VALUES
-('00', 'mnfv, jhf mhf', 'other_personel', 'Active'),
-('1', 'JM', 'Administrator', 'Active'),
-('2', 'Mara', 'Administrator', 'Active'),
-('3', 'Mj', 'Other_Personnel', 'Inactive'),
-('4444', 'Mark', 'Administrator', 'Active'),
-('821', '85', 'Administrator', 'Active');
+('1', 'JM', 'Test', ''),
+('3', 'Mj', 'Administrator', ''),
+('4', 'Corpuz', 'Faculty_Member', ''),
+('4444', 'Mark', 'Other_Personnel', '');
 
 -- --------------------------------------------------------
 
@@ -82,44 +80,54 @@ CREATE TABLE `emp_rec` (
   `LATE` int(255) DEFAULT NULL,
   `UNDERTIME` int(255) DEFAULT NULL,
   `NOTE` varchar(255) DEFAULT NULL,
-  `OB` int(255) DEFAULT NULL
+  `OB` int(255) DEFAULT NULL,
+  `SL` int(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `emp_rec`
 --
 
-INSERT INTO `emp_rec` (`ID`, `EMP_ID`, `AM_IN`, `AM_OUT`, `PM_IN`, `PM_OUT`, `DATE`, `LATE`, `UNDERTIME`, `NOTE`, `OB`) VALUES
-(1, '1', NULL, NULL, NULL, NULL, '2025-05-01', 0, 540, NULL, NULL),
-(2, '1', NULL, NULL, NULL, NULL, '2025-05-02', 0, 540, NULL, NULL),
-(3, '1', NULL, NULL, NULL, NULL, '2025-05-03', 0, 540, NULL, NULL),
-(4, '1', NULL, NULL, NULL, NULL, '2025-05-04', 0, 540, NULL, NULL),
-(5, '1', NULL, NULL, NULL, NULL, '2025-05-05', 0, 540, NULL, 1),
-(6, '821', NULL, NULL, NULL, NULL, '2025-05-01', 0, 540, NULL, NULL),
-(7, '821', NULL, NULL, NULL, NULL, '2025-05-02', 0, 540, NULL, NULL),
-(8, '821', NULL, NULL, NULL, NULL, '2025-05-03', 0, 540, NULL, NULL),
-(9, '821', NULL, NULL, NULL, NULL, '2025-05-04', 0, 540, NULL, NULL),
-(10, '821', NULL, NULL, NULL, NULL, '2025-05-05', 0, 540, NULL, NULL),
-(11, '00', NULL, NULL, NULL, NULL, '2025-05-01', 0, 540, NULL, NULL),
-(12, '00', NULL, NULL, NULL, NULL, '2025-05-02', 0, 540, NULL, NULL),
-(13, '00', NULL, NULL, NULL, NULL, '2025-05-03', 0, 540, NULL, NULL),
-(14, '00', NULL, NULL, NULL, NULL, '2025-05-04', 0, 540, NULL, NULL),
-(15, '00', NULL, NULL, NULL, NULL, '2025-05-05', 0, 540, NULL, NULL),
-(16, '2', NULL, NULL, NULL, NULL, '2025-05-01', 0, 540, NULL, NULL),
-(17, '2', NULL, NULL, NULL, NULL, '2025-05-02', 0, 540, NULL, NULL),
-(18, '2', NULL, NULL, NULL, NULL, '2025-05-03', 0, 540, NULL, NULL),
-(19, '2', NULL, NULL, NULL, NULL, '2025-05-04', 0, 540, NULL, NULL),
-(20, '2', '00:28:00', NULL, NULL, NULL, '2025-05-05', 0, 540, NULL, NULL),
-(21, '3', '09:53:00', '13:19:00', NULL, NULL, '2025-05-01', 53, 334, NULL, NULL),
-(22, '3', NULL, NULL, NULL, NULL, '2025-05-02', 0, 540, NULL, NULL),
-(23, '3', NULL, NULL, NULL, NULL, '2025-05-03', 0, 540, NULL, 1),
-(24, '3', NULL, NULL, NULL, NULL, '2025-05-04', 0, 540, NULL, 0),
-(25, '3', '08:00:00', NULL, NULL, '16:00:00', '2025-05-05', 0, 540, NULL, NULL),
-(26, '4444', '12:05:00', '13:19:00', NULL, NULL, '2025-05-01', 185, 466, NULL, NULL),
-(27, '4444', NULL, NULL, NULL, NULL, '2025-05-02', 0, 540, NULL, NULL),
-(28, '4444', NULL, NULL, NULL, NULL, '2025-05-03', 0, 540, NULL, NULL),
-(29, '4444', NULL, NULL, NULL, NULL, '2025-05-04', 0, 540, NULL, NULL),
-(30, '4444', NULL, NULL, NULL, NULL, '2025-05-05', 0, 540, NULL, 1);
+INSERT INTO `emp_rec` (`ID`, `EMP_ID`, `AM_IN`, `AM_OUT`, `PM_IN`, `PM_OUT`, `DATE`, `LATE`, `UNDERTIME`, `NOTE`, `OB`, `SL`) VALUES
+(110, '1', NULL, NULL, NULL, NULL, '2025-05-01', 0, 660, NULL, NULL, NULL),
+(111, '1', NULL, NULL, NULL, NULL, '2025-05-02', 0, 660, NULL, NULL, NULL),
+(112, '1', NULL, NULL, NULL, NULL, '2025-05-03', 0, 660, NULL, NULL, NULL),
+(113, '1', NULL, NULL, NULL, NULL, '2025-05-04', 0, 660, NULL, NULL, NULL),
+(114, '1', NULL, NULL, NULL, NULL, '2025-05-05', 0, 660, NULL, NULL, NULL),
+(115, '1', NULL, NULL, NULL, NULL, '2025-05-06', 0, 660, NULL, NULL, NULL),
+(116, '1', NULL, NULL, NULL, NULL, '2025-05-07', 0, 660, NULL, NULL, NULL),
+(117, '1', NULL, NULL, NULL, NULL, '2025-05-08', 0, 660, NULL, NULL, NULL),
+(118, '1', NULL, NULL, NULL, NULL, '2025-05-09', 0, 660, NULL, NULL, NULL),
+(119, '1', NULL, NULL, NULL, NULL, '2025-05-10', 0, 660, NULL, NULL, NULL),
+(120, '3', '09:53:00', '11:48:00', '12:54:00', '13:19:00', '2025-05-01', 173, 346, NULL, 0, NULL),
+(121, '3', NULL, NULL, NULL, NULL, '2025-05-02', 0, 480, NULL, NULL, NULL),
+(122, '3', NULL, NULL, NULL, NULL, '2025-05-03', 0, 480, NULL, NULL, NULL),
+(123, '3', NULL, NULL, NULL, NULL, '2025-05-04', 0, 480, NULL, NULL, NULL),
+(124, '3', '00:29:00', NULL, NULL, NULL, '2025-05-05', 0, 480, NULL, NULL, NULL),
+(125, '3', '09:14:00', NULL, NULL, NULL, '2025-05-06', 134, 480, NULL, NULL, NULL),
+(126, '3', NULL, NULL, NULL, NULL, '2025-05-07', 0, 480, NULL, NULL, NULL),
+(127, '3', '07:58:00', '08:57:00', '13:00:00', '17:00:00', '2025-05-08', 58, 241, NULL, 0, NULL),
+(128, '3', '07:00:00', '12:00:00', '13:10:00', '17:00:00', '2025-05-09', 10, 10, 'asdasd', 0, 0),
+(129, '4444', NULL, '12:05:00', '12:06:00', '13:19:00', '2025-05-01', 0, 641, NULL, NULL, NULL),
+(130, '4444', NULL, NULL, NULL, NULL, '2025-05-02', 0, 660, NULL, NULL, NULL),
+(131, '4444', NULL, NULL, NULL, NULL, '2025-05-03', 0, 660, NULL, NULL, NULL),
+(132, '4444', NULL, NULL, NULL, NULL, '2025-05-04', 0, 660, NULL, NULL, NULL),
+(133, '4444', NULL, NULL, NULL, NULL, '2025-05-05', 0, 660, NULL, NULL, NULL),
+(134, '4444', NULL, NULL, NULL, NULL, '2025-05-06', 0, 660, NULL, NULL, NULL),
+(135, '4444', NULL, NULL, NULL, NULL, '2025-05-07', 0, 660, NULL, NULL, NULL),
+(136, '4444', '05:00:00', '12:00:00', '13:00:00', NULL, '2025-05-08', 0, 300, NULL, NULL, NULL),
+(137, '4444', '06:00:00', '12:10:00', NULL, NULL, '2025-05-09', 0, 300, NULL, NULL, NULL),
+(138, '4444', '06:05:00', '12:00:00', '12:00:00', '18:00:00', '2025-05-10', 5, 5, NULL, 0, NULL),
+(139, '4', NULL, NULL, NULL, NULL, '2025-05-01', 0, 480, NULL, NULL, NULL),
+(140, '4', NULL, NULL, NULL, NULL, '2025-05-02', 0, 480, NULL, NULL, NULL),
+(141, '4', NULL, NULL, NULL, NULL, '2025-05-03', 0, 480, NULL, NULL, NULL),
+(142, '4', NULL, NULL, NULL, NULL, '2025-05-04', 0, 480, NULL, NULL, NULL),
+(143, '4', '10:30:00', '10:30:00', NULL, NULL, '2025-05-05', 150, 480, NULL, NULL, NULL),
+(144, '4', NULL, NULL, NULL, NULL, '2025-05-06', 0, 480, NULL, NULL, NULL),
+(145, '4', NULL, NULL, NULL, NULL, '2025-05-07', 0, 480, NULL, NULL, NULL),
+(146, '4', NULL, NULL, NULL, NULL, '2025-05-08', 0, 480, NULL, NULL, 0),
+(147, '4', NULL, NULL, NULL, NULL, '2025-05-09', 0, 480, NULL, 0, NULL),
+(148, '4', NULL, NULL, NULL, NULL, '2025-05-10', 0, 480, NULL, 0, 0);
 
 --
 -- Indexes for dumped tables
@@ -158,7 +166,7 @@ ALTER TABLE `admin`
 -- AUTO_INCREMENT for table `emp_rec`
 --
 ALTER TABLE `emp_rec`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=149;
 
 --
 -- Constraints for dumped tables
