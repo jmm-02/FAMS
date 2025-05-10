@@ -376,6 +376,37 @@
             background: #EF9A9A;
             border-color: #B71C1C;
         }
+
+        .warning-row-yellow {
+            background-color: #fff9c4 !important; /* Soft yellow */
+        }
+        .warning-row-orange {
+            background-color: #ffe0b2 !important; /* Soft orange */
+        }
+        .warning-legend {
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            background: #f4f4f4;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #444;
+        }
+        .legend-box {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            margin-right: 6px;
+            border-radius: 3px;
+            vertical-align: middle;
+        }
+        .legend-yellow {
+            background: #fff9c4;
+            border: 1px solid #fbc02d;
+        }
+        .legend-orange {
+            background: #ffe0b2;
+            border: 1px solid #ff9800;
+        }
     </style>
 </head>
 <body>
@@ -383,6 +414,12 @@
     <div class="container">
         <a href="employeeinfo.php" class="back-link">← Back to Employee List</a>
         <h2>Employee Attendance Records</h2>
+        <!-- Warning Legend -->
+        <div class="warning-legend">
+            <strong>Legend:</strong>
+            <span class="legend-box legend-yellow">&nbsp;</span> Only one time entry, cannot compute interval<br>
+            <span class="legend-box legend-orange">&nbsp;</span> Out-of-order time entries detected
+        </div>
         
         <!-- Update the employee info section -->
         <div id="employeeInfo" class="employee-info">
@@ -557,19 +594,28 @@
                     displayPmIn = '13:00';
                 }
 
-                // Calculate late based on base time: 8:00 for regular, 6:00 for Other_Personnel
-                let baseHour = isOtherPersonnel ? 6 : 8;
-                let baseMinute = 0;
-                let lateMinutes = 0;
-                if (record.am_in) {
-                    const [h, m] = record.am_in.split(':').map(Number);
-                    if (h > baseHour || (h === baseHour && m > baseMinute)) {
-                        lateMinutes = (h - baseHour) * 60 + (m - baseMinute);
-                    } else {
-                        lateMinutes = 0;
-                    }
+                // Build an array of present times
+                const times = [];
+                if (record.am_in) times.push(toMinutes(record.am_in));
+                if (record.am_out) times.push(toMinutes(record.am_out));
+                if (record.pm_in) times.push(toMinutes(record.pm_in));
+                if (record.pm_out) times.push(toMinutes(record.pm_out));
+
+                let hasSingleEntry = times.length === 1;
+                let outOfOrder = false;
+                let validIntervals = 0;
+                for (let i = 0; i < times.length - 1; i++) {
+                    if (times[i+1] < times[i]) outOfOrder = true;
+                    if (times[i+1] > times[i]) validIntervals++;
                 }
-                
+
+                let rowClass = '';
+                if (hasSingleEntry) {
+                    rowClass = 'warning-row-yellow';
+                } else if (outOfOrder || (totalTime === '—' && times.length > 0)) {
+                    rowClass = 'warning-row-orange';
+                }
+
                 // Prepare remarks
                 let remarks = '';
                 if (record.HOLIDAY == 1) {
@@ -579,14 +625,34 @@
                     remarks += remarks ? ` | ${record.note}` : record.note;
                 }
 
+                // Do not add out-of-order message to remarks
+                let remarksText = remarks;
+
+                // Calculate late based on base time: 8:00 for regular, 6:00 for Other_Personnel
+                let baseHour = isOtherPersonnel ? 6 : 8;
+                let baseMinute = 0;
+                let lateMinutes = 0;
+                // Only compute late if more than one time entry, no out-of-order, and at least one valid interval
+                if (!hasSingleEntry && !outOfOrder && validIntervals > 0 && record.am_in) {
+                    const [h, m] = record.am_in.split(':').map(Number);
+                    if (h > baseHour || (h === baseHour && m > baseMinute)) {
+                        lateMinutes = (h - baseHour) * 60 + (m - baseMinute);
+                    } else {
+                        lateMinutes = 0;
+                    }
+                } else {
+                    lateMinutes = 0;
+                }
+                
                 const row = document.createElement('tr');
+                row.className = rowClass;
                 row.innerHTML = `
                     <td>${formatDate(record.date)}</td>
                     <td>${formatTime(displayAmIn)}</td>
                     <td>${formatTime(displayAmOut)}</td>
                     <td>${formatTime(displayPmIn)}</td>
                     <td>${formatTime(record.pm_out)}</td>
-                    <td class="${(lateMinutes > 0 && record.OB != 1) ? 'late-minutes' : ''}">${record.OB == 1 ? '' : (lateMinutes === 0 ? '' : `${Math.floor(lateMinutes/60)}h ${lateMinutes%60}m (${lateMinutes} mins)`)}</td>
+                    <td class="${(!hasSingleEntry && !outOfOrder && validIntervals > 0 && lateMinutes > 0 && record.OB != 1) ? 'late-minutes' : ''}">${(!hasSingleEntry && !outOfOrder && validIntervals > 0 && record.OB != 1 && lateMinutes > 0) ? `${Math.floor(lateMinutes/60)}h ${lateMinutes%60}m (${lateMinutes} mins)` : ''}</td>
                     <td class="${undertime && record.OB != 1 ? 'undertime-minutes' : ''}">${record.OB == 1 ? '' : undertime ? `${Math.floor(undertime/60)}h ${undertime%60}m (${undertime} mins)` : ''}</td>
                     <td>${totalTime}</td>
                     <td>
@@ -607,6 +673,7 @@
                             ? `<span class="holiday-tag" style="background: #ff9800; color: white; padding: 3px 8px; border-radius: 4px; margin-left: 8px;">Holiday</span>` 
                             : ''
                         }
+                        <div style="color:#ff9800;font-size:0.95em;margin-top:2px;">${remarksText}</div>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -833,83 +900,70 @@
         });
     });
 
+    function toMinutes(time) {
+        if (!time) return null;
+        let h, m;
+        if (/AM|PM/i.test(time)) {
+            // 12-hour format
+            let [raw, ampm] = time.split(/\s+/);
+            [h, m] = raw.split(':').map(Number);
+            ampm = ampm.toUpperCase();
+            if (ampm === 'PM' && h < 12) h += 12;
+            if (ampm === 'AM' && h === 12) h = 0;
+        } else {
+            [h, m] = time.split(':').map(Number);
+        }
+        return h * 60 + m;
+    }
+
     function computeTotalTime(am_in, am_out, pm_in, pm_out, department, isHoliday, isOB, isSL) {
-        // If it's OB or SL, return standard time based on department
         if (isOB == 1 || isSL == 1) {
             const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
             return isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
         }
-        
-        // For holidays, only credit hours if there are actual time entries
         if (isHoliday == 1) {
-            // If there are no time entries, show dash
             if (!am_in && !am_out && !pm_in && !pm_out) {
                 return '—';
             }
-            // If there are time entries, DO NOT give default hours, just continue to compute actual time below
         }
-        
-        function toMinutes(time) {
-            if (!time) return null;
-            const [h, m] = time.split(':').map(Number);
-            return h * 60 + m;
+        const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
+        let amInMinRaw = toMinutes(am_in);
+        let amInMin = amInMinRaw;
+        if (isOtherPersonnel && amInMinRaw !== null && amInMinRaw < 360) {
+            amInMin = 360;
+        } else if (!isOtherPersonnel && amInMinRaw !== null && amInMinRaw < 480) {
+            amInMin = 480;
         }
-        const amInMinRaw = toMinutes(am_in);
         const amOutMin = toMinutes(am_out);
         const pmInMin = toMinutes(pm_in);
         const pmOutMin = toMinutes(pm_out);
-
-        const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
-        let amInMin = amInMinRaw;
-        if (isOtherPersonnel && amInMinRaw !== null && amInMinRaw < 360) {
-            amInMin = 360; // 6:00 AM in minutes
-        } else if (!isOtherPersonnel && amInMinRaw !== null && amInMinRaw < 480) {
-            amInMin = 480; // 8:00 AM in minutes
-        }
-
         let total = 0;
-
-        // For regular employees, if both AM In and PM Out are present, always compute (PM Out - AM In) - 1 hour
-        if (!isOtherPersonnel && amInMin !== null && pmOutMin !== null) {
+        // If both AM In and PM Out are present, use (PM Out - AM In) - 1hr rule
+        if (amInMin !== null && pmOutMin !== null) {
             total = pmOutMin - amInMin - 60;
+        } else if (amInMin === null && amOutMin !== null && pmInMin !== null && pmOutMin === null) {
+            // Special: only AM OUT and PM IN, do NOT support overnight
+            if (pmInMin > amOutMin) {
+                total = pmInMin - amOutMin;
+            } else {
+                total = 0;
+            }
         } else {
-            // For Other_Personnel, keep the original logic
-            // Case 1: All four times present
-            if (
-                amInMin !== null && amOutMin !== null &&
-                pmInMin !== null && pmOutMin !== null
-            ) {
-                total = (amOutMin - amInMin) + (pmOutMin - pmInMin);
-            }
-            // Case 2: Only AM In and PM Out present (no AM Out, no PM In)
-            else if (
-                amInMin !== null && pmOutMin !== null &&
-                amOutMin === null && pmInMin === null
-            ) {
-                total = pmOutMin - amInMin - 60; // Subtract 1 hour break
-            }
-            // Case 3: AM In, AM Out, and PM In present, PM Out missing
-            else if (
-                amInMin !== null && amOutMin !== null &&
-                pmInMin !== null && pmOutMin === null
-            ) {
-                total = (amOutMin - amInMin) + 60; // Add 1 hour for lunch
-            }
-            // Case 4: Sum all valid pairs
-            else {
-                if (amInMin !== null && amOutMin !== null && amOutMin > amInMin) {
-                    total += amOutMin - amInMin;
-                }
-                if (pmInMin !== null && pmOutMin !== null && pmOutMin > pmInMin) {
-                    total += pmOutMin - pmInMin;
+            // Flexible: sum all valid consecutive pairs
+            const times = [];
+            if (amInMin !== null) times.push(amInMin);
+            if (amOutMin !== null) times.push(amOutMin);
+            if (pmInMin !== null) times.push(pmInMin);
+            if (pmOutMin !== null) times.push(pmOutMin);
+            total = 0;
+            for (let i = 0; i < times.length - 1; i++) {
+                if (times[i+1] > times[i]) {
+                    total += times[i+1] - times[i];
                 }
             }
         }
-
         if (total <= 0) return '—';
-
-        // Cap total time based on department
-        const capMinutes = isOtherPersonnel ? 720 : 480; // 12 hours or 8 hours
+        const capMinutes = isOtherPersonnel ? 720 : 480;
         const displayMinutes = total > capMinutes ? capMinutes : total;
         const hours = Math.floor(displayMinutes / 60);
         const minutes = displayMinutes % 60;

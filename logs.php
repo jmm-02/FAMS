@@ -3,9 +3,22 @@ session_start();
 require_once 'includes/session_handler.php';
 require_once 'includes/db_connect.php';
 
-// Function to convert time to minutes
+// Function to convert time to minutes (improved, flexible)
 function toMinutes($time) {
     if (!$time) return null;
+    if (preg_match('/^(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)?$/', $time, $matches)) {
+        $hours = (int)$matches[1];
+        $minutes = (int)$matches[2];
+        $ampm = isset($matches[3]) ? strtoupper($matches[3]) : null;
+        if ($ampm) {
+            if ($ampm === 'PM' && $hours < 12) {
+                $hours += 12;
+            } else if ($ampm === 'AM' && $hours === 12) {
+                $hours = 0;
+            }
+        }
+        return $hours * 60 + $minutes;
+    }
     $time = date('H:i', strtotime($time));
     list($h, $m) = explode(':', $time);
     return $h * 60 + $m;
@@ -21,61 +34,50 @@ function computeTotalTime($am_in, $am_out, $pm_in, $pm_out, $department = null, 
     
     // For holidays, only credit hours if there are actual time entries
     if ($isHoliday == 1) {
-        // If there are no time entries, show dash
         if (!$am_in && !$am_out && !$pm_in && !$pm_out) {
             return '—';
         }
-        // If there are time entries, DO NOT give default hours, just continue to compute actual time below
     }
-    
+
+    $isOtherPersonnel = $department && strtolower(trim($department)) === 'other_personnel';
+
+    // Adjust AM In for early logins
     $amInMinRaw = toMinutes($am_in);
+    $amInMin = $amInMinRaw;
+    if ($isOtherPersonnel && $amInMinRaw !== null && $amInMinRaw < 360) {
+        $amInMin = 360; // 6:00 AM
+    } else if (!$isOtherPersonnel && $amInMinRaw !== null && $amInMinRaw < 480) {
+        $amInMin = 480; // 8:00 AM
+    }
     $amOutMin = toMinutes($am_out);
     $pmInMin = toMinutes($pm_in);
     $pmOutMin = toMinutes($pm_out);
 
-    $isOtherPersonnel = $department && strtolower(trim($department)) === 'other_personnel';
-    $amInMin = $amInMinRaw;
-    if ($isOtherPersonnel && $amInMinRaw !== null && $amInMinRaw < 360) {
-        $amInMin = 360; // 6:00 AM in minutes
-    } else if (!$isOtherPersonnel && $amInMinRaw !== null && $amInMinRaw < 480) {
-        $amInMin = 480; // 8:00 AM in minutes
-    }
-
-    $total = 0;
-
-    // For regular employees, if both AM In and PM Out are present, always compute (PM Out - AM In) - 1 hour
-    if (!$isOtherPersonnel && $amInMin !== null && $pmOutMin !== null) {
+    // If both AM In and PM Out are present, use (PM Out - AM In) - 1hr rule
+    if ($amInMin !== null && $pmOutMin !== null) {
         $total = $pmOutMin - $amInMin - 60;
-    } else {
-        // For Other_Personnel, keep the original logic
-        // Case 1: All four times present
-        if (
-            $amInMin !== null && $amOutMin !== null &&
-            $pmInMin !== null && $pmOutMin !== null
-        ) {
-            $total = ($amOutMin - $amInMin) + ($pmOutMin - $pmInMin);
+    } 
+    // Special case: only AM OUT and PM IN are present
+    else if ($amInMin === null && $amOutMin !== null && $pmInMin !== null && $pmOutMin === null) {
+        // Treat AM OUT as IN and PM IN as OUT, but do NOT support overnight
+        if ($pmInMin > $amOutMin) {
+            $total = $pmInMin - $amOutMin;
+        } else {
+            $total = 0;
         }
-        // Case 2: Only AM In and PM Out present (no AM Out, no PM In)
-        else if (
-            $amInMin !== null && $pmOutMin !== null &&
-            $amOutMin === null && $pmInMin === null
-        ) {
-            $total = $pmOutMin - $amInMin - 60; // Subtract 1 hour break
-        }
-        // Case 3: AM In, AM Out, and PM In present, PM Out missing
-        else if (
-            $amInMin !== null && $amOutMin !== null &&
-            $pmInMin !== null && $pmOutMin === null
-        ) {
-            $total = ($amOutMin - $amInMin) + 60; // Add 1 hour for lunch
-        }
-        // Case 4: Sum all valid pairs
-        else {
-            if ($amInMin !== null && $amOutMin !== null && $amOutMin > $amInMin) {
-                $total += $amOutMin - $amInMin;
-            }
-            if ($pmInMin !== null && $pmOutMin !== null && $pmOutMin > $pmInMin) {
-                $total += $pmOutMin - $pmInMin;
+    }
+    else {
+        // Collect all non-null times in order
+        $times = [];
+        if ($amInMin !== null) $times[] = $amInMin;
+        if ($amOutMin !== null) $times[] = $amOutMin;
+        if ($pmInMin !== null) $times[] = $pmInMin;
+        if ($pmOutMin !== null) $times[] = $pmOutMin;
+        // Sum all valid consecutive pairs
+        $total = 0;
+        for ($i = 0; $i < count($times) - 1; $i++) {
+            if ($times[$i+1] > $times[$i]) {
+                $total += $times[$i+1] - $times[$i];
             }
         }
     }
@@ -83,7 +85,7 @@ function computeTotalTime($am_in, $am_out, $pm_in, $pm_out, $department = null, 
     if ($total <= 0) return '—';
 
     // Cap total time based on department
-    $capMinutes = $isOtherPersonnel ? 720 : 480; // 12 hours or 8 hours
+    $capMinutes = $isOtherPersonnel ? 720 : 480; // 12 or 8 hours
     $displayMinutes = $total > $capMinutes ? $capMinutes : $total;
     $hours = floor($displayMinutes / 60);
     $minutes = $displayMinutes % 60;
@@ -540,6 +542,45 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
         .profile-icon:hover {
             transform: scale(1.1); /* Slightly enlarge the icon on hover */
         }
+
+        .warning-row {
+            background-color: #fffbe6 !important;
+        }
+
+        .warning-row-yellow {
+            background-color: #fff9c4 !important; /* Soft yellow */
+        }
+        .warning-row-orange {
+            background-color: #ffe0b2 !important; /* Soft orange */
+        }
+        .warning-legend {
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            background: #f4f4f4;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #444;
+        }
+        .legend-box {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            margin-right: 6px;
+            border-radius: 3px;
+            vertical-align: middle;
+        }
+        .legend-yellow {
+            background: #fff9c4;
+            border: 1px solid #fbc02d;
+        }
+        .legend-orange {
+            background: #ffe0b2;
+            border: 1px solid #ff9800;
+        }
+        /* Ensure orange warning row always applies */
+        .logs-table tr.warning-row-orange {
+            background-color: #ffe0b2 !important;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -549,6 +590,12 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <!-- Main Content -->
     <div class="main-content">
         <div class="logs-table">
+            <!-- Warning Legend -->
+            <div class="warning-legend">
+                <strong>Legend:</strong>
+                <span class="legend-box legend-yellow"></span> Only one time entry, cannot compute interval<br>
+                <span class="legend-box legend-orange"></span> Out-of-order time entries detected
+            </div>
             <div class="filter-container">
                 <form method="GET" action="" class="filter-form">
                     <div class="filter-group">
@@ -621,6 +668,28 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         if (isset($record['HOLIDAY']) && $record['HOLIDAY'] == 1) {
                             $remarks[] = 'Holiday';
                         }
+
+                        // --- Custom warnings and highlights ---
+                        $intervalsUsed = [];
+                        $outOfOrder = false;
+                        $times = [];
+                        $labels = [];
+                        if (!empty($record['AM_IN'])) { $times[] = toMinutes($record['AM_IN']); $labels[] = 'AM IN'; }
+                        if (!empty($record['AM_OUT'])) { $times[] = toMinutes($record['AM_OUT']); $labels[] = 'AM OUT'; }
+                        if (!empty($record['PM_IN'])) { $times[] = toMinutes($record['PM_IN']); $labels[] = 'PM IN'; }
+                        if (!empty($record['PM_OUT'])) { $times[] = toMinutes($record['PM_OUT']); $labels[] = 'PM OUT'; }
+                        $hasSingleEntry = false;
+                        if (count($times) == 1) {
+                            $hasSingleEntry = true;
+                        }
+                        for ($i = 0; $i < count($times) - 1; $i++) {
+                            if ($times[$i+1] > $times[$i]) {
+                                $intervalsUsed[] = $labels[$i] . ' → ' . $labels[$i+1];
+                            } else if ($times[$i+1] < $times[$i]) {
+                                $outOfOrder = true;
+                            }
+                        }
+                        // Remove warning messages from remarks
                         $remarksText = implode(' | ', $remarks);
 
                         // Display rule: if both AM_IN and PM_OUT are present, show AM_OUT as 12:00 and PM_IN as 13:00
@@ -644,8 +713,31 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 $displayAmIn = '08:00';
                             }
                         }
+                        // Add warning-row class if any warning present
+                        $rowClass = '';
+                        if ($hasSingleEntry) {
+                            $rowClass = 'warning-row-yellow';
+                        } else if ($outOfOrder) {
+                            $rowClass = 'warning-row-orange';
+                        }
+                        // Mark as out-of-order if totalTime is '—' and there is at least one log and not a single entry
+                        $hasAnyLog = !empty($record['AM_IN']) || !empty($record['AM_OUT']) || !empty($record['PM_IN']) || !empty($record['PM_OUT']);
+                        if ($totalTime === '—' && $hasAnyLog && !$hasSingleEntry) {
+                            $rowClass = 'warning-row-orange';
+                        }
+                        // Compute late only if more than one time entry, no out-of-order entries, and at least one valid interval
+                        $lateValue = '';
+                        $validIntervals = 0;
+                        for ($i = 0; $i < count($times) - 1; $i++) {
+                            if ($times[$i+1] > $times[$i]) {
+                                $validIntervals++;
+                            }
+                        }
+                        if (!$hasSingleEntry && !$outOfOrder && $validIntervals > 0) {
+                            $lateValue = computeLate($record['AM_IN'], $record['DEPT']);
+                        }
                     ?>
-                    <tr>
+                    <tr class="<?php echo $rowClass; ?>">
                         <td><?php echo htmlspecialchars($record['EMP_ID']); ?></td>
                         <td><?php echo htmlspecialchars($record['Name']); ?></td>
                         <td><?php echo htmlspecialchars($record['DEPT']); ?></td>
@@ -654,7 +746,7 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <td><?php echo convertTo12Hour($displayAmOut); ?></td>
                         <td><?php echo convertTo12Hour($displayPmIn); ?></td>
                         <td><?php echo convertTo12Hour($record['PM_OUT']); ?></td>
-                        <td><?php echo computeLate($record['AM_IN'], $record['DEPT']); ?></td>
+                        <td><?php echo $lateValue; ?></td>
                         <td><?php echo $undertime; ?></td>
                         <td><?php echo $totalTime; ?></td>
                         <td><?php echo htmlspecialchars($remarksText); ?></td>
