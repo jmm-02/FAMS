@@ -324,6 +324,58 @@
             background: #EF9A9A;
             border-color: #B71C1C;
         }
+
+        /* Style for Mark SL button */
+        .mark-sl-btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: 1px solid #9C27B0;
+            background: #F3E5F5;
+            color: #7B1FA2;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: 8px;
+        }
+
+        .mark-sl-btn:hover {
+            background: #E1BEE7;
+            border-color: #7B1FA2;
+            color: #6A1B9A;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .mark-sl-btn:active {
+            background: #CE93D8;
+            border-color: #6A1B9A;
+        }
+
+        /* Style for Deny SL button */
+        .deny-sl-btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: 1px solid #F44336;
+            background: #FFEBEE;
+            color: #D32F2F;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: 8px;
+        }
+
+        .deny-sl-btn:hover {
+            background: #FFCDD2;
+            border-color: #D32F2F;
+            color: #B71C1C;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .deny-sl-btn:active {
+            background: #EF9A9A;
+            border-color: #B71C1C;
+        }
     </style>
 </head>
 <body>
@@ -445,6 +497,7 @@
     
     // Render attendance records
     function renderRecords(records, startDate = null, endDate = null) {
+        console.log('Records with SL values:', records);
         const tbody = document.querySelector('#recordsTable tbody');
         tbody.innerHTML = '';
 
@@ -466,7 +519,7 @@
 
         if (filteredRecords.length > 0) {
             filteredRecords.forEach(record => {
-                console.log('OB value for', record.date, ':', record.OB, typeof record.OB);
+                console.log('SL value for', record.date, ':', record.SL, typeof record.SL);
                 let totalTime = computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out, department);
 
                 const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
@@ -528,7 +581,12 @@
                         ${
                           record.OB == 1
                             ? `<button class="deny-ob-btn" data-emp-id="${empId}" data-date="${record.date}">Deny OB</button>`
-                            : `<button class="mark-ob-btn" data-emp-id="${empId}" data-date="${record.date}">Mark OB</button>`
+                            : `<button class="mark-ob-btn" data-emp-id="${empId}" data-date="${record.date}" ${record.SL == 1 ? 'disabled' : ''}>Mark OB</button>`
+                        }
+                        ${
+                          record.SL == 1
+                            ? `<button class="deny-sl-btn" data-emp-id="${empId}" data-date="${record.date}" data-sl-value="0">Deny SL</button>`
+                            : `<button class="mark-sl-btn" data-emp-id="${empId}" data-date="${record.date}" data-sl-value="1" ${record.OB == 1 ? 'disabled' : ''}>Mark SL</button>`
                         }
                     </td>
                 `;
@@ -609,111 +667,38 @@
                 denyOB(empId, date);
             });
         });
-    }
-    
-    // Function to export filtered data to Excel
-    function exportToExcel(records, employee) {
-        // Update records with the latest notes from the input fields
-        document.querySelectorAll('.note-input').forEach(input => {
-            const date = input.getAttribute('data-date');
-            const note = input.value;
-            const record = records.find(r => r.date === date);
-            if (record) {
-                record.note = note;
-            }
+
+        // Add event listeners for "Mark SL" buttons
+        document.querySelectorAll('.mark-sl-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const empId = this.getAttribute('data-emp-id');
+                const date = this.getAttribute('data-date');
+                toggleSL(empId, date, 1);
+            });
         });
 
-        if (records.length === 0) {
-            alert('No data to export.');
+        // Add event listeners for "Deny SL" buttons
+        document.querySelectorAll('.deny-sl-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const empId = this.getAttribute('data-emp-id');
+                const date = this.getAttribute('data-date');
+                toggleSL(empId, date, 0);
+            });
+        });
+    }
+    
+    // Add the toggleSL function with fixed parameters
+    function toggleSL(empId, date, newValue) {
+        console.log('toggleSL called with:', empId, date, newValue);
+        
+        // First check if this record has OB active
+        const record = allRecords.find(r => r.date === date);
+        if (record && record.OB == 1 && newValue == 1) {
+            alert('Cannot mark as SL because this record is already marked as OB!');
             return;
         }
 
-        // Prepare employee info
-        const employeeInfo = [
-            ['Employee ID:', employee.emp_id || '—'],
-            ['Name:', employee.Name || '—'],
-            [], // Empty row for spacing
-        ];
-
-        // Get department from employee
-        const department = employee && employee.department ? employee.department : '';
-
-        // Prepare attendance records
-        const attendanceData = [
-            ['Date', 'AM In', 'AM Out', 'PM In', 'PM Out', 'Late(min)', 'Undertime(min)', 'Total Time', 'Note'],
-            ...records.map(record => {
-                let totalTime = computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out, department);
-                const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
-                if (record.OB == 1) {
-                    totalTime = isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
-                }
-                const undertime = computeUndertime(totalTime, department, record.am_in);
-                return [
-                    formatDate(record.date),
-                    formatTime(record.am_in),
-                    formatTime(record.am_out),
-                    formatTime(record.pm_in),
-                    formatTime(record.pm_out),
-                    record.late == 0 || record.late === '0' ? '' : `${Math.floor(record.late/60)}h ${record.late%60}m (${record.late} mins)`,
-                    undertime ? `${Math.floor(undertime/60)}h ${undertime%60}m (${undertime} mins)` : '',
-                    totalTime,
-                    record.note || '—'
-                ];
-            })
-        ];
-
-        // Calculate totals
-        let totalMinutes = 0;
-        let totalLateMinutes = 0;
-        let totalUndertimeMinutes = 0;
-
-        records.forEach(record => {
-            let totalTime = computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out, department);
-            const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
-            if (record.OB == 1) {
-                totalTime = isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
-            }
-            if (totalTime !== '—') {
-                const [hours, minutes] = totalTime.replace(' hrs.', '').split(':').map(Number);
-                totalMinutes += (hours * 60) + minutes;
-            }
-            // Only add late minutes if the record is not marked as OB
-            if (record.OB != 1) {
-                totalLateMinutes += Number(record.late) || 0;
-            }
-            // Calculate total undertime minutes
-            const undertime = computeUndertime(totalTime, department, record.am_in);
-            totalUndertimeMinutes += Number(undertime) || 0;
-        });
-
-        const totalHours = Math.floor(totalMinutes / 60);
-        const totalMins = totalMinutes % 60;
-        const totalTimeStr = totalMinutes === 0 ? '—' : `${totalHours}:${totalMins.toString().padStart(2, '0')} hrs.`;
-        
-        // Add the total row to the attendanceData
-        attendanceData.push([
-            '', '', '', '', '', 
-            totalLateMinutes ? `${Math.floor(totalLateMinutes/60)}h ${totalLateMinutes%60}m (${totalLateMinutes} mins)` : '', 
-            totalUndertimeMinutes ? `${Math.floor(totalUndertimeMinutes/60)}h ${totalUndertimeMinutes%60}m (${totalUndertimeMinutes} mins)` : '', 
-            totalTimeStr, 
-            ''
-        ]);
-
-        // Combine employee info and attendance data
-        const worksheetData = [...employeeInfo, ...attendanceData];
-
-        // Create a new workbook and worksheet
-        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendance Records');
-
-        // Export the workbook to an Excel file
-        XLSX.writeFile(workbook, 'Attendance_Records.xlsx');
-    }
-
-    // Save note to database
-    function saveNoteToDatabase(empId, date, note) {
-        fetch('Fetch/save_note.php', {
+        fetch('Fetch/mark_sl.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -721,42 +706,7 @@
             body: JSON.stringify({
                 emp_id: empId,
                 date: date,
-                note: note,
-            }),
-        })
-            .then(response => {
-                return response.text().then(text => {
-                    console.log("Response Text:", text); // Debugging
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return JSON.parse(text);
-                });
-            })
-            .then(data => {
-                console.log('Save Note Response:', data); // Debugging
-                if (data.success) {
-                    alert('Note saved successfully!');
-                } else {
-                    alert(`Error saving note: ${data.error}`);
-                }
-            })
-            .catch(error => {
-                console.error('Error saving note:', error);
-                alert('Failed to save note. Please try again later.');
-            });
-    }
-
-    // Add the markAsOB function
-    function markAsOB(empId, date) {
-        fetch('Fetch/mark_ob.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                emp_id: empId,
-                date: date
+                sl_value: parseInt(newValue)
             }),
         })
         .then(response => {
@@ -766,9 +716,8 @@
             return response.json();
         })
         .then(data => {
-            console.log('Mark OB Response:', data); // Debug log
             if (data.success) {
-                alert('Successfully marked as OB!');
+                alert(newValue === '1' ? 'Successfully marked as SL!' : 'SL denied successfully!');
                 // Refresh the records
                 fetch(`Fetch/fetch_employee_records.php?emp_id=${empId}`)
                     .then(response => response.json())
@@ -785,55 +734,12 @@
                         alert('Failed to refresh records. Please refresh the page manually.');
                     });
             } else {
-                alert(`Error marking as OB: ${data.error || 'Unknown error occurred'}`);
+                alert(`Error updating SL status: ${data.error || 'Unknown error occurred'}`);
             }
         })
         .catch(error => {
-            console.error('Error marking as OB:', error);
-            alert(`Failed to mark as OB: ${error.message}`);
-        });
-    }
-
-    // Add the denyOB function
-    function denyOB(empId, date) {
-        fetch('Fetch/mark_ob.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                emp_id: empId,
-                date: date,
-                ob_value: 0 // Set OB to 0
-            }),
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                alert('OB denied successfully!');
-                // Refresh the records
-                fetch(`Fetch/fetch_employee_records.php?emp_id=${empId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.error) {
-                            alert(`Error: ${data.error}`);
-                            return;
-                        }
-                        allRecords = data.records;
-                        renderRecords(allRecords);
-                    });
-            } else {
-                alert(`Error denying OB: ${data.error || 'Unknown error occurred'}`);
-            }
-        })
-        .catch(error => {
-            console.error('Error denying OB:', error);
-            alert(`Failed to deny OB: ${error.message}`);
+            console.error('Error updating SL status:', error);
+            alert(`Failed to update SL status: ${error.message}`);
         });
     }
 
@@ -1017,6 +923,252 @@
                 return (480 - totalMinutes).toString(); // Calculate undertime from 8 hours
             }
         }
+    }
+
+    // Function to export filtered data to Excel
+    function exportToExcel(records, employee) {
+        // Update records with the latest notes from the input fields
+        document.querySelectorAll('.note-input').forEach(input => {
+            const date = input.getAttribute('data-date');
+            const note = input.value;
+            const record = records.find(r => r.date === date);
+            if (record) {
+                record.note = note;
+            }
+        });
+
+        if (records.length === 0) {
+            alert('No data to export.');
+            return;
+        }
+
+        // Prepare employee info
+        const employeeInfo = [
+            ['Employee ID:', employee.emp_id || '—'],
+            ['Name:', employee.Name || '—'],
+            [], // Empty row for spacing
+        ];
+
+        // Get department from employee
+        const department = employee && employee.department ? employee.department : '';
+
+        // Prepare attendance records
+        const attendanceData = [
+            ['Date', 'AM In', 'AM Out', 'PM In', 'PM Out', 'Late(min)', 'Undertime(min)', 'Total Time', 'Note'],
+            ...records.map(record => {
+                let totalTime = computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out, department);
+                const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
+                if (record.OB == 1) {
+                    totalTime = isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
+                }
+                const undertime = computeUndertime(totalTime, department, record.am_in);
+                
+                // Prepare note field with OB and SL information
+                let noteText = record.note || '';
+                
+                // Add OB and SL information to the note
+                if (record.OB == 1) {
+                    noteText = noteText ? noteText + ' | Official Business' : 'Official Business';
+                }
+                
+                if (record.SL == 1) {
+                    noteText = noteText ? noteText + ' | Sick Leave' : 'Sick Leave';
+                }
+                
+                return [
+                    formatDate(record.date),
+                    formatTime(record.am_in),
+                    formatTime(record.am_out),
+                    formatTime(record.pm_in),
+                    formatTime(record.pm_out),
+                    record.late == 0 || record.late === '0' ? '' : `${Math.floor(record.late/60)}h ${record.late%60}m (${record.late} mins)`,
+                    undertime ? `${Math.floor(undertime/60)}h ${undertime%60}m (${undertime} mins)` : '',
+                    totalTime,
+                    noteText || '—'
+                ];
+            })
+        ];
+
+        // Calculate totals
+        let totalMinutes = 0;
+        let totalLateMinutes = 0;
+        let totalUndertimeMinutes = 0;
+
+        records.forEach(record => {
+            let totalTime = computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out, department);
+            const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
+            if (record.OB == 1) {
+                totalTime = isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
+            }
+            if (totalTime !== '—') {
+                const [hours, minutes] = totalTime.replace(' hrs.', '').split(':').map(Number);
+                totalMinutes += (hours * 60) + minutes;
+            }
+            // Only add late minutes if the record is not marked as OB
+            if (record.OB != 1) {
+                totalLateMinutes += Number(record.late) || 0;
+            }
+            // Calculate total undertime minutes
+            const undertime = computeUndertime(totalTime, department, record.am_in);
+            totalUndertimeMinutes += Number(undertime) || 0;
+        });
+
+        const totalHours = Math.floor(totalMinutes / 60);
+        const totalMins = totalMinutes % 60;
+        const totalTimeStr = totalMinutes === 0 ? '—' : `${totalHours}:${totalMins.toString().padStart(2, '0')} hrs.`;
+        
+        // Add the total row to the attendanceData
+        attendanceData.push([
+            '', '', '', '', '', 
+            totalLateMinutes ? `${Math.floor(totalLateMinutes/60)}h ${totalLateMinutes%60}m (${totalLateMinutes} mins)` : '', 
+            totalUndertimeMinutes ? `${Math.floor(totalUndertimeMinutes/60)}h ${totalUndertimeMinutes%60}m (${totalUndertimeMinutes} mins)` : '', 
+            totalTimeStr, 
+            ''
+        ]);
+
+        // Combine employee info and attendance data
+        const worksheetData = [...employeeInfo, ...attendanceData];
+
+        // Create a new workbook and worksheet
+        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendance Records');
+
+        // Export the workbook to an Excel file
+        XLSX.writeFile(workbook, 'Attendance_Records.xlsx');
+    }
+
+    // Save note to database
+    function saveNoteToDatabase(empId, date, note) {
+        fetch('Fetch/save_note.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                emp_id: empId,
+                date: date,
+                note: note,
+            }),
+        })
+            .then(response => {
+                return response.text().then(text => {
+                    console.log("Response Text:", text); // Debugging
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return JSON.parse(text);
+                });
+            })
+            .then(data => {
+                console.log('Save Note Response:', data); // Debugging
+                if (data.success) {
+                    alert('Note saved successfully!');
+                } else {
+                    alert(`Error saving note: ${data.error}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error saving note:', error);
+                alert('Failed to save note. Please try again later.');
+            });
+    }
+
+    // Add the markAsOB function
+    function markAsOB(empId, date) {
+        // Check if this record has SL active
+        const record = allRecords.find(r => r.date === date);
+        if (record && record.SL == 1) {
+            alert('Cannot mark as OB because this record is already marked as SL!');
+            return;
+        }
+
+        fetch('Fetch/mark_ob.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                emp_id: empId,
+                date: date
+            }),
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Mark OB Response:', data); // Debug log
+            if (data.success) {
+                alert('Successfully marked as OB!');
+                // Refresh the records
+                fetch(`Fetch/fetch_employee_records.php?emp_id=${empId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert(`Error: ${data.error}`);
+                            return;
+                        }
+                        allRecords = data.records;
+                        renderRecords(allRecords);
+                    })
+                    .catch(error => {
+                        console.error('Error refreshing records:', error);
+                        alert('Failed to refresh records. Please refresh the page manually.');
+                    });
+            } else {
+                alert(`Error marking as OB: ${data.error || 'Unknown error occurred'}`);
+            }
+        })
+        .catch(error => {
+            console.error('Error marking as OB:', error);
+            alert(`Failed to mark as OB: ${error.message}`);
+        });
+    }
+
+    // Add the denyOB function
+    function denyOB(empId, date) {
+        fetch('Fetch/mark_ob.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                emp_id: empId,
+                date: date,
+                ob_value: 0 // Set OB to 0
+            }),
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                alert('OB denied successfully!');
+                // Refresh the records
+                fetch(`Fetch/fetch_employee_records.php?emp_id=${empId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert(`Error: ${data.error}`);
+                            return;
+                        }
+                        allRecords = data.records;
+                        renderRecords(allRecords);
+                    });
+            } else {
+                alert(`Error denying OB: ${data.error || 'Unknown error occurred'}`);
+            }
+        })
+        .catch(error => {
+            console.error('Error denying OB:', error);
+            alert(`Failed to deny OB: ${error.message}`);
+        });
     }
     </script>
 </body>
