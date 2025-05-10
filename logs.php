@@ -130,6 +130,22 @@ function formatDateWithDay($dateStr) {
     return date('M j, Y', $timestamp) . ' (' . $dayOfWeek . ')';
 }
 
+// Function to compute late minutes
+function computeLate($am_in, $department) {
+    if (empty($am_in)) return '';
+    
+    $isOtherPersonnel = $department && strtolower(trim($department)) === 'other_personnel';
+    $standardTime = $isOtherPersonnel ? '06:00' : '08:00';
+    
+    $amInMin = toMinutes($am_in);
+    $standardMin = toMinutes($standardTime);
+    
+    if ($amInMin === null || $standardMin === null) return '';
+    
+    $late = $amInMin - $standardMin;
+    return $late > 0 ? $late : '';
+}
+
 // Handle filtering
 $filter_start_date = isset($_GET['start_date']) ? $_GET['start_date'] : '';
 $filter_end_date = isset($_GET['end_date']) ? $_GET['end_date'] : '';
@@ -137,7 +153,7 @@ $filter_name = isset($_GET['employee_name']) ? $_GET['employee_name'] : '';
 $filter_status = isset($_GET['status']) ? $_GET['status'] : '';
 
 // Build query based on filters
-$query = "SELECT e.ID as EMP_ID, e.Name, e.DEPT, e.STATUS, r.DATE, r.AM_IN, r.AM_OUT, r.PM_IN, r.PM_OUT, r.LATE, r.UNDERTIME, r.OB, r.note, r.HOLIDAY, r.SL
+$query = "SELECT e.ID as EMP_ID, e.Name, e.DEPT, e.STATUS, r.DATE, r.AM_IN, r.AM_OUT, r.PM_IN, r.PM_OUT, r.OB, r.note, r.HOLIDAY, r.SL
           FROM emp_info e 
           LEFT JOIN emp_rec r ON e.ID = r.EMP_ID 
           WHERE 1=1";
@@ -638,7 +654,7 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <td><?php echo convertTo12Hour($displayAmOut); ?></td>
                         <td><?php echo convertTo12Hour($displayPmIn); ?></td>
                         <td><?php echo convertTo12Hour($record['PM_OUT']); ?></td>
-                        <td><?php echo (isset($record['LATE']) && ($record['LATE'] === '0' || $record['LATE'] == 0)) ? '' : htmlspecialchars($record['LATE']); ?></td>
+                        <td><?php echo computeLate($record['AM_IN'], $record['DEPT']); ?></td>
                         <td><?php echo $undertime; ?></td>
                         <td><?php echo $totalTime; ?></td>
                         <td><?php echo htmlspecialchars($remarksText); ?></td>
