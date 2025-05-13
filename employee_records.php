@@ -385,6 +385,10 @@
         .warning-row-orange {
             background-color: #ffe0b2 !important; /* Soft orange */
         }
+        .warning-row-red {
+            background-color: #ffebee !important; /* Soft red */
+        }
+
         .warning-legend {
             margin-bottom: 10px;
             padding: 10px 15px;
@@ -409,6 +413,10 @@
             background: #ffe0b2;
             border: 1px solid #ff9800;
         }
+        .legend-red {
+            background: #ffebee;
+            border: 1px solid #ff0000;
+        }
         /* Style for late row highlight */
         .late-row {
             background-color: #ffebee !important;
@@ -424,7 +432,8 @@
         <div class="warning-legend">
             <strong>Legend:</strong><br>
             <span class="legend-box legend-yellow">&nbsp;</span> Only one time entry, cannot compute interval<br>
-            <span class="legend-box legend-orange">&nbsp;</span> Out-of-order time entries detected
+            <span class="legend-box legend-orange">&nbsp;</span> Out-of-order time entries detected<br>
+            <span class="legend-box legend-red">&nbsp;</span> Late
         </div>
         
         <!-- Update the employee info section -->
@@ -694,23 +703,44 @@
 
             filteredRecords.forEach(record => {
                 let totalTime = computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out, department, record.HOLIDAY, record.OB, record.SL);
-
                 const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
                 if (record.OB == 1) {
                     totalTime = isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
                 }
-
+                // Recalculate outOfOrder for this record
+                const times = [];
+                if (record.am_in) times.push(toMinutes(record.am_in));
+                if (record.am_out) times.push(toMinutes(record.am_out));
+                if (record.pm_in) times.push(toMinutes(record.pm_in));
+                if (record.pm_out) times.push(toMinutes(record.pm_out));
+                let outOfOrder = false;
+                for (let i = 0; i < times.length - 1; i++) {
+                    if (times[i+1] < times[i]) outOfOrder = true;
+                }
                 if (totalTime !== '—') {
                     const [hours, minutes] = totalTime.replace(' hrs.', '').split(':').map(Number);
                     totalMinutes += (hours * 60) + minutes;
                 }
-                // Only add late minutes if the record is not marked as OB
-                if (record.OB != 1) {
-                    totalLateMinutes += Number(record.late) || 0;
+                // Only add late and undertime if not OB, not SL, not outOfOrder
+                if (record.OB != 1 && record.SL != 1 && !outOfOrder) {
+                    let hasSingleEntry = times.length === 1;
+                    let validIntervals = 0;
+                    for (let i = 0; i < times.length - 1; i++) {
+                        if (times[i+1] > times[i]) validIntervals++;
+                    }
+                    let lateMinutes = 0;
+                    if (!hasSingleEntry && !outOfOrder && validIntervals > 0 && record.am_in) {
+                        const [h, m] = record.am_in.split(':').map(Number);
+                        let baseHour = isOtherPersonnel ? 6 : 8;
+                        let baseMinute = 0;
+                        if (h > baseHour || (h === baseHour && m > baseMinute)) {
+                            lateMinutes = (h - baseHour) * 60 + (m - baseMinute);
+                        }
+                    }
+                    totalLateMinutes += lateMinutes;
+                    const undertime = computeUndertime(totalTime, department, record.am_in, record.HOLIDAY);
+                    totalUndertimeMinutes += Number(undertime) || 0;
                 }
-                // Calculate total undertime minutes
-                const undertime = computeUndertime(totalTime, department, record.am_in, record.HOLIDAY);
-                totalUndertimeMinutes += Number(undertime) || 0;
             });
 
             const totalHours = Math.floor(totalMinutes / 60);
@@ -1104,17 +1134,40 @@
             if (record.OB == 1) {
                 totalTime = isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
             }
+            // Recalculate outOfOrder for this record
+            const times = [];
+            if (record.am_in) times.push(toMinutes(record.am_in));
+            if (record.am_out) times.push(toMinutes(record.am_out));
+            if (record.pm_in) times.push(toMinutes(record.pm_in));
+            if (record.pm_out) times.push(toMinutes(record.pm_out));
+            let outOfOrder = false;
+            for (let i = 0; i < times.length - 1; i++) {
+                if (times[i+1] < times[i]) outOfOrder = true;
+            }
             if (totalTime !== '—') {
                 const [hours, minutes] = totalTime.replace(' hrs.', '').split(':').map(Number);
                 totalMinutes += (hours * 60) + minutes;
             }
-            // Only add late minutes if the record is not marked as OB
-            if (record.OB != 1) {
-                totalLateMinutes += Number(record.late) || 0;
+            // Only add late and undertime if not OB, not SL, not outOfOrder
+            if (record.OB != 1 && record.SL != 1 && !outOfOrder) {
+                let hasSingleEntry = times.length === 1;
+                let validIntervals = 0;
+                for (let i = 0; i < times.length - 1; i++) {
+                    if (times[i+1] > times[i]) validIntervals++;
+                }
+                let lateMinutes = 0;
+                if (!hasSingleEntry && !outOfOrder && validIntervals > 0 && record.am_in) {
+                    const [h, m] = record.am_in.split(':').map(Number);
+                    let baseHour = isOtherPersonnel ? 6 : 8;
+                    let baseMinute = 0;
+                    if (h > baseHour || (h === baseHour && m > baseMinute)) {
+                        lateMinutes = (h - baseHour) * 60 + (m - baseMinute);
+                    }
+                }
+                totalLateMinutes += lateMinutes;
+                const undertime = computeUndertime(totalTime, department, record.am_in, record.HOLIDAY);
+                totalUndertimeMinutes += Number(undertime) || 0;
             }
-            // Calculate total undertime minutes
-            const undertime = computeUndertime(totalTime, department, record.am_in, record.HOLIDAY);
-            totalUndertimeMinutes += Number(undertime) || 0;
         });
 
         const totalHours = Math.floor(totalMinutes / 60);

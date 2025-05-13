@@ -553,6 +553,10 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
         .warning-row-orange {
             background-color: #ffe0b2 !important; /* Soft orange */
         }
+        .warning-row-red {
+            background-color: #ffebee !important; /* Soft red */
+        }
+
         .warning-legend {
             margin-bottom: 10px;
             padding: 10px 15px;
@@ -577,6 +581,10 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
             background: #ffe0b2;
             border: 1px solid #ff9800;
         }
+        .legend-red {
+            background: #ffebee;
+            border: 1px solid #ff0000;
+        }
         /* Ensure orange warning row always applies */
         .logs-table tr.warning-row-orange {
             background-color: #ffe0b2 !important;
@@ -597,7 +605,8 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="warning-legend">
                 <strong>Legend:</strong><br>
                 <span class="legend-box legend-yellow"></span> Only one time entry, cannot compute interval<br>
-                <span class="legend-box legend-orange"></span> Out-of-order time entries detected
+                <span class="legend-box legend-orange"></span> Out-of-order time entries detected<br>
+                <span class="legend-box legend-red"></span> Late<br>
             </div>
             <div class="filter-container">
                 <form method="GET" action="" class="filter-form">
