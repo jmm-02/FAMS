@@ -581,6 +581,9 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
         .logs-table tr.warning-row-orange {
             background-color: #ffe0b2 !important;
         }
+        .late-row {
+            background-color: #ffebee !important;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -725,7 +728,7 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         if ($totalTime === '—' && $hasAnyLog && !$hasSingleEntry) {
                             $rowClass = 'warning-row-orange';
                         }
-                        // Compute late only if more than one time entry, no out-of-order entries, and at least one valid interval
+                        // Compute late only if more than one time entry, no out-of-order entries, and at least one valid interval, and not OB/SL
                         $lateValue = '';
                         $validIntervals = 0;
                         for ($i = 0; $i < count($times) - 1; $i++) {
@@ -733,8 +736,21 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 $validIntervals++;
                             }
                         }
-                        if (!$hasSingleEntry && !$outOfOrder && $validIntervals > 0) {
+                        if (
+                            !$hasSingleEntry && 
+                            !$outOfOrder && 
+                            $validIntervals > 0 && 
+                            (!isset($record['OB']) || $record['OB'] != 1) && 
+                            (!isset($record['SL']) || $record['SL'] != 1)
+                        ) {
                             $lateValue = computeLate($record['AM_IN'], $record['DEPT']);
+                        } else {
+                            $lateValue = '';
+                        }
+                        // Highlight row if late > 0 and not OB/SL
+                        $isLate = (is_numeric($lateValue) && $lateValue > 0);
+                        if ($isLate && (!isset($record['OB']) || $record['OB'] != 1) && (!isset($record['SL']) || $record['SL'] != 1)) {
+                            $rowClass = 'late-row';
                         }
                     ?>
                     <tr class="<?php echo $rowClass; ?>">
