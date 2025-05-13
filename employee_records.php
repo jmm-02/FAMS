@@ -263,12 +263,14 @@
 
         /* Style for late minutes */
         #recordsTable td.late-minutes {
+            background-color: #ffebee !important; /* Light red background */
             color: #d32f2f !important;
             font-weight: 700;
         }
 
         /* Style for undertime minutes */
         #recordsTable td.undertime-minutes {
+            background-color: #ffebee !important; /* Light red background */
             color: #d32f2f !important;
             font-weight: 700;
         }
@@ -406,6 +408,10 @@
         .legend-orange {
             background: #ffe0b2;
             border: 1px solid #ff9800;
+        }
+        /* Style for late row highlight */
+        .late-row {
+            background-color: #ffebee !important;
         }
     </style>
 </head>
@@ -609,11 +615,29 @@
                     if (times[i+1] > times[i]) validIntervals++;
                 }
 
+                // Calculate late based on base time: 8:00 for regular, 6:00 for Other_Personnel
+                let baseHour = isOtherPersonnel ? 6 : 8;
+                let baseMinute = 0;
+                let lateMinutes = 0;
+                // Only compute late if more than one time entry, no out-of-order, and at least one valid interval, and not SL
+                if (!hasSingleEntry && !outOfOrder && validIntervals > 0 && record.am_in && record.SL != 1) {
+                    const [h, m] = record.am_in.split(':').map(Number);
+                    if (h > baseHour || (h === baseHour && m > baseMinute)) {
+                        lateMinutes = (h - baseHour) * 60 + (m - baseMinute);
+                    } else {
+                        lateMinutes = 0;
+                    }
+                } else {
+                    lateMinutes = 0;
+                }
+
                 let rowClass = '';
                 if (hasSingleEntry) {
                     rowClass = 'warning-row-yellow';
                 } else if (outOfOrder || (totalTime === '—' && times.length > 0)) {
                     rowClass = 'warning-row-orange';
+                } else if (lateMinutes > 0 && record.OB != 1 && record.SL != 1) {
+                    rowClass = 'late-row';
                 }
 
                 // Prepare remarks
@@ -628,22 +652,6 @@
                 // Do not add out-of-order message to remarks
                 let remarksText = remarks;
 
-                // Calculate late based on base time: 8:00 for regular, 6:00 for Other_Personnel
-                let baseHour = isOtherPersonnel ? 6 : 8;
-                let baseMinute = 0;
-                let lateMinutes = 0;
-                // Only compute late if more than one time entry, no out-of-order, and at least one valid interval
-                if (!hasSingleEntry && !outOfOrder && validIntervals > 0 && record.am_in) {
-                    const [h, m] = record.am_in.split(':').map(Number);
-                    if (h > baseHour || (h === baseHour && m > baseMinute)) {
-                        lateMinutes = (h - baseHour) * 60 + (m - baseMinute);
-                    } else {
-                        lateMinutes = 0;
-                    }
-                } else {
-                    lateMinutes = 0;
-                }
-                
                 const row = document.createElement('tr');
                 row.className = rowClass;
                 row.innerHTML = `
@@ -652,7 +660,7 @@
                     <td>${formatTime(displayAmOut)}</td>
                     <td>${formatTime(displayPmIn)}</td>
                     <td>${formatTime(record.pm_out)}</td>
-                    <td class="${(!hasSingleEntry && !outOfOrder && validIntervals > 0 && lateMinutes > 0 && record.OB != 1) ? 'late-minutes' : ''}">${(!hasSingleEntry && !outOfOrder && validIntervals > 0 && record.OB != 1 && lateMinutes > 0) ? `${Math.floor(lateMinutes/60)}h ${lateMinutes%60}m (${lateMinutes} mins)` : ''}</td>
+                    <td class="${(!hasSingleEntry && !outOfOrder && validIntervals > 0 && lateMinutes > 0 && record.OB != 1 && record.SL != 1) ? 'late-minutes' : ''}">${(!hasSingleEntry && !outOfOrder && validIntervals > 0 && record.OB != 1 && record.SL != 1 && lateMinutes > 0) ? `${Math.floor(lateMinutes/60)}h ${lateMinutes%60}m (${lateMinutes} mins)` : ''}</td>
                     <td class="${undertime && record.OB != 1 ? 'undertime-minutes' : ''}">${record.OB == 1 ? '' : undertime ? `${Math.floor(undertime/60)}h ${undertime%60}m (${undertime} mins)` : ''}</td>
                     <td>${totalTime}</td>
                     <td>
