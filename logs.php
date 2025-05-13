@@ -592,6 +592,17 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
         .late-row {
             background-color: #ffebee !important;
         }
+
+        .table-scroll-wrapper {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        .logs-table thead {
+            position: sticky;
+            top: 0; /* Adjust if needed for filter bar height */
+            z-index: 99;
+            background: #f8f9fa;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -642,143 +653,143 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <div class="results-count">Total records: <?php echo count($records); ?></div>
             </div>
             
-
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>Employee ID</th>
-                        <th>Name</th>
-                        <th>Department</th>
-                        <th>Date</th>
-                        <th>AM IN</th>
-                        <th>AM OUT</th>
-                        <th>PM IN</th>
-                        <th>PM OUT</th>
-                        <th>Late(min)</th>
-                        <th>Undertime(min)</th>
-                        <th>Total Time</th>
-                        <th>Remarks</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($records as $record): 
-                        $totalTime = computeTotalTime($record['AM_IN'], $record['AM_OUT'], $record['PM_IN'], $record['PM_OUT'], $record['DEPT'], $record['HOLIDAY'], $record['OB'], $record['SL']);
-                        $undertime = computeUndertime($totalTime, $record['DEPT'], $record['AM_IN'], $record['HOLIDAY'], $record['OB'], $record['SL']);
-                        
-                        // Prepare remarks text
-                        $remarks = [];
-                        if (!empty($record['note'])) {
-                            $remarks[] = $record['note'];
-                        }
-                        if (isset($record['OB']) && $record['OB'] == 1) {
-                            $remarks[] = 'Official Business';
-                        }
-                        if (isset($record['SL']) && $record['SL'] == 1) {
-                            $remarks[] = 'Sick Leave';
-                        }
-                        if (isset($record['HOLIDAY']) && $record['HOLIDAY'] == 1) {
-                            $remarks[] = 'Holiday';
-                        }
-
-                        // --- Custom warnings and highlights ---
-                        $intervalsUsed = [];
-                        $outOfOrder = false;
-                        $times = [];
-                        $labels = [];
-                        if (!empty($record['AM_IN'])) { $times[] = toMinutes($record['AM_IN']); $labels[] = 'AM IN'; }
-                        if (!empty($record['AM_OUT'])) { $times[] = toMinutes($record['AM_OUT']); $labels[] = 'AM OUT'; }
-                        if (!empty($record['PM_IN'])) { $times[] = toMinutes($record['PM_IN']); $labels[] = 'PM IN'; }
-                        if (!empty($record['PM_OUT'])) { $times[] = toMinutes($record['PM_OUT']); $labels[] = 'PM OUT'; }
-                        $hasSingleEntry = false;
-                        if (count($times) == 1) {
-                            $hasSingleEntry = true;
-                        }
-                        for ($i = 0; $i < count($times) - 1; $i++) {
-                            if ($times[$i+1] > $times[$i]) {
-                                $intervalsUsed[] = $labels[$i] . ' → ' . $labels[$i+1];
-                            } else if ($times[$i+1] < $times[$i]) {
-                                $outOfOrder = true;
+            <div class="table-scroll-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Employee ID</th>
+                            <th>Name</th>
+                            <th>Department</th>
+                            <th>Date</th>
+                            <th>AM IN</th>
+                            <th>AM OUT</th>
+                            <th>PM IN</th>
+                            <th>PM OUT</th>
+                            <th>Late(min)</th>
+                            <th>Undertime(min)</th>
+                            <th>Total Time</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($records as $record): 
+                            $totalTime = computeTotalTime($record['AM_IN'], $record['AM_OUT'], $record['PM_IN'], $record['PM_OUT'], $record['DEPT'], $record['HOLIDAY'], $record['OB'], $record['SL']);
+                            $undertime = computeUndertime($totalTime, $record['DEPT'], $record['AM_IN'], $record['HOLIDAY'], $record['OB'], $record['SL']);
+                            
+                            // Prepare remarks text
+                            $remarks = [];
+                            if (!empty($record['note'])) {
+                                $remarks[] = $record['note'];
                             }
-                        }
-                        // Remove warning messages from remarks
-                        $remarksText = implode(' | ', $remarks);
-
-                        // Display rule: if both AM_IN and PM_OUT are present, show AM_OUT as 12:00 and PM_IN as 13:00
-                        $displayAmOut = $record['AM_OUT'];
-                        $displayPmIn = $record['PM_IN'];
-                        if (!empty($record['AM_IN']) && !empty($record['PM_OUT'])) {
-                            $displayAmOut = '12:00';
-                            $displayPmIn = '13:00';
-                        }
-
-                        // Display rule: AM IN should not be earlier than 6:00 for Other_Personnel, 8:00 for others
-                        $displayAmIn = $record['AM_IN'];
-                        if (!empty($record['AM_IN'])) {
-                            $isOtherPersonnel = isset($record['DEPT']) && strtolower(trim($record['DEPT'])) === 'other_personnel';
-                            list($h, $m) = explode(':', $record['AM_IN']);
-                            $h = (int)$h;
-                            $m = (int)$m;
-                            if ($isOtherPersonnel && ($h < 6)) {
-                                $displayAmIn = '06:00';
-                            } else if (!$isOtherPersonnel && ($h < 8)) {
-                                $displayAmIn = '08:00';
+                            if (isset($record['OB']) && $record['OB'] == 1) {
+                                $remarks[] = 'Official Business';
                             }
-                        }
-                        // Add warning-row class if any warning present
-                        $rowClass = '';
-                        if ($hasSingleEntry) {
-                            $rowClass = 'warning-row-yellow';
-                        } else if ($outOfOrder) {
-                            $rowClass = 'warning-row-orange';
-                        }
-                        // Mark as out-of-order if totalTime is '—' and there is at least one log and not a single entry
-                        $hasAnyLog = !empty($record['AM_IN']) || !empty($record['AM_OUT']) || !empty($record['PM_IN']) || !empty($record['PM_OUT']);
-                        if ($totalTime === '—' && $hasAnyLog && !$hasSingleEntry) {
-                            $rowClass = 'warning-row-orange';
-                        }
-                        // Compute late only if more than one time entry, no out-of-order entries, and at least one valid interval, and not OB/SL
-                        $lateValue = '';
-                        $validIntervals = 0;
-                        for ($i = 0; $i < count($times) - 1; $i++) {
-                            if ($times[$i+1] > $times[$i]) {
-                                $validIntervals++;
+                            if (isset($record['SL']) && $record['SL'] == 1) {
+                                $remarks[] = 'Sick Leave';
                             }
-                        }
-                        if (
-                            !$hasSingleEntry && 
-                            !$outOfOrder && 
-                            $validIntervals > 0 && 
-                            (!isset($record['OB']) || $record['OB'] != 1) && 
-                            (!isset($record['SL']) || $record['SL'] != 1)
-                        ) {
-                            $lateValue = computeLate($record['AM_IN'], $record['DEPT']);
-                        } else {
+                            if (isset($record['HOLIDAY']) && $record['HOLIDAY'] == 1) {
+                                $remarks[] = 'Holiday';
+                            }
+
+                            // --- Custom warnings and highlights ---
+                            $intervalsUsed = [];
+                            $outOfOrder = false;
+                            $times = [];
+                            $labels = [];
+                            if (!empty($record['AM_IN'])) { $times[] = toMinutes($record['AM_IN']); $labels[] = 'AM IN'; }
+                            if (!empty($record['AM_OUT'])) { $times[] = toMinutes($record['AM_OUT']); $labels[] = 'AM OUT'; }
+                            if (!empty($record['PM_IN'])) { $times[] = toMinutes($record['PM_IN']); $labels[] = 'PM IN'; }
+                            if (!empty($record['PM_OUT'])) { $times[] = toMinutes($record['PM_OUT']); $labels[] = 'PM OUT'; }
+                            $hasSingleEntry = false;
+                            if (count($times) == 1) {
+                                $hasSingleEntry = true;
+                            }
+                            for ($i = 0; $i < count($times) - 1; $i++) {
+                                if ($times[$i+1] > $times[$i]) {
+                                    $intervalsUsed[] = $labels[$i] . ' → ' . $labels[$i+1];
+                                } else if ($times[$i+1] < $times[$i]) {
+                                    $outOfOrder = true;
+                                }
+                            }
+                            // Remove warning messages from remarks
+                            $remarksText = implode(' | ', $remarks);
+
+                            // Display rule: if both AM_IN and PM_OUT are present, show AM_OUT as 12:00 and PM_IN as 13:00
+                            $displayAmOut = $record['AM_OUT'];
+                            $displayPmIn = $record['PM_IN'];
+                            if (!empty($record['AM_IN']) && !empty($record['PM_OUT'])) {
+                                $displayAmOut = '12:00';
+                                $displayPmIn = '13:00';
+                            }
+
+                            // Display rule: AM IN should not be earlier than 6:00 for Other_Personnel, 8:00 for others
+                            $displayAmIn = $record['AM_IN'];
+                            if (!empty($record['AM_IN'])) {
+                                $isOtherPersonnel = isset($record['DEPT']) && strtolower(trim($record['DEPT'])) === 'other_personnel';
+                                list($h, $m) = explode(':', $record['AM_IN']);
+                                $h = (int)$h;
+                                $m = (int)$m;
+                                if ($isOtherPersonnel && ($h < 6)) {
+                                    $displayAmIn = '06:00';
+                                } else if (!$isOtherPersonnel && ($h < 8)) {
+                                    $displayAmIn = '08:00';
+                                }
+                            }
+                            // Add warning-row class if any warning present
+                            $rowClass = '';
+                            if ($hasSingleEntry) {
+                                $rowClass = 'warning-row-yellow';
+                            } else if ($outOfOrder) {
+                                $rowClass = 'warning-row-orange';
+                            }
+                            // Mark as out-of-order if totalTime is '—' and there is at least one log and not a single entry
+                            $hasAnyLog = !empty($record['AM_IN']) || !empty($record['AM_OUT']) || !empty($record['PM_IN']) || !empty($record['PM_OUT']);
+                            if ($totalTime === '—' && $hasAnyLog && !$hasSingleEntry) {
+                                $rowClass = 'warning-row-orange';
+                            }
+                            // Compute late only if more than one time entry, no out-of-order entries, and at least one valid interval, and not OB/SL
                             $lateValue = '';
-                        }
-                        // Highlight row if late > 0 and not OB/SL
-                        $isLate = (is_numeric($lateValue) && $lateValue > 0);
-                        if ($isLate && (!isset($record['OB']) || $record['OB'] != 1) && (!isset($record['SL']) || $record['SL'] != 1)) {
-                            $rowClass = 'late-row';
-                        }
-                    ?>
-                    <tr class="<?php echo $rowClass; ?>">
-                        <td><?php echo htmlspecialchars($record['EMP_ID']); ?></td>
-                        <td><?php echo htmlspecialchars($record['Name']); ?></td>
-                        <td><?php echo htmlspecialchars($record['DEPT']); ?></td>
-                        <td><?php echo formatDateWithDay($record['DATE']); ?></td>
-                        <td><?php echo convertTo12Hour($displayAmIn); ?></td>
-                        <td><?php echo convertTo12Hour($displayAmOut); ?></td>
-                        <td><?php echo convertTo12Hour($displayPmIn); ?></td>
-                        <td><?php echo convertTo12Hour($record['PM_OUT']); ?></td>
-                        <td><?php echo $lateValue; ?></td>
-                        <td><?php echo $undertime; ?></td>
-                        <td><?php echo $totalTime; ?></td>
-                        <td><?php echo htmlspecialchars($remarksText); ?></td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                            $validIntervals = 0;
+                            for ($i = 0; $i < count($times) - 1; $i++) {
+                                if ($times[$i+1] > $times[$i]) {
+                                    $validIntervals++;
+                                }
+                            }
+                            if (
+                                !$hasSingleEntry && 
+                                !$outOfOrder && 
+                                $validIntervals > 0 && 
+                                (!isset($record['OB']) || $record['OB'] != 1) && 
+                                (!isset($record['SL']) || $record['SL'] != 1)
+                            ) {
+                                $lateValue = computeLate($record['AM_IN'], $record['DEPT']);
+                            } else {
+                                $lateValue = '';
+                            }
+                            // Highlight row if late > 0 and not OB/SL
+                            $isLate = (is_numeric($lateValue) && $lateValue > 0);
+                            if ($isLate && (!isset($record['OB']) || $record['OB'] != 1) && (!isset($record['SL']) || $record['SL'] != 1)) {
+                                $rowClass = 'late-row';
+                            }
+                        ?>
+                        <tr class="<?php echo $rowClass; ?>">
+                            <td><?php echo htmlspecialchars($record['EMP_ID']); ?></td>
+                            <td><?php echo htmlspecialchars($record['Name']); ?></td>
+                            <td><?php echo htmlspecialchars($record['DEPT']); ?></td>
+                            <td><?php echo formatDateWithDay($record['DATE']); ?></td>
+                            <td><?php echo convertTo12Hour($displayAmIn); ?></td>
+                            <td><?php echo convertTo12Hour($displayAmOut); ?></td>
+                            <td><?php echo convertTo12Hour($displayPmIn); ?></td>
+                            <td><?php echo convertTo12Hour($record['PM_OUT']); ?></td>
+                            <td><?php echo $lateValue; ?></td>
+                            <td><?php echo $undertime; ?></td>
+                            <td><?php echo $totalTime; ?></td>
+                            <td><?php echo htmlspecialchars($remarksText); ?></td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
