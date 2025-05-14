@@ -651,11 +651,8 @@
 
                 // Prepare remarks
                 let remarks = '';
-                if (record.HOLIDAY == 1) {
-                    remarks += 'Holiday';
-                }
                 if (record.note) {
-                    remarks += remarks ? ` | ${record.note}` : record.note;
+                    remarks = record.note;
                 }
 
                 // Do not add out-of-order message to remarks
