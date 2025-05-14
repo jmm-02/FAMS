@@ -578,8 +578,9 @@
                 let totalTime = computeTotalTime(record.am_in, record.am_out, record.pm_in, record.pm_out, department, record.HOLIDAY, record.OB, record.SL);
 
                 const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
+                const isJanitor = department && department.trim().toLowerCase() === 'janitor';
                 if (record.OB == 1) {
-                    totalTime = isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
+                    totalTime = isOtherPersonnel ? '12:00 hrs.' : (isJanitor ? '8:00 hrs.' : '8:00 hrs.');
                 }
                 
                 const undertime = computeUndertime(totalTime, department, record.am_in, record.HOLIDAY);
@@ -622,12 +623,12 @@
                     if (times[i+1] > times[i]) validIntervals++;
                 }
 
-                // Calculate late based on base time: 8:00 for regular, 6:00 for Other_Personnel
-                let baseHour = isOtherPersonnel ? 6 : 8;
+                // Calculate late based on base time: 8:00 for regular, 6:00 for Other_Personnel and Janitor
+                let baseHour = isOtherPersonnel || isJanitor ? 6 : 8;
                 let baseMinute = 0;
                 let lateMinutes = 0;
-                // Only compute late if more than one time entry, no out-of-order, and at least one valid interval, and not SL
-                if (!hasSingleEntry && !outOfOrder && validIntervals > 0 && record.am_in && record.SL != 1) {
+                // Only compute late if more than one time entry, no out-of-order, and at least one valid interval, and not SL, and not holiday
+                if (!hasSingleEntry && !outOfOrder && validIntervals > 0 && record.am_in && record.SL != 1 && record.HOLIDAY != 1) {
                     const [h, m] = record.am_in.split(':').map(Number);
                     if (h > baseHour || (h === baseHour && m > baseMinute)) {
                         lateMinutes = (h - baseHour) * 60 + (m - baseMinute);
@@ -952,51 +953,90 @@
     function computeTotalTime(am_in, am_out, pm_in, pm_out, department, isHoliday, isOB, isSL) {
         if (isOB == 1 || isSL == 1) {
             const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
-            return isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
+            const isJanitor = department && department.trim().toLowerCase() === 'janitor';
+            return isOtherPersonnel ? '12:00 hrs.' : (isJanitor ? '8:00 hrs.' : '8:00 hrs.');
         }
         if (isHoliday == 1) {
             if (!am_in && !am_out && !pm_in && !pm_out) {
                 return '—';
             }
+            // For holidays, return fixed hours based on department
+            const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
+            return isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
         }
         const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
+        const isJanitor = department && department.trim().toLowerCase() === 'janitor';
         let amInMinRaw = toMinutes(am_in);
         let amInMin = amInMinRaw;
         if (isOtherPersonnel && amInMinRaw !== null && amInMinRaw < 360) {
             amInMin = 360;
-        } else if (!isOtherPersonnel && amInMinRaw !== null && amInMinRaw < 480) {
+        } else if (isJanitor && amInMinRaw !== null && amInMinRaw < 360) {
+            amInMin = 360;
+        } else if (!isOtherPersonnel && !isJanitor && amInMinRaw !== null && amInMinRaw < 480) {
             amInMin = 480;
         }
         const amOutMin = toMinutes(am_out);
         const pmInMin = toMinutes(pm_in);
         const pmOutMin = toMinutes(pm_out);
         let total = 0;
-        // If both AM In and PM Out are present, use (PM Out - AM In) - 1hr rule
-        if (amInMin !== null && pmOutMin !== null) {
-            total = pmOutMin - amInMin - 60;
-        } else if (amInMin === null && amOutMin !== null && pmInMin !== null && pmOutMin === null) {
-            // Special: only AM OUT and PM IN, do NOT support overnight
-            if (pmInMin > amOutMin) {
-                total = pmInMin - amOutMin;
+
+        // Special handling for Janitor schedule
+        if (isJanitor) {
+            // If both AM In and PM Out are present, use (PM Out - AM In) - 1hr rule
+            if (amInMin !== null && pmOutMin !== null) {
+                total = pmOutMin - amInMin - 60; // Subtract 1 hour for break
+            } else if (amInMin === null && amOutMin !== null && pmInMin !== null && pmOutMin === null) {
+                // Special: only AM OUT and PM IN
+                if (pmInMin > amOutMin) {
+                    total = pmInMin - amOutMin;
+                } else {
+                    total = 0;
+                }
             } else {
+                // Flexible: sum all valid consecutive pairs
+                const times = [];
+                if (amInMin !== null) times.push(amInMin);
+                if (amOutMin !== null) times.push(amOutMin);
+                if (pmInMin !== null) times.push(pmInMin);
+                if (pmOutMin !== null) times.push(pmOutMin);
                 total = 0;
+                for (let i = 0; i < times.length - 1; i++) {
+                    if (times[i+1] > times[i]) {
+                        total += times[i+1] - times[i];
+                    }
+                }
+                // Subtract 1 hour for break if there are multiple entries
+                if (times.length > 1) {
+                    total -= 60;
+                }
             }
         } else {
-            // Flexible: sum all valid consecutive pairs
-            const times = [];
-            if (amInMin !== null) times.push(amInMin);
-            if (amOutMin !== null) times.push(amOutMin);
-            if (pmInMin !== null) times.push(pmInMin);
-            if (pmOutMin !== null) times.push(pmOutMin);
-            total = 0;
-            for (let i = 0; i < times.length - 1; i++) {
-                if (times[i+1] > times[i]) {
-                    total += times[i+1] - times[i];
+            // Original logic for other employees
+            if (amInMin !== null && pmOutMin !== null) {
+                total = pmOutMin - amInMin - 60;
+            } else if (amInMin === null && amOutMin !== null && pmInMin !== null && pmOutMin === null) {
+                if (pmInMin > amOutMin) {
+                    total = pmInMin - amOutMin;
+                } else {
+                    total = 0;
+                }
+            } else {
+                const times = [];
+                if (amInMin !== null) times.push(amInMin);
+                if (amOutMin !== null) times.push(amOutMin);
+                if (pmInMin !== null) times.push(pmInMin);
+                if (pmOutMin !== null) times.push(pmOutMin);
+                total = 0;
+                for (let i = 0; i < times.length - 1; i++) {
+                    if (times[i+1] > times[i]) {
+                        total += times[i+1] - times[i];
+                    }
                 }
             }
         }
+
         if (total <= 0) return '—';
-        const capMinutes = isOtherPersonnel ? 720 : 480;
+        const capMinutes = isOtherPersonnel ? 720 : (isJanitor ? 480 : 480);
         const displayMinutes = total > capMinutes ? capMinutes : total;
         const hours = Math.floor(displayMinutes / 60);
         const minutes = displayMinutes % 60;
@@ -1015,8 +1055,9 @@
         const timeStr = totalTime.replace(' hrs.', '');
         const [hours, minutes] = timeStr.split(':').map(Number);
         const totalMinutes = (hours * 60) + minutes;
-        // Check if employee is Other_Personnel
+        // Check if employee is Other_Personnel or Janitor
         const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
+        const isJanitor = department && department.trim().toLowerCase() === 'janitor';
 
         // Adjust base time for undertime calculation
         let baseStart = 0;
@@ -1031,6 +1072,19 @@
             const standardMinutes = 720;
             const undertime = standardMinutes - totalMinutes;
             return undertime <= 0 ? '' : undertime.toString();
+        } else if (isJanitor) {
+            baseStart = 360; // 6:00 AM in minutes
+            if (am_in) {
+                const [h, m] = am_in.split(':').map(Number);
+                if (h < 6) baseStart = 360; // Still 6:00 AM
+                else baseStart = h * 60 + m;
+            }
+            // For Janitors: 8 hours (480 minutes) including 1-hour break
+            if (totalMinutes >= 480) { // 8 hours or more
+                return ''; // No undertime
+            } else {
+                return (480 - totalMinutes).toString(); // Calculate undertime from 8 hours
+            }
         } else {
             baseStart = 480; // 8:00 AM in minutes
             if (am_in) {
