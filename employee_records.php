@@ -1136,6 +1136,9 @@
                 // Add Holiday information if applicable
                 if (record.HOLIDAY == 1) {
                     noteText = noteText ? noteText + ' | Holiday' : 'Holiday';
+                    if (record.HOLIDAY_DESC) {
+                        noteText += ': ' + record.HOLIDAY_DESC;
+                    }
                 }
                 
                 return [

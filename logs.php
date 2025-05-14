@@ -146,9 +146,10 @@ $filter_name = isset($_GET['employee_name']) ? $_GET['employee_name'] : '';
 $filter_status = isset($_GET['status']) ? $_GET['status'] : '';
 
 // Build query based on filters
-$query = "SELECT e.ID as EMP_ID, e.Name, e.DEPT, e.STATUS, r.DATE, r.AM_IN, r.AM_OUT, r.PM_IN, r.PM_OUT, r.OB, r.note, r.HOLIDAY, r.SL
+$query = "SELECT e.ID as EMP_ID, e.Name, e.DEPT, e.STATUS, r.DATE, r.AM_IN, r.AM_OUT, r.PM_IN, r.PM_OUT, r.OB, r.note, r.HOLIDAY, r.SL, h.DESCRIPTION as HOLIDAY_DESC
           FROM emp_info e 
           LEFT JOIN emp_rec r ON e.ID = r.EMP_ID 
+          LEFT JOIN holidays h ON r.DATE = h.DATE
           WHERE 1=1";
 
 $params = [];
@@ -679,7 +680,7 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 $remarks[] = 'Sick Leave';
                             }
                             if (isset($record['HOLIDAY']) && $record['HOLIDAY'] == 1) {
-                                $remarks[] = 'Holiday';
+                                $remarks[] = 'Holiday' . (!empty($record['HOLIDAY_DESC']) ? ': ' . $record['HOLIDAY_DESC'] : '');
                             }
 
                             // --- Custom warnings and highlights ---

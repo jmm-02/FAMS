@@ -30,21 +30,14 @@ try {
         exit;
     }
 
-    // Get attendance records for the employee
-    $recQuery = "SELECT ID as record_id, DATE as date, 
-                AM_IN as am_in, AM_OUT as am_out, 
-                PM_IN as pm_in, PM_OUT as pm_out, 
-                LATE as late, 
-                UNDERTIME as undertime,
-                `NOTE` as note,
-                OB,
-                SL,
-                HOLIDAY
-                FROM emp_rec 
-                WHERE EMP_ID = :emp_id
-                ORDER BY DATE DESC";
-    $recStmt = $pdo->prepare($recQuery);
-    $recStmt->bindParam(':emp_id', $emp_id);
+    // Fetch employee records
+    $query = "SELECT r.*, h.DESCRIPTION as HOLIDAY_DESC 
+              FROM emp_rec r 
+              LEFT JOIN holidays h ON r.DATE = h.DATE 
+              WHERE r.EMP_ID = ? 
+              ORDER BY r.DATE DESC";
+    $recStmt = $pdo->prepare($query);
+    $recStmt->bindParam(1, $emp_id);
     $recStmt->execute();
     $records = $recStmt->fetchAll(PDO::FETCH_ASSOC);
 
