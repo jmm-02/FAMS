@@ -39,27 +39,18 @@ function computeTotalTime($am_in, $am_out, $pm_in, $pm_out, $department = null, 
         }
     }
 
-    $isOtherPersonnel = $department && strtolower(trim($department)) === 'other_personnel';
-
-    // Adjust AM In for early logins
-    $amInMinRaw = toMinutes($am_in);
-    $amInMin = $amInMinRaw;
-    if ($isOtherPersonnel && $amInMinRaw !== null && $amInMinRaw < 360) {
-        $amInMin = 360; // 6:00 AM
-    } else if (!$isOtherPersonnel && $amInMinRaw !== null && $amInMinRaw < 480) {
-        $amInMin = 480; // 8:00 AM
-    }
+    // Use actual time entries without adjustment
+    $amInMin = toMinutes($am_in);
     $amOutMin = toMinutes($am_out);
     $pmInMin = toMinutes($pm_in);
     $pmOutMin = toMinutes($pm_out);
 
     // If both AM In and PM Out are present, use (PM Out - AM In) - 1hr rule
     if ($amInMin !== null && $pmOutMin !== null) {
-        $total = $pmOutMin - $amInMin - 60;
+        $total = $pmOutMin - $amInMin - 60; // Subtract 1 hour for break
     } 
     // Special case: only AM OUT and PM IN are present
     else if ($amInMin === null && $amOutMin !== null && $pmInMin !== null && $pmOutMin === null) {
-        // Treat AM OUT as IN and PM IN as OUT, but do NOT support overnight
         if ($pmInMin > $amOutMin) {
             $total = $pmInMin - $amOutMin;
         } else {
@@ -84,8 +75,8 @@ function computeTotalTime($am_in, $am_out, $pm_in, $pm_out, $department = null, 
 
     if ($total <= 0) return '—';
 
-    // Cap total time based on department
-    $capMinutes = $isOtherPersonnel ? 720 : 480; // 12 or 8 hours
+    // Cap total time at 8 hours (480 minutes)
+    $capMinutes = 480;
     $displayMinutes = $total > $capMinutes ? $capMinutes : $total;
     $hours = floor($displayMinutes / 60);
     $minutes = $displayMinutes % 60;
@@ -105,15 +96,18 @@ function computeUndertime($totalTime, $department, $am_in = null, $isHoliday = 0
     }
     
     if ($totalTime === '—') return '';
+    
     // Remove ' hrs.' suffix if present
     $timeStr = str_replace(' hrs.', '', $totalTime);
     list($hours, $minutes) = explode(':', $timeStr);
     $totalMinutes = ($hours * 60) + $minutes;
-    // Standard working time: 12 hours for 'Other_Personnel', else 8 hours (case-insensitive)
-    $isOtherPersonnel = $department && strtolower(trim($department)) === 'other_personnel';
-    $standardMinutes = $isOtherPersonnel ? 720 : 480;
+    
+    // Standard working time is 8 hours (480 minutes)
+    $standardMinutes = 480;
+    
     // Calculate undertime
     $undertime = $standardMinutes - $totalMinutes;
+    
     // Return empty string if no undertime, otherwise return the undertime in minutes
     return $undertime <= 0 ? '' : $undertime;
 }
@@ -136,11 +130,8 @@ function formatDateWithDay($dateStr) {
 function computeLate($am_in, $department) {
     if (empty($am_in)) return '';
     
-    $isOtherPersonnel = $department && strtolower(trim($department)) === 'other_personnel';
-    $standardTime = $isOtherPersonnel ? '06:00' : '08:00';
-    
     $amInMin = toMinutes($am_in);
-    $standardMin = toMinutes($standardTime);
+    $standardMin = toMinutes('06:00'); // Standard time is 6:00 AM
     
     if ($amInMin === null || $standardMin === null) return '';
     
@@ -722,19 +713,9 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 $displayPmIn = '13:00';
                             }
 
-                            // Display rule: AM IN should not be earlier than 6:00 for Other_Personnel, 8:00 for others
+                            // Use actual time entries without adjustment
                             $displayAmIn = $record['AM_IN'];
-                            if (!empty($record['AM_IN'])) {
-                                $isOtherPersonnel = isset($record['DEPT']) && strtolower(trim($record['DEPT'])) === 'other_personnel';
-                                list($h, $m) = explode(':', $record['AM_IN']);
-                                $h = (int)$h;
-                                $m = (int)$m;
-                                if ($isOtherPersonnel && ($h < 6)) {
-                                    $displayAmIn = '06:00';
-                                } else if (!$isOtherPersonnel && ($h < 8)) {
-                                    $displayAmIn = '08:00';
-                                }
-                            }
+
                             // Add warning-row class if any warning present
                             $rowClass = '';
                             if ($hasSingleEntry) {

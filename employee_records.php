@@ -585,24 +585,12 @@
                 
                 const undertime = computeUndertime(totalTime, department, record.am_in, record.HOLIDAY);
                 
-                // For regular employees, if AM In is before 8:00, display 8:00 AM
-                // For Other_Personnel, if AM In is before 6:00, display 6:00 AM
+                // Use actual time entries without adjustment
                 let displayAmIn = record.am_in;
-                if (isOtherPersonnel && record.am_in) {
-                    const [h, m] = record.am_in.split(':').map(Number);
-                    if (h < 6) {
-                        displayAmIn = '06:00';
-                    }
-                } else if (!isOtherPersonnel && record.am_in) {
-                    const [h, m] = record.am_in.split(':').map(Number);
-                    if (h < 8) {
-                        displayAmIn = '08:00';
-                    }
-                }
-
-                // For AM Out and PM In, always display defaults if both AM In and PM Out are present (full-day attendance)
                 let displayAmOut = record.am_out;
                 let displayPmIn = record.pm_in;
+
+                // For AM Out and PM In, always display defaults if both AM In and PM Out are present (full-day attendance)
                 if (record.am_in && record.pm_out) {
                     displayAmOut = '12:00';
                     displayPmIn = '13:00';
