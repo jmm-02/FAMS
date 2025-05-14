@@ -59,6 +59,49 @@ try {
         echo json_encode(['success' => true, 'message' => 'Holiday removed successfully']);
     }
     
+    // Update a holiday
+    else if ($action === 'update') {
+        if (!isset($data['oldDate']) || !isset($data['newDate']) || !isset($data['description'])) {
+            echo json_encode(['success' => false, 'error' => 'Missing required parameters']);
+            exit;
+        }
+        
+        $oldDate = $data['oldDate'];
+        $newDate = $data['newDate'];
+        $description = $data['description'];
+        
+        try {
+            $pdo->beginTransaction();
+            
+            // If the date is being changed, we need to handle the emp_rec entries
+            if ($oldDate !== $newDate) {
+                // Remove holiday status from old date
+                $stmtOldEmpRec = $pdo->prepare("UPDATE emp_rec SET HOLIDAY = 0 WHERE DATE = :oldDate");
+                $stmtOldEmpRec->execute([':oldDate' => $oldDate]);
+                
+                // Add holiday status to new date
+                $stmtNewEmpRec = $pdo->prepare("UPDATE emp_rec SET HOLIDAY = 1 WHERE DATE = :newDate");
+                $stmtNewEmpRec->execute([':newDate' => $newDate]);
+                
+                // Delete old holiday entry
+                $stmtDelete = $pdo->prepare("DELETE FROM holidays WHERE DATE = :oldDate");
+                $stmtDelete->execute([':oldDate' => $oldDate]);
+            }
+            
+            // Insert or update the new holiday entry
+            $stmtHoliday = $pdo->prepare("INSERT INTO holidays (DATE, DESCRIPTION) VALUES (:date, :description) 
+                                        ON DUPLICATE KEY UPDATE DESCRIPTION = :description");
+            $stmtHoliday->execute([':date' => $newDate, ':description' => $description]);
+            
+            $pdo->commit();
+            echo json_encode(['success' => true, 'message' => 'Holiday updated successfully']);
+            
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+    }
+    
     // Get all holidays
     else if ($action === 'get_all') {
         $stmt = $pdo->prepare("SELECT * FROM holidays ORDER BY DATE DESC");

@@ -74,6 +74,10 @@
             background: #d32f2f;
             color: white;
         }
+        .btn-warning {
+            background: #f57c00;
+            color: white;
+        }
         .btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
@@ -83,6 +87,20 @@
         }
         .btn-danger:hover {
             background: #b71c1c;
+        }
+        .btn-warning:hover {
+            background: #e65100;
+        }
+        .edit-form {
+            display: none;
+            background: #fff3e0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border: 1px solid #ffe0b2;
+        }
+        .edit-form.active {
+            display: block;
         }
         table {
             width: 100%;
@@ -232,10 +250,88 @@
                 <td>${formatDate(holiday.DATE)}</td>
                 <td>${holiday.DESCRIPTION}</td>
                 <td>
+                    <button class="btn btn-warning" onclick="showEditForm('${holiday.DATE}', '${holiday.DESCRIPTION}')">Edit</button>
                     <button class="btn btn-danger" onclick="removeHoliday('${holiday.DATE}')">Remove</button>
                 </td>
             `;
             tbody.appendChild(row);
+        });
+    }
+    
+    // Show edit form for a holiday
+    function showEditForm(date, description) {
+        const row = event.target.closest('tr');
+        const existingForm = document.querySelector('.edit-form');
+        if (existingForm) {
+            existingForm.remove();
+        }
+        
+        const editForm = document.createElement('div');
+        editForm.className = 'edit-form active';
+        editForm.innerHTML = `
+            <div class="form-group">
+                <label for="editHolidayDate">Date:</label>
+                <input type="date" id="editHolidayDate" value="${date}">
+            </div>
+            <div class="form-group">
+                <label for="editHolidayDescription">Description:</label>
+                <textarea id="editHolidayDescription">${description}</textarea>
+            </div>
+            <button class="btn btn-primary" onclick="updateHoliday('${date}')">Update</button>
+            <button class="btn btn-danger" onclick="this.closest('.edit-form').remove()">Cancel</button>
+        `;
+        
+        row.insertAdjacentElement('afterend', editForm);
+    }
+    
+    // Update a holiday
+    function updateHoliday(oldDate) {
+        const newDate = document.getElementById('editHolidayDate').value;
+        const description = document.getElementById('editHolidayDescription').value;
+        
+        if (!newDate) {
+            alert('Please select a date');
+            return;
+        }
+        
+        if (!description) {
+            alert('Please enter a description');
+            return;
+        }
+        
+        fetch('Fetch/manage_holidays.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'update',
+                oldDate: oldDate,
+                newDate: newDate,
+                description: description
+            }),
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                alert('Holiday updated successfully!');
+                // Remove edit form
+                document.querySelector('.edit-form').remove();
+                // Reload holidays
+                loadHolidays();
+            } else {
+                console.error('Error updating holiday:', data.error);
+                alert(`Error updating holiday: ${data.error || 'Unknown error occurred'}`);
+            }
+        })
+        .catch(error => {
+            console.error('Error updating holiday:', error);
+            alert(`Failed to update holiday: ${error.message}`);
         });
     }
     
