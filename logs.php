@@ -32,11 +32,10 @@ function computeTotalTime($am_in, $am_out, $pm_in, $pm_out, $department = null, 
         return $isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
     }
     
-    // For holidays, only credit hours if there are actual time entries
+    // For holidays, always return standard hours based on department
     if ($isHoliday == 1) {
-        if (!$am_in && !$am_out && !$pm_in && !$pm_out) {
-            return '—';
-        }
+        $isOtherPersonnel = $department && strtolower(trim($department)) === 'other_personnel';
+        return $isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
     }
 
     // Use actual time entries without adjustment
