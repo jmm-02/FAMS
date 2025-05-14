@@ -966,15 +966,7 @@
         }
         const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
         const isJanitor = department && department.trim().toLowerCase() === 'janitor';
-        let amInMinRaw = toMinutes(am_in);
-        let amInMin = amInMinRaw;
-        if (isOtherPersonnel && amInMinRaw !== null && amInMinRaw < 360) {
-            amInMin = 360;
-        } else if (isJanitor && amInMinRaw !== null && amInMinRaw < 360) {
-            amInMin = 360;
-        } else if (!isOtherPersonnel && !isJanitor && amInMinRaw !== null && amInMinRaw < 480) {
-            amInMin = 480;
-        }
+        let amInMin = toMinutes(am_in);
         const amOutMin = toMinutes(am_out);
         const pmInMin = toMinutes(pm_in);
         const pmOutMin = toMinutes(pm_out);
