@@ -6,6 +6,10 @@
     <title>Welcome</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        :root {
+            --sidebar-width: 250px;
+            --sidebar-width-collapsed: 80px;
+        }
         * {
             margin: 0;
             padding: 0;
@@ -23,21 +27,21 @@
 
         /* Sidebar Styles */
         .sidebar {
-            position: fixed; /* Fix the sidebar to the viewport */
+            position: fixed;
             top: 0;
             left: 0;
-            width: 250px;
+            width: var(--sidebar-width);
+            height: 100vh;
             background-color: #006633;
-            padding: 20px;
             color: white;
-            transition: width 0.3s ease-in-out;
-            height: 100vh; /* Ensure the sidebar takes the full viewport height */
-            overflow-y: auto; /* Enable vertical scrolling for the sidebar */
-            /* z-index: 1000; Ensure it stays above other content */
+            padding: 20px 0;
+            transition: width 0.3s;
+            z-index: 1000;
+            overflow-y: auto;
         }
 
         .sidebar.collapsed {
-            width: 80px;
+            width: var(--sidebar-width-collapsed);
         }
 
         .sidebar.collapsed .nav-links a {
@@ -173,16 +177,16 @@
         }
 
         /* Main Content Styles */
-        .main-content {
-            margin-left: 250px; /* Add margin to prevent overlap with the sidebar */
-            flex: 1;
-            padding: 20px;
-            background-color: #f5f5f5;
-            position: relative;
+        .main-content,
+        .container {
+            margin-left: var(--sidebar-width);
+            padding: 24px;
+            transition: margin-left 0.3s;
         }
 
-        .sidebar.collapsed + .main-content {
-            margin-left: 80px; /* Adjust margin when the sidebar is collapsed */
+        .sidebar.collapsed ~ .main-content,
+        .sidebar.collapsed ~ .container {
+            margin-left: var(--sidebar-width-collapsed);
         }
 
         .header-banner {
@@ -261,6 +265,23 @@
             display: inline-block;
             visibility: visible;
             z-index: 1000;
+        }
+
+        @media (max-width: 900px) {
+            .sidebar {
+                width: var(--sidebar-width-collapsed);
+            }
+            .main-content,
+            .container {
+                margin-left: var(--sidebar-width-collapsed);
+                padding: 12px 2vw;
+            }
+        }
+
+        .nav-links a,
+        .logout-btn,
+        button.nav-link {
+            padding-left: 30px;
         }
     </style>
 </head>

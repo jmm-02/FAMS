@@ -6,6 +6,7 @@ require_once 'includes/session_handler.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="assets/logo.png" type="image/x-icon">
     <title>Employee Information</title>
     <style>
         body {
@@ -17,12 +18,11 @@ require_once 'includes/session_handler.php';
             padding: 0;
         }
         .container {
-            max-width: 900px;
-            margin: -15% auto 0 auto;
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-            padding: 32px 24px 24px 24px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            width: 900px;
         }
         h2 {
             color: #2d3a4b;

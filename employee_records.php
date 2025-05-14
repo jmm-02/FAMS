@@ -15,15 +15,9 @@
             flex-direction: column;
         }
         .container {
-            max-width: 1000px;
-            margin: auto;
-            margin-right: 150px; /* Slightly to the right */
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-            padding: 32px 24px 24px 24px;
-            overflow: visible;
-            max-height: none;
+            flex: 1;
+            padding: 20px;
+            background-color: #f5f5f5;
             position: relative;
         }
         @media (max-width: 900px) {
@@ -32,6 +26,10 @@
                 width: 98vw;
                 max-width: 99vw;
             }
+        }
+        .parent {
+            display: grid;
+            place-items: center;
         }
         .employee-info {
             margin-bottom: 24px;

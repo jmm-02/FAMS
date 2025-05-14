@@ -106,23 +106,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
 <?php include 'sidebar.php'; ?>
-    <div class="change-password-container">
-        <h3>Change Password</h3>
-        <form method="POST" action="change_password_handler.php">
-            <div class="form-group">
-                <label for="current_password">Current Password</label>
-                <input type="password" id="current_password" name="current_password" placeholder="Enter Current Password" required>
-            </div>
-            <div class="form-group">
-                <label for="new_password">New Password</label>
-                <input type="password" id="new_password" name="new_password" placeholder="Enter New Password" required>
-            </div>
-            <div class="form-group">
-                <label for="confirm_password">Confirm New Password</label>
-                <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm New Password" required>
-            </div>
-            <button type="submit">Change Password</button>
-        </form>
+    <div class="main-content">
+        <div class="change-password-container">
+            <h3>Change Password</h3>
+            <form method="POST" action="change_password_handler.php">
+                <div class="form-group">
+                    <label for="current_password">Current Password</label>
+                    <input type="password" id="current_password" name="current_password" placeholder="Enter Current Password" required>
+                </div>
+                <div class="form-group">
+                    <label for="new_password">New Password</label>
+                    <input type="password" id="new_password" name="new_password" placeholder="Enter New Password" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirm_password">Confirm New Password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm New Password" required>
+                </div>
+                <button type="submit">Change Password</button>
+            </form>
+        </div>
     </div>
 </body>
 </html>
