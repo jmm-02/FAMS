@@ -455,7 +455,7 @@
             <table id="recordsTable" border="0" cellpadding="0" cellspacing="0">
             <thead>
                 <tr class="table-header-title">
-                    <th colspan="9">Attendance Record Details</th>
+                    <th colspan="10">Attendance Record Details</th>
                 </tr>
                 <tr>
                     <th>Date</th>
@@ -466,6 +466,7 @@
                     <th>Late(min)</th>
                     <th>Undertime(min)</th>
                     <th>Total Time</th>
+                    <th>Overtime</th>
                     <th>Remarks</th>
                 </tr>
             </thead>
@@ -656,6 +657,7 @@
                     <td class="${(!hasSingleEntry && !outOfOrder && validIntervals > 0 && lateMinutes > 0 && record.OB != 1 && record.SL != 1) ? 'late-minutes' : ''}">${(!hasSingleEntry && !outOfOrder && validIntervals > 0 && record.OB != 1 && record.SL != 1 && lateMinutes > 0) ? `${Math.floor(lateMinutes/60)}h ${lateMinutes%60}m (${lateMinutes} mins)` : ''}</td>
                     <td class="${undertime && record.OB != 1 ? 'undertime-minutes' : ''}">${record.OB == 1 ? '' : undertime ? `${Math.floor(undertime/60)}h ${undertime%60}m (${undertime} mins)` : ''}</td>
                     <td>${totalTime}</td>
+                    <td>${calculateOvertime(totalTime, department, record.OB, record.SL)}</td>
                     <td>
                         <input type="text" class="note-input" value="${record.NOTE || ''}" data-date="${record.DATE}" />
                         <button class="save-note-btn" data-emp-id="${empId}" data-date="${record.DATE}">Save</button>
@@ -738,6 +740,7 @@
                 <td class="${totalLateMinutes ? 'late-minutes' : ''}">${totalLateMinutes ? `${Math.floor(totalLateMinutes/60)}h ${totalLateMinutes%60}m (${totalLateMinutes} mins)` : ''}</td>
                 <td class="${totalUndertimeMinutes ? 'undertime-minutes' : ''}">${totalUndertimeMinutes ? `${Math.floor(totalUndertimeMinutes/60)}h ${totalUndertimeMinutes%60}m (${totalUndertimeMinutes} mins)` : ''}</td>
                 <td>${totalTimeStr}</td>
+                <td>${calculateOvertime(totalTimeStr, department, 0, 0)}</td>
                 <td></td>
             `;
             tbody.appendChild(totalRow);
@@ -1103,6 +1106,38 @@
         }
     }
 
+    function calculateOvertime(totalTime, department, isOB, isSL) {
+        if (isOB == 1 || isSL == 1 || totalTime === '—') return '';
+        
+        // Get standard working hours based on department
+        const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
+        const isJanitor = department && department.trim().toLowerCase() === 'janitor';
+        
+        // Set standard hours based on department
+        let standardHours;
+        if (isOtherPersonnel) {
+            standardHours = 12; // 12 hours for Other Personnel
+        } else if (isJanitor) {
+            standardHours = 8; // 8 hours for Janitors
+        } else {
+            standardHours = 8; // 8 hours for regular employees
+        }
+        
+        // Convert total time to minutes
+        const timeStr = totalTime.replace(' hrs.', '');
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        const totalMinutes = (hours * 60) + minutes;
+        
+        // Calculate overtime
+        const standardMinutes = standardHours * 60;
+        const overtime = totalMinutes - standardMinutes;
+        
+        // Only return overtime if it's greater than 0
+        if (overtime <= 0) return '';
+        
+        return `${Math.floor(overtime/60)}h ${overtime%60}m (${overtime} mins)`;
+    }
+
     // Function to export filtered data to Excel
     function exportToExcel(records, employee) {
         // Update records with the latest notes from the input fields
@@ -1132,7 +1167,7 @@
 
         // Prepare attendance records
         const attendanceData = [
-            ['Date', 'AM In', 'AM Out', 'PM In', 'PM Out', 'Late(min)', 'Undertime(min)', 'Total Time', 'Note'],
+            ['Date', 'AM In', 'AM Out', 'PM In', 'PM Out', 'Late(min)', 'Undertime(min)', 'Total Time', 'Overtime', 'Note'],
             ...records.map(record => {
                 let totalTime = computeTotalTime(record.AM_IN, record.AM_OUT, record.PM_IN, record.PM_OUT, department, record.HOLIDAY, record.OB, record.SL);
                 const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
@@ -1140,6 +1175,7 @@
                     totalTime = isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
                 }
                 const undertime = computeUndertime(totalTime, department, record.AM_IN, record.HOLIDAY);
+                const overtime = calculateOvertime(totalTime, department, record.OB, record.SL);
                 
                 // Calculate late minutes
                 let lateMinutes = 0;
@@ -1198,6 +1234,7 @@
                     lateMinutes > 0 ? `${Math.floor(lateMinutes/60)}h ${lateMinutes%60}m (${lateMinutes} mins)` : '',
                     undertime ? `${Math.floor(undertime/60)}h ${undertime%60}m (${undertime} mins)` : '',
                     totalTime,
+                    overtime,
                     noteText || '—'
                 ];
             })
@@ -1263,6 +1300,7 @@
             totalLateMinutes ? `${Math.floor(totalLateMinutes/60)}h ${totalLateMinutes%60}m (${totalLateMinutes} mins)` : '', 
             totalUndertimeMinutes ? `${Math.floor(totalUndertimeMinutes/60)}h ${totalUndertimeMinutes%60}m (${totalUndertimeMinutes} mins)` : '', 
             totalTimeStr, 
+            calculateOvertime(totalTimeStr, department, 0, 0),
             ''
         ]);
 

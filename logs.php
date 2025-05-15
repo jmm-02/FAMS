@@ -127,8 +127,14 @@ function computeUndertime($totalTime, $department, $am_in = null, $isHoliday = 0
     // Calculate undertime
     $undertime = $standardMinutes - $totalMinutes;
     
-    // Return empty string if no undertime, otherwise return the undertime in minutes
-    return $undertime <= 0 ? '' : $undertime;
+    // Return empty string if no undertime, otherwise return formatted undertime
+    if ($undertime <= 0) return '';
+    
+    return sprintf("%dh %dm (%d mins)", 
+        floor($undertime/60), 
+        $undertime%60, 
+        $undertime
+    );
 }
 
 // Function to convert 24-hour time to 12-hour format
@@ -159,7 +165,13 @@ function computeLate($am_in, $department) {
     if ($amInMin === null || $standardMin === null) return '';
     
     $late = $amInMin - $standardMin;
-    return $late > 0 ? $late : '';
+    if ($late <= 0) return '';
+    
+    return sprintf("%dh %dm (%d mins)", 
+        floor($late/60), 
+        $late%60, 
+        $late
+    );
 }
 
 // Handle filtering
@@ -684,6 +696,7 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <th>Late(min)</th>
                             <th>Undertime(min)</th>
                             <th>Total Time</th>
+                            <th>Overtime</th>
                             <th>Remarks</th>
                         </tr>
                     </thead>
@@ -692,6 +705,32 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             $totalTime = computeTotalTime($record['AM_IN'], $record['AM_OUT'], $record['PM_IN'], $record['PM_OUT'], $record['DEPT'], $record['HOLIDAY'], $record['OB'], $record['SL']);
                             $undertime = computeUndertime($totalTime, $record['DEPT'], $record['AM_IN'], $record['HOLIDAY'], $record['OB'], $record['SL']);
                             
+                            // Calculate overtime
+                            $overtime = '';
+                            if ($totalTime !== '—' && $record['OB'] != 1 && $record['SL'] != 1) {
+                                // Get standard working hours based on department
+                                $isOtherPersonnel = $record['DEPT'] && strtolower(trim($record['DEPT'])) === 'other_personnel';
+                                $standardHours = $isOtherPersonnel ? 12 : 8;
+                                
+                                // Convert total time to minutes
+                                $timeStr = str_replace(' hrs.', '', $totalTime);
+                                list($hours, $minutes) = explode(':', $timeStr);
+                                $totalMinutes = ($hours * 60) + $minutes;
+                                
+                                // Calculate overtime
+                                $standardMinutes = $standardHours * 60;
+                                $overtimeMinutes = $totalMinutes - $standardMinutes;
+                                
+                                // Only show overtime if it's greater than 0
+                                if ($overtimeMinutes > 0) {
+                                    $overtime = sprintf("%dh %dm (%d mins)", 
+                                        floor($overtimeMinutes/60), 
+                                        $overtimeMinutes%60, 
+                                        $overtimeMinutes
+                                    );
+                                }
+                            }
+
                             // Prepare remarks text
                             $remarks = [];
                             if (!empty($record['note'])) {
@@ -790,6 +829,7 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <td><?php echo $lateValue; ?></td>
                             <td><?php echo $undertime; ?></td>
                             <td><?php echo $totalTime; ?></td>
+                            <td><?php echo $overtime; ?></td>
                             <td><?php echo htmlspecialchars($remarksText); ?></td>
                         </tr>
                         <?php endforeach; ?>
@@ -832,6 +872,7 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         { wch: 15 }, // Late
                         { wch: 15 }, // Undertime
                         { wch: 15 }, // Total Time
+                        { wch: 15 }, // Overtime
                         { wch: 35 }  // Remarks
                     ];
                     worksheet['!cols'] = columnWidths;
