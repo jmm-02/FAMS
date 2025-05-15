@@ -7,10 +7,11 @@ require_once 'includes/session_handler.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome</title>
+    <link rel="icon" href="assets/logo.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         .update-log-btn {
-            background: linear-gradient(90deg, #5c8df6 0%, #6fc8fb 100%);
+            background: linear-gradient(90deg,rgb(0, 106, 9) 0%,rgb(0, 159, 50) 100%);
             color: white;
             border: none;
             padding: 10px 20px;
@@ -138,18 +139,157 @@ require_once 'includes/session_handler.php';
         .modal-error {
             color: #a94442;
         }
+        
+        .header {
+            padding: 25px 40px;
+            color: #2e7d32;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            width: 100%;
+            margin: 0;
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            margin: 0;
+            padding: 0 20px;
+            justify-content: space-between;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+        
+        .datetime-display {
+            text-align: right;
+            color: #2e7d32;
+        }
+        
+        .datetime-display .date {
+            font-size: 1.2em;
+            font-weight: 500;
+        }
+        
+        .datetime-display .time {
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+        
+        .logo {
+            margin-right: 30px;
+        }
+        
+        .logo img {
+            height: 90px;
+            width: auto;
+        }
+        
+        .header-text {
+            flex: 1;
+        }
+        
+        .header-text h1 {
+            margin: 0;
+            font-size: 2.8em;
+            font-weight: bold;
+            color: #2e7d32;
+        }
+        
+        .header-text h2 {
+            margin: 8px 0 0 0;
+            font-size: 1.6em;
+            font-weight: normal;
+            color: #43a047;
+        }
+
+        .main-content {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .instructions {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .instructions h3 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+            padding-left: 0;
+        }
+        
+        .instructions li {
+            margin-bottom: 15px;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .note {
+            background-color: #e8f5e9;
+            border-left: 4px solid #2e7d32;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .note i {
+            color: #2e7d32;
+            margin-right: 8px;
+        }
+        
+        .note p {
+            margin: 0;
+            color: #1b5e20;
+        }
     </style>
 </head>
 <body>
     <?php include 'sidebar.php'; ?>
     <!-- Main Content -->
     <div class="main-content">
-        <div class="header-banner">
-            <img src="assets/wall.png" alt="Colegio de Los Baños Logo">
+        <div class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="logo">
+                        <img src="assets/logo.png" alt="Colegio de Los Baños Logo">
+                    </div>
+                    <div class="header-text">
+                        <h1>Colegio de Los Baños</h1>
+                        <h2>Fingerprint Attendance Monitoring System</h2>
+                    </div>
+                </div>
+                <div class="datetime-display">
+                    <div class="date" id="current-date"></div>
+                    <div class="time" id="current-time"></div>
+                </div>
+            </div>
         </div>
         
         <div class="content-text">
-            <h2>The fingerprint attendance monitoring system for Colegio de Los Baños provides a user-friendly interface designed specifically for tracking employee attendance. It features real-time updates on faculty and staff attendance, including the total number of present and absent. A live feed displays names, and timestamps for time-in and time-out records, ensuring efficient monitoring.</h2>
+            <h2>Welcome to Colegio de Los Baños Attendance System</h2>
+            <div class="instructions">
+                <h3>Quick Start Guide:</h3>
+                <ol>
+                    <li><strong>Fingerprint Registration:</strong> Place your finger on the scanner to record attendance</li>
+                    <li><strong>Time In/Out:</strong> Scan your fingerprint at the start and end of your shift</li>
+                    <li><strong>Data Management:</strong> Use the Excel import feature below to update employee records</li>
+                </ol>
+                
+                <div class="note">
+                    <p><i class="fas fa-info-circle"></i> <strong>Important:</strong> Complete all daily attendance records before uploading the Excel file. This ensures accurate and complete attendance data for the entire day.</p>
+                </div>
+            </div>
             <form action="import_excel.php" method="post" enctype="multipart/form-data">
             <div class="file-upload-container">
                 <div class="file-input-wrapper">
@@ -177,6 +317,27 @@ require_once 'includes/session_handler.php';
     </div>
 
     <script>
+        // Update date and time
+        function updateDateTime() {
+            const now = new Date();
+            
+            // Format date
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
+            
+            // Format time
+            document.getElementById('current-time').textContent = now.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true 
+            });
+        }
+
+        // Update immediately and then every second
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+
         // Handle file selection
         document.getElementById('excelFileInput').addEventListener('change', function(e) {
             const fileName = e.target.files.length ? e.target.files[0].name : 'No file selected';

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Form</title>
+    <link rel="icon" href="assets/logo.png" type="image/x-icon">
     <style>
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
