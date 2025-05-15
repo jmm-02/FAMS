@@ -949,9 +949,20 @@
             const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
             return isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
         }
+
         const isOtherPersonnel = department && department.trim().toLowerCase() === 'other_personnel';
         const isJanitor = department && department.trim().toLowerCase() === 'janitor';
-        let amInMin = toMinutes(am_in);
+        
+        // Set standard time based on department
+        const standardTime = (isOtherPersonnel || isJanitor) ? '06:00' : '08:00';
+        const standardMin = toMinutes(standardTime);
+        
+        // Convert time strings to minutes for calculation
+        let amInMinRaw = toMinutes(am_in);
+        
+        // Use standard time if employee arrives earlier than their standard time
+        let amInMin = (amInMinRaw !== null && amInMinRaw < standardMin) ? standardMin : amInMinRaw;
+        
         const amOutMin = toMinutes(am_out);
         const pmInMin = toMinutes(pm_in);
         const pmOutMin = toMinutes(pm_out);
@@ -1017,10 +1028,10 @@
         }
 
         if (total <= 0) return '—';
-        const capMinutes = isOtherPersonnel ? 720 : (isJanitor ? 480 : 480);
-        const displayMinutes = total > capMinutes ? capMinutes : total;
-        const hours = Math.floor(displayMinutes / 60);
-        const minutes = displayMinutes % 60;
+        
+        // Remove the cap on total minutes and display actual time worked
+        const hours = Math.floor(total / 60);
+        const minutes = total % 60;
         return `${hours}:${minutes.toString().padStart(2, '0')} hrs.`;
     }
 
