@@ -764,7 +764,7 @@
             year: 'numeric', 
             month: 'short', 
             day: 'numeric' 
-        })} (${dayOfWeek})`;
+        })}<br>${dayOfWeek}`;
     }
     
     // Render employee info
