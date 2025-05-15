@@ -6,24 +6,20 @@
     <title>Holiday Management</title>
     <style>
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: #e8f5e9;
-            margin: 0;
-            padding: 0;
-            height: 100vh;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
         }
         .container {
             max-width: 1000px;
-            margin: auto;
             background: #fff;
             border-radius: 12px;
             box-shadow: 0 4px 24px rgba(0,0,0,0.08);
             padding: 32px 24px 24px 24px;
-            overflow: visible;
-            max-height: none;
-            position: relative;
         }
         h2 {
             color: #2d3a4b;
