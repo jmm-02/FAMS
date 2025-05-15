@@ -57,6 +57,14 @@ function computeTotalTime($am_in, $am_out, $pm_in, $pm_out, $department = null, 
     if ($amInMin !== null && $amOutMin === null && $pmInMin !== null && $pmOutMin === null) {
         $total = $pmInMin - $amInMin - 60;
     }
+    // Special case: Only AM IN and PM OUT are present (no AM OUT, no PM IN)
+    else if ($amInMin !== null && $amOutMin === null && $pmInMin === null && $pmOutMin !== null) {
+        $total = $pmOutMin - $amInMin - 60; // Deduct 1 hour for break
+    }
+    // Special case: Only AM OUT and PM OUT are present (no AM IN, no PM IN)
+    else if ($amInMin === null && $amOutMin !== null && $pmInMin === null && $pmOutMin !== null) {
+        $total = $pmOutMin - $amOutMin - 60; // Deduct 1 hour for break
+    }
     // If both AM In and PM Out are present, use (PM Out - AM In) - 1hr rule
     else if ($amInMin !== null && $pmOutMin !== null) {
         $total = $pmOutMin - $amInMin - 60; // Subtract 1 hour for break

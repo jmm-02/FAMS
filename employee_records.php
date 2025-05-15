@@ -968,8 +968,16 @@
         const pmOutMin = toMinutes(pm_out);
         let total = 0;
 
+        // Special case: Only AM IN and PM OUT are present (no AM OUT, no PM IN)
+        if (amInMin !== null && amOutMin === null && pmInMin === null && pmOutMin !== null) {
+            total = pmOutMin - amInMin - 60; // Deduct 1 hour for break
+        }
+        // Special case: Only AM OUT and PM OUT are present (no AM IN, no PM IN)
+        else if (amInMin === null && amOutMin !== null && pmInMin === null && pmOutMin !== null) {
+            total = pmOutMin - amOutMin - 60; // Deduct 1 hour for break
+        }
         // Special handling for Janitor schedule
-        if (isJanitor) {
+        else if (isJanitor) {
             if (amInMin !== null && amOutMin !== null && pmInMin !== null && pmOutMin !== null) {
                 // All four time entries
                 total = (amOutMin - amInMin) + (pmOutMin - pmInMin) - 60;
