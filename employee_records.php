@@ -1141,6 +1141,34 @@
                 }
                 const undertime = computeUndertime(totalTime, department, record.AM_IN, record.HOLIDAY);
                 
+                // Calculate late minutes
+                let lateMinutes = 0;
+                if (!record.OB && !record.SL && record.AM_IN) {
+                    const times = [];
+                    if (record.AM_IN) times.push(toMinutes(record.AM_IN));
+                    if (record.AM_OUT) times.push(toMinutes(record.AM_OUT));
+                    if (record.PM_IN) times.push(toMinutes(record.PM_IN));
+                    if (record.PM_OUT) times.push(toMinutes(record.PM_OUT));
+                    
+                    let hasSingleEntry = times.length === 1;
+                    let outOfOrder = false;
+                    let validIntervals = 0;
+                    
+                    for (let i = 0; i < times.length - 1; i++) {
+                        if (times[i+1] < times[i]) outOfOrder = true;
+                        if (times[i+1] > times[i]) validIntervals++;
+                    }
+                    
+                    if (!hasSingleEntry && !outOfOrder && validIntervals > 0) {
+                        const [h, m] = record.AM_IN.split(':').map(Number);
+                        let baseHour = isOtherPersonnel ? 6 : 8;
+                        let baseMinute = 0;
+                        if (h > baseHour || (h === baseHour && m > baseMinute)) {
+                            lateMinutes = (h - baseHour) * 60 + (m - baseMinute);
+                        }
+                    }
+                }
+                
                 // Prepare note field with OB and SL information
                 let noteText = record.NOTE || '';
                 
@@ -1167,7 +1195,7 @@
                     formatTime(record.AM_OUT),
                     formatTime(record.PM_IN),
                     formatTime(record.PM_OUT),
-                    record.late == 0 || record.late === '0' ? '' : `${Math.floor(record.late/60)}h ${record.late%60}m (${record.late} mins)`,
+                    lateMinutes > 0 ? `${Math.floor(lateMinutes/60)}h ${lateMinutes%60}m (${lateMinutes} mins)` : '',
                     undertime ? `${Math.floor(undertime/60)}h ${undertime%60}m (${undertime} mins)` : '',
                     totalTime,
                     noteText || '—'
@@ -1186,29 +1214,26 @@
             if (record.OB == 1) {
                 totalTime = isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
             }
-            // Recalculate outOfOrder for this record
-            const times = [];
-            if (record.AM_IN) times.push(toMinutes(record.AM_IN));
-            if (record.AM_OUT) times.push(toMinutes(record.AM_OUT));
-            if (record.PM_IN) times.push(toMinutes(record.PM_IN));
-            if (record.PM_OUT) times.push(toMinutes(record.PM_OUT));
-            let outOfOrder = false;
-            for (let i = 0; i < times.length - 1; i++) {
-                if (times[i+1] < times[i]) outOfOrder = true;
-            }
-            if (totalTime !== '—') {
-                const [hours, minutes] = totalTime.replace(' hrs.', '').split(':').map(Number);
-                totalMinutes += (hours * 60) + minutes;
-            }
-            // Only add late and undertime if not OB, not SL, not outOfOrder
-            if (record.OB != 1 && record.SL != 1 && !outOfOrder) {
+            
+            // Calculate late minutes for total
+            let lateMinutes = 0;
+            if (!record.OB && !record.SL && record.AM_IN) {
+                const times = [];
+                if (record.AM_IN) times.push(toMinutes(record.AM_IN));
+                if (record.AM_OUT) times.push(toMinutes(record.AM_OUT));
+                if (record.PM_IN) times.push(toMinutes(record.PM_IN));
+                if (record.PM_OUT) times.push(toMinutes(record.PM_OUT));
+                
                 let hasSingleEntry = times.length === 1;
+                let outOfOrder = false;
                 let validIntervals = 0;
+                
                 for (let i = 0; i < times.length - 1; i++) {
+                    if (times[i+1] < times[i]) outOfOrder = true;
                     if (times[i+1] > times[i]) validIntervals++;
                 }
-                let lateMinutes = 0;
-                if (!hasSingleEntry && !outOfOrder && validIntervals > 0 && record.AM_IN) {
+                
+                if (!hasSingleEntry && !outOfOrder && validIntervals > 0) {
                     const [h, m] = record.AM_IN.split(':').map(Number);
                     let baseHour = isOtherPersonnel ? 6 : 8;
                     let baseMinute = 0;
@@ -1216,10 +1241,16 @@
                         lateMinutes = (h - baseHour) * 60 + (m - baseMinute);
                     }
                 }
-                totalLateMinutes += lateMinutes;
-                const undertime = computeUndertime(totalTime, department, record.AM_IN, record.HOLIDAY);
-                totalUndertimeMinutes += Number(undertime) || 0;
             }
+            
+            if (totalTime !== '—') {
+                const [hours, minutes] = totalTime.replace(' hrs.', '').split(':').map(Number);
+                totalMinutes += (hours * 60) + minutes;
+            }
+            
+            totalLateMinutes += lateMinutes;
+            const undertime = computeUndertime(totalTime, department, record.AM_IN, record.HOLIDAY);
+            totalUndertimeMinutes += Number(undertime) || 0;
         });
 
         const totalHours = Math.floor(totalMinutes / 60);
