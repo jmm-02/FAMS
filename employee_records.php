@@ -13,10 +13,11 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            font-size: 14px; /* Base font size */
         }
         .container {
             flex: 1;
-            padding: clamp(12px, 2vw, 20px);
+            padding: clamp(8px, 1.5vw, 16px);
             background-color: #f5f5f5;
             position: relative;
             max-width: 100%;
@@ -35,46 +36,46 @@
             width: 100%;
         }
         .employee-info {
-            margin-bottom: clamp(16px, 3vw, 24px);
-            padding: clamp(12px, 2vw, 16px);
+            margin-bottom: clamp(12px, 2vw, 20px);
+            padding: clamp(10px, 1.5vw, 14px);
             background: #e0f2e0;
             border-radius: 8px;
             display: flex;
             flex-wrap: wrap;
-            gap: clamp(8px, 2vw, 16px);
+            gap: clamp(6px, 1.5vw, 12px);
             justify-content: flex-start;
             width: 100%;
             box-sizing: border-box;
         }
         .employee-info div {
             margin-bottom: 0;
-            min-width: min(200px, 100%);
+            min-width: min(180px, 100%);
             flex: 1;
         }
         .employee-info strong {
             display: block;
             color: #2e7d32;
-            font-size: clamp(0.85rem, 1.5vw, 0.9rem);
-            margin-bottom: 4px;
+            font-size: 0.9rem;
+            margin-bottom: 3px;
         }
         h2 {
             color: #2d3a4b;
-            margin-bottom: clamp(12px, 2vw, 18px);
-            letter-spacing: 1px;
-            font-size: clamp(1.5rem, 3vw, 2rem);
+            margin-bottom: clamp(10px, 1.5vw, 16px);
+            letter-spacing: 0.5px;
+            font-size: 1.4rem;
         }
         h3 {
             color: #2d3a4b;
-            margin-top: clamp(16px, 3vw, 24px);
-            margin-bottom: clamp(12px, 2vw, 16px);
-            font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+            margin-top: clamp(14px, 2vw, 20px);
+            margin-bottom: clamp(10px, 1.5vw, 14px);
+            font-size: 1.2rem;
         }
         .back-link {
             display: inline-block;
-            margin-bottom: clamp(12px, 2vw, 16px);
+            margin-bottom: clamp(10px, 1.5vw, 14px);
             color: #2e7d32;
             text-decoration: none;
-            font-size: clamp(0.9rem, 1.5vw, 1rem);
+            font-size: 0.9rem;
         }
         .back-link:hover {
             text-decoration: underline;
@@ -100,8 +101,9 @@
             border-radius: 8px;
         }
         #recordsTable th, #recordsTable td {
-            padding: 14px 12px;
+            padding: 8px 6px;
             text-align: left;
+            font-size: 0.9rem;
         }
         
         /* Fixed column widths for consistent alignment */
@@ -130,9 +132,9 @@
         
         /* Table wrapper with proper scrolling */
         .table-wrapper {
-            max-height: 500px;
+            max-height: 600px; /* Increased height */
             overflow: auto;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             border-radius: 8px;
             box-shadow: 0 2px 12px rgba(0,0,0,0.08);
             width: 100%;
@@ -180,12 +182,12 @@
             color: #2d3a4b;
         }
         .date-filter {
-            margin-bottom: clamp(16px, 3vw, 20px);
+            margin-bottom: clamp(12px, 2vw, 16px);
             display: flex;
-            gap: clamp(8px, 2vw, 12px);
+            gap: clamp(6px, 1.5vw, 10px);
             align-items: center;
             flex-wrap: wrap;
-            padding: clamp(12px, 2vw, 16px);
+            padding: clamp(10px, 1.5vw, 14px);
             background: #f8faff;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
@@ -197,10 +199,10 @@
             box-sizing: border-box;
         }
         .date-filter input {
-            padding: clamp(8px, 1.5vw, 10px) clamp(10px, 2vw, 14px);
+            padding: 6px 8px;
             border: 1px solid #d1d9e6;
             border-radius: 6px;
-            font-size: clamp(0.85rem, 1.5vw, 0.9rem);
+            font-size: 0.9rem;
             transition: all 0.2s;
             box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
             min-width: 120px;
@@ -212,7 +214,7 @@
             box-shadow: 0 0 0 3px rgba(46,125,50,0.2);
         }
         .date-filter button {
-            padding: clamp(8px, 1.5vw, 10px) clamp(12px, 2vw, 18px);
+            padding: 6px 12px;
             background: #2e7d32;
             color: white;
             border: none;
@@ -221,7 +223,7 @@
             font-weight: 500;
             transition: all 0.2s;
             box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-            font-size: clamp(0.85rem, 1.5vw, 0.9rem);
+            font-size: 0.9rem;
             white-space: nowrap;
         }
         .date-filter button:hover {
@@ -254,12 +256,12 @@
 
         /* Style for the "Save" button */
         .save-note-btn {
-            padding: 6px 12px;
+            padding: 4px 8px;
             border-radius: 4px;
             border: 1px solid #4CAF50;
             background: #e8f5e9;
             color: #2d3a4b;
-            font-size: 0.9em;
+            font-size: 0.85rem;
             cursor: pointer;
             transition: all 0.2s;
         }
@@ -293,12 +295,12 @@
 
         /* Style for Mark OB button */
         .mark-ob-btn {
-            padding: 6px 12px;
+            padding: 4px 8px;
             border-radius: 4px;
             border: 1px solid #2196F3;
             background: #E3F2FD;
             color: #1976D2;
-            font-size: 0.9em;
+            font-size: 0.85rem;
             cursor: pointer;
             transition: all 0.2s;
             margin-left: 8px;
@@ -319,12 +321,12 @@
 
         /* Style for Deny OB button */
         .deny-ob-btn {
-            padding: 6px 12px;
+            padding: 4px 8px;
             border-radius: 4px;
             border: 1px solid #F44336;
             background: #FFEBEE;
             color: #D32F2F;
-            font-size: 0.9em;
+            font-size: 0.85rem;
             cursor: pointer;
             transition: all 0.2s;
             margin-left: 8px;
@@ -345,12 +347,12 @@
 
         /* Style for Mark SL button */
         .mark-sl-btn {
-            padding: 6px 12px;
+            padding: 4px 8px;
             border-radius: 4px;
             border: 1px solid #9C27B0;
             background: #F3E5F5;
             color: #7B1FA2;
-            font-size: 0.9em;
+            font-size: 0.85rem;
             cursor: pointer;
             transition: all 0.2s;
             margin-left: 8px;
@@ -371,12 +373,12 @@
 
         /* Style for Deny SL button */
         .deny-sl-btn {
-            padding: 6px 12px;
+            padding: 4px 8px;
             border-radius: 4px;
             border: 1px solid #F44336;
             background: #FFEBEE;
             color: #D32F2F;
-            font-size: 0.9em;
+            font-size: 0.85rem;
             cursor: pointer;
             transition: all 0.2s;
             margin-left: 8px;
@@ -406,22 +408,22 @@
         }
 
         .warning-legend {
-            margin-bottom: clamp(8px, 2vw, 10px);
-            padding: clamp(8px, 1.5vw, 10px) clamp(12px, 2vw, 15px);
+            margin-bottom: clamp(6px, 1.5vw, 8px);
+            padding: clamp(6px, 1.2vw, 8px) clamp(10px, 1.5vw, 12px);
             background: #f4f4f4;
             border-radius: 6px;
-            font-size: clamp(0.8rem, 1.5vw, 0.9rem);
+            font-size: 0.85rem;
             color: #444;
             display: flex;
             flex-wrap: wrap;
-            gap: clamp(8px, 2vw, 12px);
+            gap: clamp(6px, 1.5vw, 10px);
             align-items: center;
         }
         .legend-box {
             display: inline-block;
-            width: clamp(14px, 2vw, 18px);
-            height: clamp(14px, 2vw, 18px);
-            margin-right: clamp(4px, 1vw, 6px);
+            width: 12px;
+            height: 12px;
+            margin-right: 4px;
             border-radius: 3px;
             vertical-align: middle;
         }
@@ -474,13 +476,13 @@
             }
 
             #recordsTable {
-                min-width: 800px; /* Ensure table doesn't shrink too much */
+                min-width: 900px; /* Increased minimum width */
             }
 
             #recordsTable th, 
             #recordsTable td {
-                padding: 8px 6px;
-                font-size: 0.9rem;
+                padding: 6px 4px;
+                font-size: 0.85rem;
                 white-space: nowrap;
             }
 
@@ -524,7 +526,7 @@
             .deny-ob-btn,
             .mark-sl-btn,
             .deny-sl-btn {
-                padding: 4px 8px;
+                padding: 3px 6px;
                 font-size: 0.8rem;
                 margin: 2px;
                 white-space: nowrap;
@@ -1056,7 +1058,7 @@
         })
         .then(data => {
             if (data.success) {
-                alert(newValue === '1' ? 'Successfully marked as SL!' : 'SL denied successfully!');
+                alert(newValue === 1 ? 'Successfully marked as SL!' : 'SL denied successfully!');
                 // Refresh the records
                 fetch(`Fetch/fetch_employee_records.php?emp_id=${empId}`)
                     .then(response => response.json())
