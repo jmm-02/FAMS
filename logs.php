@@ -38,8 +38,17 @@ function computeTotalTime($am_in, $am_out, $pm_in, $pm_out, $department = null, 
         return $isOtherPersonnel ? '12:00 hrs.' : '8:00 hrs.';
     }
 
-    // Use actual time entries without adjustment
-    $amInMin = toMinutes($am_in);
+    // Convert time strings to minutes for calculation
+    $amInMinRaw = toMinutes($am_in);
+    
+    // Set standard time based on department
+    $isOtherPersonnel = $department && strtolower(trim($department)) === 'other_personnel';
+    $isJanitor = $department && strtolower(trim($department)) === 'janitor';
+    $standardMin = ($isOtherPersonnel || $isJanitor) ? toMinutes('06:00') : toMinutes('08:00');
+    
+    // Use standard time if employee arrives earlier than their standard time
+    $amInMin = ($amInMinRaw !== null && $amInMinRaw < $standardMin) ? $standardMin : $amInMinRaw;
+    
     $amOutMin = toMinutes($am_out);
     $pmInMin = toMinutes($pm_in);
     $pmOutMin = toMinutes($pm_out);
@@ -133,7 +142,11 @@ function computeLate($am_in, $department) {
     if (empty($am_in)) return '';
     
     $amInMin = toMinutes($am_in);
-    $standardMin = toMinutes('06:00'); // Standard time is 6:00 AM
+    
+    // Set standard time based on department
+    $isOtherPersonnel = $department && strtolower(trim($department)) === 'other_personnel';
+    $isJanitor = $department && strtolower(trim($department)) === 'janitor';
+    $standardMin = ($isOtherPersonnel || $isJanitor) ? toMinutes('06:00') : toMinutes('08:00');
     
     if ($amInMin === null || $standardMin === null) return '';
     
