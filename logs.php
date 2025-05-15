@@ -44,8 +44,12 @@ function computeTotalTime($am_in, $am_out, $pm_in, $pm_out, $department = null, 
     $pmInMin = toMinutes($pm_in);
     $pmOutMin = toMinutes($pm_out);
 
+    // If only AM In and PM In are present (and AM Out and PM Out are missing), subtract 1 hour for break
+    if ($amInMin !== null && $amOutMin === null && $pmInMin !== null && $pmOutMin === null) {
+        $total = $pmInMin - $amInMin - 60;
+    }
     // If both AM In and PM Out are present, use (PM Out - AM In) - 1hr rule
-    if ($amInMin !== null && $pmOutMin !== null) {
+    else if ($amInMin !== null && $pmOutMin !== null) {
         $total = $pmOutMin - $amInMin - 60; // Subtract 1 hour for break
     } 
     // Special case: only AM OUT and PM IN are present
@@ -74,11 +78,9 @@ function computeTotalTime($am_in, $am_out, $pm_in, $pm_out, $department = null, 
 
     if ($total <= 0) return '—';
 
-    // Cap total time at 8 hours (480 minutes)
-    $capMinutes = 480;
-    $displayMinutes = $total > $capMinutes ? $capMinutes : $total;
-    $hours = floor($displayMinutes / 60);
-    $minutes = $displayMinutes % 60;
+    // Remove the cap on total minutes and display actual time worked
+    $hours = floor($total / 60);
+    $minutes = $total % 60;
     return sprintf("%d:%02d hrs.", $hours, $minutes);
 }
 
@@ -101,8 +103,9 @@ function computeUndertime($totalTime, $department, $am_in = null, $isHoliday = 0
     list($hours, $minutes) = explode(':', $timeStr);
     $totalMinutes = ($hours * 60) + $minutes;
     
-    // Standard working time is 8 hours (480 minutes)
-    $standardMinutes = 480;
+    // Use 12 hours (720 min) for Other_Personnel, 8 hours (480 min) for others
+    $isOtherPersonnel = $department && strtolower(trim($department)) === 'other_personnel';
+    $standardMinutes = $isOtherPersonnel ? 720 : 480;
     
     // Calculate undertime
     $undertime = $standardMinutes - $totalMinutes;

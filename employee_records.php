@@ -959,11 +959,17 @@
 
         // Special handling for Janitor schedule
         if (isJanitor) {
-            // If both AM In and PM Out are present, use (PM Out - AM In) - 1hr rule
-            if (amInMin !== null && pmOutMin !== null) {
-                total = pmOutMin - amInMin - 60; // Subtract 1 hour for break
+            if (amInMin !== null && amOutMin !== null && pmInMin !== null && pmOutMin !== null) {
+                // All four time entries
+                total = (amOutMin - amInMin) + (pmOutMin - pmInMin) - 60;
+            } else if (amInMin !== null && pmOutMin !== null) {
+                // Only AM In and PM Out
+                total = pmOutMin - amInMin - 60;
+            } else if (amInMin !== null && amOutMin === null && pmInMin !== null && pmOutMin === null) {
+                // Only AM In and PM In
+                total = pmInMin - amInMin - 60;
             } else if (amInMin === null && amOutMin !== null && pmInMin !== null && pmOutMin === null) {
-                // Special: only AM OUT and PM IN
+                // Only AM Out and PM In
                 if (pmInMin > amOutMin) {
                     total = pmInMin - amOutMin;
                 } else {
@@ -982,14 +988,12 @@
                         total += times[i+1] - times[i];
                     }
                 }
-                // Subtract 1 hour for break if there are multiple entries
-                if (times.length > 1) {
-                    total -= 60;
-                }
             }
         } else {
             // Original logic for other employees
-            if (amInMin !== null && pmOutMin !== null) {
+            if (amInMin !== null && amOutMin === null && pmInMin !== null && pmOutMin === null) {
+                total = pmInMin - amInMin - 60;
+            } else if (amInMin !== null && pmOutMin !== null) {
                 total = pmOutMin - amInMin - 60;
             } else if (amInMin === null && amOutMin !== null && pmInMin !== null && pmOutMin === null) {
                 if (pmInMin > amOutMin) {
