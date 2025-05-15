@@ -9,18 +9,20 @@
         body {
             font-family: Arial, sans-serif;
             background-color: #f5f5f5;
+            margin: 0;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            padding: 20px;
         }
         .container {
-            max-width: 1000px;
+            width: 100%;
+            max-width: 1200px;
             background: #fff;
             border-radius: 12px;
             box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-            padding: 32px 24px 24px 24px;
+            padding: 20px;
         }
         h2 {
             color: #2d3a4b;
@@ -49,6 +51,7 @@
             border: 1px solid #d1d9e6;
             border-radius: 6px;
             font-size: 14px;
+            box-sizing: border-box;
         }
         textarea {
             resize: vertical;
@@ -62,6 +65,7 @@
             font-weight: 500;
             transition: all 0.2s;
             margin-right: 10px;
+            margin-bottom: 10px;
         }
         .btn-primary {
             background: #2e7d32;
@@ -137,6 +141,69 @@
         }
         .back-link:hover {
             text-decoration: underline;
+        }
+
+        /* Responsive Design */
+        @media screen and (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+            
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+            
+            .btn {
+                width: 100%;
+                margin-right: 0;
+            }
+            
+            .edit-form {
+                padding: 10px;
+            }
+            
+            th, td {
+                padding: 8px 10px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .container {
+                margin: 5px;
+                padding: 10px;
+            }
+            
+            h2 {
+                font-size: 1.5em;
+            }
+            
+            .add-holiday-form {
+                padding: 15px;
+            }
+            
+            input, textarea {
+                padding: 8px;
+            }
+        }
+
+        /* Action buttons container */
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        @media screen and (max-width: 480px) {
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .action-buttons .btn {
+                margin-bottom: 5px;
+            }
         }
     </style>
 </head>
@@ -247,8 +314,10 @@
                 <td>${formatDate(holiday.DATE)}</td>
                 <td>${holiday.DESCRIPTION}</td>
                 <td>
-                    <button class="btn btn-warning" onclick="showEditForm('${holiday.DATE}', '${holiday.DESCRIPTION}')">Edit</button>
-                    <button class="btn btn-danger" onclick="removeHoliday('${holiday.DATE}')">Remove</button>
+                    <div class="action-buttons">
+                        <button class="btn btn-warning" onclick="showEditForm('${holiday.DATE}', '${holiday.DESCRIPTION}')">Edit</button>
+                        <button class="btn btn-danger" onclick="removeHoliday('${holiday.DATE}')">Remove</button>
+                    </div>
                 </td>
             `;
             tbody.appendChild(row);

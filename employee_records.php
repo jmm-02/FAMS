@@ -10,15 +10,17 @@
             background: #e8f5e9;
             margin: 0;
             padding: 0;
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
         .container {
             flex: 1;
-            padding: 20px;
+            padding: clamp(12px, 2vw, 20px);
             background-color: #f5f5f5;
             position: relative;
+            max-width: 100%;
+            box-sizing: border-box;
         }
         @media (max-width: 900px) {
             .container {
@@ -30,41 +32,49 @@
         .parent {
             display: grid;
             place-items: center;
+            width: 100%;
         }
         .employee-info {
-            margin-bottom: 24px;
-            padding: 16px;
+            margin-bottom: clamp(16px, 3vw, 24px);
+            padding: clamp(12px, 2vw, 16px);
             background: #e0f2e0;
             border-radius: 8px;
-            display: flex; /* Ensure it's visible */
+            display: flex;
             flex-wrap: wrap;
-            justify-content: space-between;
+            gap: clamp(8px, 2vw, 16px);
+            justify-content: flex-start;
+            width: 100%;
+            box-sizing: border-box;
         }
         .employee-info div {
-            margin-bottom: 8px;
-            min-width: 200px;
+            margin-bottom: 0;
+            min-width: min(200px, 100%);
+            flex: 1;
         }
         .employee-info strong {
             display: block;
             color: #2e7d32;
-            font-size: 0.9rem;
+            font-size: clamp(0.85rem, 1.5vw, 0.9rem);
             margin-bottom: 4px;
         }
         h2 {
             color: #2d3a4b;
-            margin-bottom: 18px;
+            margin-bottom: clamp(12px, 2vw, 18px);
             letter-spacing: 1px;
+            font-size: clamp(1.5rem, 3vw, 2rem);
         }
         h3 {
             color: #2d3a4b;
-            margin-top: 24px;
-            margin-bottom: 16px;
+            margin-top: clamp(16px, 3vw, 24px);
+            margin-bottom: clamp(12px, 2vw, 16px);
+            font-size: clamp(1.2rem, 2.5vw, 1.5rem);
         }
         .back-link {
             display: inline-block;
-            margin-bottom: 16px;
+            margin-bottom: clamp(12px, 2vw, 16px);
             color: #2e7d32;
             text-decoration: none;
+            font-size: clamp(0.9rem, 1.5vw, 1rem);
         }
         .back-link:hover {
             text-decoration: underline;
@@ -125,6 +135,8 @@
             margin-bottom: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            width: 100%;
+            position: relative;
         }
         
         /* Both header rows */
@@ -168,12 +180,12 @@
             color: #2d3a4b;
         }
         .date-filter {
-            margin-bottom: 20px;
+            margin-bottom: clamp(16px, 3vw, 20px);
             display: flex;
-            gap: 12px;
+            gap: clamp(8px, 2vw, 12px);
             align-items: center;
             flex-wrap: wrap;
-            padding: 16px;
+            padding: clamp(12px, 2vw, 16px);
             background: #f8faff;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
@@ -181,14 +193,18 @@
             top: 0;
             z-index: 5;
             flex-shrink: 0;
+            width: 100%;
+            box-sizing: border-box;
         }
         .date-filter input {
-            padding: 10px 14px;
+            padding: clamp(8px, 1.5vw, 10px) clamp(10px, 2vw, 14px);
             border: 1px solid #d1d9e6;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: clamp(0.85rem, 1.5vw, 0.9rem);
             transition: all 0.2s;
             box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+            min-width: 120px;
+            flex: 1;
         }
         .date-filter input:focus {
             outline: none;
@@ -196,7 +212,7 @@
             box-shadow: 0 0 0 3px rgba(46,125,50,0.2);
         }
         .date-filter button {
-            padding: 10px 18px;
+            padding: clamp(8px, 1.5vw, 10px) clamp(12px, 2vw, 18px);
             background: #2e7d32;
             color: white;
             border: none;
@@ -205,6 +221,8 @@
             font-weight: 500;
             transition: all 0.2s;
             box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+            font-size: clamp(0.85rem, 1.5vw, 0.9rem);
+            white-space: nowrap;
         }
         .date-filter button:hover {
             background: #1b5e20;
@@ -388,18 +406,22 @@
         }
 
         .warning-legend {
-            margin-bottom: 10px;
-            padding: 10px 15px;
+            margin-bottom: clamp(8px, 2vw, 10px);
+            padding: clamp(8px, 1.5vw, 10px) clamp(12px, 2vw, 15px);
             background: #f4f4f4;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: clamp(0.8rem, 1.5vw, 0.9rem);
             color: #444;
+            display: flex;
+            flex-wrap: wrap;
+            gap: clamp(8px, 2vw, 12px);
+            align-items: center;
         }
         .legend-box {
             display: inline-block;
-            width: 18px;
-            height: 18px;
-            margin-right: 6px;
+            width: clamp(14px, 2vw, 18px);
+            height: clamp(14px, 2vw, 18px);
+            margin-right: clamp(4px, 1vw, 6px);
             border-radius: 3px;
             vertical-align: middle;
         }
@@ -418,6 +440,212 @@
         /* Style for late row highlight */
         .late-row {
             background-color: #ffebee !important;
+        }
+        @media (max-width: 600px) {
+            .date-filter {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .date-filter input,
+            .date-filter button {
+                width: 100%;
+            }
+            .employee-info {
+                flex-direction: column;
+            }
+            .employee-info div {
+                width: 100%;
+            }
+            .warning-legend {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        /* Mobile Responsive Table Styles */
+        @media (max-width: 768px) {
+            .table-wrapper {
+                max-height: none;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                margin: 0 -12px;
+                width: calc(100% + 24px);
+                border-radius: 0;
+            }
+
+            #recordsTable {
+                min-width: 800px; /* Ensure table doesn't shrink too much */
+            }
+
+            #recordsTable th, 
+            #recordsTable td {
+                padding: 8px 6px;
+                font-size: 0.9rem;
+                white-space: nowrap;
+            }
+
+            /* Make the first column sticky on mobile */
+            #recordsTable th:first-child,
+            #recordsTable td:first-child {
+                position: sticky;
+                left: 0;
+                background: inherit;
+                z-index: 1;
+            }
+
+            /* Add shadow to indicate scrollable content */
+            .table-wrapper::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                width: 5px;
+                background: linear-gradient(to right, transparent, rgba(0,0,0,0.1));
+                pointer-events: none;
+            }
+
+            /* Adjust header positioning for mobile */
+            #recordsTable thead tr:first-child th {
+                position: sticky;
+                top: 0;
+                z-index: 2;
+            }
+
+            #recordsTable thead tr:nth-child(2) th {
+                position: sticky;
+                top: 40px;
+                z-index: 2;
+            }
+
+            /* Improve button spacing and sizing on mobile */
+            .save-note-btn,
+            .mark-ob-btn,
+            .deny-ob-btn,
+            .mark-sl-btn,
+            .deny-sl-btn {
+                padding: 4px 8px;
+                font-size: 0.8rem;
+                margin: 2px;
+                white-space: nowrap;
+            }
+
+            /* Adjust note input field */
+            .note-input {
+                width: 100%;
+                margin-bottom: 4px;
+            }
+
+            /* Improve date filter layout on mobile */
+            .date-filter {
+                padding: 10px;
+                gap: 8px;
+            }
+
+            .date-filter input {
+                width: 100%;
+                margin-bottom: 4px;
+            }
+
+            .date-filter button {
+                width: 100%;
+                margin-bottom: 4px;
+            }
+
+            /* Adjust employee info section */
+            .employee-info {
+                padding: 10px;
+                gap: 8px;
+            }
+
+            .employee-info div {
+                width: 100%;
+            }
+
+            /* Improve warning legend on mobile */
+            .warning-legend {
+                padding: 8px;
+                font-size: 0.8rem;
+            }
+
+            .legend-box {
+                width: 12px;
+                height: 12px;
+            }
+
+            /* Add touch-friendly scrolling */
+            .table-wrapper {
+                scrollbar-width: thin;
+                scrollbar-color: rgba(0,0,0,0.2) transparent;
+            }
+
+            .table-wrapper::-webkit-scrollbar {
+                height: 6px;
+                width: 6px;
+            }
+
+            .table-wrapper::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            .table-wrapper::-webkit-scrollbar-thumb {
+                background-color: rgba(0,0,0,0.2);
+                border-radius: 3px;
+            }
+
+            /* Improve container padding on mobile */
+            .container {
+                padding: 10px;
+            }
+
+            /* Adjust heading sizes for mobile */
+            h2 {
+                font-size: 1.3rem;
+                margin-bottom: 12px;
+            }
+
+            h3 {
+                font-size: 1.1rem;
+                margin-top: 16px;
+                margin-bottom: 12px;
+            }
+
+            /* Improve back link visibility */
+            .back-link {
+                font-size: 0.9rem;
+                margin-bottom: 10px;
+                display: inline-block;
+            }
+        }
+
+        /* Additional styles for very small screens */
+        @media (max-width: 480px) {
+            #recordsTable th, 
+            #recordsTable td {
+                padding: 6px 4px;
+                font-size: 0.85rem;
+            }
+
+            .save-note-btn,
+            .mark-ob-btn,
+            .deny-ob-btn,
+            .mark-sl-btn,
+            .deny-sl-btn {
+                padding: 3px 6px;
+                font-size: 0.75rem;
+            }
+
+            .container {
+                padding: 8px;
+            }
+
+            .date-filter {
+                padding: 8px;
+            }
+
+            .employee-info {
+                padding: 8px;
+            }
         }
     </style>
 </head>

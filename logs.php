@@ -143,12 +143,12 @@ function convertTo12Hour($time) {
     return date('h:i A', strtotime($time));
 }
 
-// Function to format date with day of week
+// Function to format date with day
 function formatDateWithDay($dateStr) {
     if (empty($dateStr)) return '';
     $timestamp = strtotime($dateStr);
     $dayOfWeek = date('l', $timestamp); // Gets the full day name
-    return date('M j, Y', $timestamp) . ' (' . $dayOfWeek . ')';
+    return date('M j, Y', $timestamp) . '<br><span style="font-size:90%;color:#666;">' . $dayOfWeek . '</span>';
 }
 
 // Function to compute late minutes
@@ -241,6 +241,9 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
             padding: 20px;
             background-color: #f5f5f5;
             position: relative;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
         }
 
         .header-banner {
@@ -281,40 +284,32 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
         /* Professional Table Styles */
         .logs-table {
             background-color: white;
-            padding: 25px;
+            padding: 15px;
             border-radius: 12px;
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
             margin: 20px 0;
+            width: 100%;
+            font-size: 13px;
         }
 
         .logs-table table {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            font-size: 14px;
+            min-width: unset;
+            table-layout: fixed;
         }
 
-        .logs-table thead {
-            position: sticky;
-            top: 90px; /* Space for the filter section */
-            z-index: 99;
+        .logs-table th, .logs-table td {
+            white-space: normal;
+            word-break: break-word;
+            text-align: center;
+            padding: 8px 4px;
+            font-size: 12px;
+            line-height: 1.3;
         }
 
         .logs-table th {
-            background-color: #f8f9fa;
-            color: #2c3e50;
             font-weight: 600;
-            padding: 16px;
-            text-align: left;
-            border-bottom: 2px solid #e9ecef;
-            white-space: nowrap;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .logs-table td {
-            padding: 14px 16px;
-            border-bottom: 1px solid #edf2f7;
-            color: #4a5568;
+            background-color: #f8f9fa;
         }
 
         .logs-table tbody tr:hover {
@@ -336,6 +331,7 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
         }
 
         .filter-form {
@@ -441,6 +437,45 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
             .filter-button {
                 flex: 1;
             }
+
+            .table-scroll-wrapper {
+                max-height: none;
+                overflow-x: auto;
+                margin: 0 -20px;
+                padding: 0 20px;
+            }
+
+            .logs-table {
+                padding: 15px;
+            }
+
+            .logs-table table {
+                min-width: unset;
+            }
+
+            .logs-table thead {
+                position: static;
+                box-shadow: none;
+            }
+
+            .results-count {
+                margin-top: 5px;
+            }
+        }
+
+        /* Table Scroll Wrapper */
+        .table-scroll-wrapper {
+            max-height: calc(100vh - 250px);
+            overflow-y: auto;
+            overflow-x: auto;
+            margin: 0 -15px;
+            padding: 0 15px;
+        }
+        .logs-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: #f8f9fa;
         }
 
         /* Status Badges */
@@ -529,7 +564,7 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .table-title {
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             color: #2d3748;
             font-weight: 600;
         }
@@ -542,7 +577,7 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         .results-count {
             color: #6b7280;
-            font-size: 14px;
+            font-size: 12px;
         }
 
         .table-header {
@@ -587,10 +622,10 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         .warning-legend {
             margin-bottom: 10px;
-            padding: 10px 15px;
+            padding: 8px 12px;
             background: #f4f4f4;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 12px;
             color: #444;
         }
         .legend-box {
@@ -621,15 +656,58 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
             background-color: #ffebee !important;
         }
 
-        .table-scroll-wrapper {
-            max-height: 60vh;
-            overflow-y: auto;
+        /* Column Widths */
+        .logs-table th:nth-child(1) { width: 8%; }  /* Employee ID */
+        .logs-table th:nth-child(2) { width: 12%; } /* Name */
+        .logs-table th:nth-child(3) { width: 8%; }  /* Department */
+        .logs-table th:nth-child(4) { width: 10%; } /* Date */
+        .logs-table th:nth-child(5) { width: 7%; }  /* AM IN */
+        .logs-table th:nth-child(6) { width: 7%; }  /* AM OUT */
+        .logs-table th:nth-child(7) { width: 7%; }  /* PM IN */
+        .logs-table th:nth-child(8) { width: 7%; }  /* PM OUT */
+        .logs-table th:nth-child(9) { width: 7%; }  /* Late */
+        .logs-table th:nth-child(10) { width: 7%; } /* Undertime */
+        .logs-table th:nth-child(11) { width: 7%; } /* Total Time */
+        .logs-table th:nth-child(12) { width: 7%; } /* Overtime */
+        .logs-table th:nth-child(13) { width: 12%; } /* Remarks */
+
+        /* Cell Content Handling */
+        .logs-table td:nth-child(2) { /* Name column */
+            white-space: normal;
+            min-width: 150px;
         }
-        .logs-table thead {
-            position: sticky;
-            top: 0; /* Adjust if needed for filter bar height */
-            z-index: 99;
-            background: #f8f9fa;
+
+        .logs-table td:nth-child(13) { /* Remarks column */
+            white-space: normal;
+            min-width: 200px;
+        }
+
+        @media (max-width: 1200px) {
+            .logs-table {
+                font-size: 12px;
+            }
+            .logs-table th, .logs-table td {
+                font-size: 11px;
+                padding: 6px 3px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .logs-table {
+                font-size: 11px;
+            }
+            .logs-table th, .logs-table td {
+                font-size: 10px;
+                padding: 4px 2px;
+            }
+        }
+
+        .logs-table th:nth-child(12),
+        .logs-table td:nth-child(12) {
+            white-space: nowrap;
+            word-break: normal;
+            min-width: 120px;
+            max-width: 200px;
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -643,9 +721,9 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <!-- Warning Legend -->
             <div class="warning-legend">
                 <strong>Legend:</strong><br>
-                <span class="legend-box legend-yellow"></span> Only one time entry, cannot compute interval<br>
-                <span class="legend-box legend-orange"></span> Out-of-order time entries detected<br>
-                <span class="legend-box legend-red"></span> Late<br>
+                <span class="legend-box legend-yellow"></span> Only one time entry, cannot compute interval
+                <span class="legend-box legend-orange"></span> Out-of-order time entries detected
+                <span class="legend-box legend-red"></span> Late
             </div>
             <div class="filter-container">
                 <form method="GET" action="" class="filter-form">
@@ -693,8 +771,8 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <th>AM OUT</th>
                             <th>PM IN</th>
                             <th>PM OUT</th>
-                            <th>Late(min)</th>
-                            <th>Undertime(min)</th>
+                            <th>Late</th>
+                            <th>Undertime</th>
                             <th>Total Time</th>
                             <th>Overtime</th>
                             <th>Remarks</th>
@@ -812,8 +890,8 @@ $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 $lateValue = '';
                             }
                             // Highlight row if late > 0 and not OB/SL
-                            $isLate = (is_numeric($lateValue) && $lateValue > 0);
-                            if ($isLate && (!isset($record['OB']) || $record['OB'] != 1) && (!isset($record['SL']) || $record['SL'] != 1)) {
+                            $isLate = !empty($lateValue) && (!isset($record['OB']) || $record['OB'] != 1) && (!isset($record['SL']) || $record['SL'] != 1);
+                            if ($isLate) {
                                 $rowClass = 'late-row';
                             }
                         ?>

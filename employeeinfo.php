@@ -9,39 +9,44 @@ require_once 'includes/session_handler.php';
     <link rel="icon" href="assets/logo.png" type="image/x-icon">
     <title>Employee Information</title>
     <style>
-        body {
-            align-items: center;
-            justify-content: center;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: #f0f7f0;
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            justify-content: center;
         }
         .container {
-            background: white;
+            flex: 1;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            width: 900px;
+            background-color: #f5f5f5;
+            position: relative;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
         }
-        h2 {
-            color: #2d3a4b;
+        .filters-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
             margin-bottom: 18px;
-            letter-spacing: 1px;
+            flex-wrap: wrap;
         }
         #searchName {
             padding: 10px 14px;
             width: 100%;
             max-width: 350px;
+            min-width: 200px;
             border: 1px solid #d1d9e6;
             border-radius: 6px;
             font-size: 1rem;
             transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        #searchName:focus {
-            border-color: #4CAF50;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+            flex: 1;
         }
         #statusFilter {
             padding: 10px 14px;
@@ -49,17 +54,31 @@ require_once 'includes/session_handler.php';
             border-radius: 6px;
             font-size: 1rem;
             transition: border-color 0.2s, box-shadow 0.2s;
+            min-width: 150px;
         }
-        #statusFilter:focus {
-            border-color: #4CAF50;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+        .table-responsive {
+            overflow-x: auto;
+            margin-top: 8px;
+            -webkit-overflow-scrolling: touch;
         }
         #employeeTable {
             width: 100%;
             border-collapse: collapse;
             background: #fff;
-            margin-top: 8px;
+            min-width: 600px;
+            table-layout: auto;
+        }
+        .actions-col, .actions-cell {
+            width: 1%;
+            white-space: nowrap;
+            text-align: left;
+            padding-right: 0;
+            padding-left: 0;
+        }
+        h2 {
+            color: #2d3a4b;
+            margin-bottom: 18px;
+            letter-spacing: 1px;
         }
         #employeeTable th, #employeeTable td {
             padding: 12px 10px;
@@ -160,13 +179,50 @@ require_once 'includes/session_handler.php';
             border-color: #2E7D32;
         }
 
-        @media (max-width: 700px) {
+        .view-records-btn, .toggle-status-btn {
+            padding: 4px 8px;
+            font-size: 0.9em;
+            margin-right: 4px;
+        }
+
+        @media (max-width: 768px) {
             .container {
-                padding: 12px 2vw 18px 2vw;
+                padding: 15px;
+                margin: 10px;
+                width: calc(100% - 20px);
+            }
+            .filters-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            #searchName, #statusFilter {
+                width: 100%;
+                max-width: none;
+            }
+            h2 {
+                font-size: 1.5rem;
+                margin-bottom: 15px;
             }
             #employeeTable th, #employeeTable td {
-                padding: 8px 4px;
-                font-size: 0.95rem;
+                padding: 8px;
+                font-size: 0.9rem;
+            }
+            .toggle-status-btn, .view-records-btn {
+                padding: 4px 8px;
+                font-size: 0.8em;
+            }
+        }
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+                margin: 5px;
+            }
+            #employeeTable th, #employeeTable td {
+                padding: 6px;
+                font-size: 0.85rem;
+            }
+            .actions-cell {
+                min-width: auto;
             }
         }
     </style>
@@ -175,7 +231,7 @@ require_once 'includes/session_handler.php';
     <?php include 'sidebar.php'; ?>
     <div class="container">
         <h2>Employee Information</h2>
-        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 18px;">
+        <div class="filters-container">
             <input type="text" id="searchName" placeholder="Search by name...">
             <select id="statusFilter">
                 <option value="">All Statuses</option>
@@ -184,20 +240,22 @@ require_once 'includes/session_handler.php';
                 <option value="Not set">Not set</option>
             </select>
         </div>
-        <table id="employeeTable" border="0" cellpadding="0" cellspacing="0">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Department</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Employee rows will be inserted here -->
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table id="employeeTable" border="0" cellpadding="0" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Department</th>
+                        <th>Status</th>
+                        <th class="actions-col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Employee rows will be inserted here -->
+                </tbody>
+            </table>
+        </div>
     </div>
     <script>
     let allEmployees = [];
@@ -232,7 +290,7 @@ require_once 'includes/session_handler.php';
                     <td>${emp.Name || ''}</td>
                     <td>${emp.department || ''}</td>
                     <td>${emp.status || 'Not set'}</td>
-                    <td>
+                    <td class="actions-cell">
                         <button type="button" class="view-records-btn" data-emp-id="${emp.emp_id}">View Records</button>
                         <button type="button" class="toggle-status-btn" data-emp-id="${emp.emp_id}" data-current-status="${emp.status || 'Inactive'}">
                             ${emp.status === 'Active' ? 'Set Inactive' : 'Set Active'}
