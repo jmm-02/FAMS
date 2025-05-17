@@ -8,7 +8,24 @@ require_once 'includes/session_handler.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome</title>
     <link rel="icon" href="assets/logo.png" type="image/x-icon">
+    <link rel="manifest" href="/attendance-monitoring/manifest.json">
+    <meta name="theme-color" content="#007bff">
+    <meta name="description" content="Employee attendance monitoring system">
+    <link rel="apple-touch-icon" href="/attendance-monitoring/assets/icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+    </script>
     <style>
         .update-log-btn {
             background: linear-gradient(90deg,rgb(0, 106, 9) 0%,rgb(0, 159, 50) 100%);

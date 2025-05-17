@@ -59,6 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Change Password</title>
+    <link rel="icon" href="assets/logo.png" type="image/x-icon">
     <style>
         body {
             font-family: Arial, sans-serif;

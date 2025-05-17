@@ -276,6 +276,22 @@
                 margin-left: var(--sidebar-width-collapsed);
                 padding: 12px 2vw;
             }
+            .nav-links a span.nav-text,
+            .logout-btn span.nav-text,
+            .profile-icon {
+                display: none;
+            }
+            .nav-links a,
+            .logout-btn {
+                justify-content: center;
+                padding: 12px 0;
+            }
+            .nav-icon {
+                margin-right: 0;
+            }
+            .nav-icon i {
+                margin-right: 0;
+            }
         }
 
         .nav-links a,
@@ -377,8 +393,41 @@
         const burgerMenu = document.querySelector('.burger-menu');
         const sidebar = document.querySelector('.sidebar');
 
+        // Function to check if device is mobile
+        function isMobile() {
+            return window.innerWidth <= 900;
+        }
+
+        // Function to handle sidebar state
+        function handleSidebarState() {
+            // Check localStorage first, then fallback to mobile check
+            const savedState = localStorage.getItem('sidebarCollapsed');
+            if (savedState !== null) {
+                if (savedState === 'true') {
+                    sidebar.classList.add('collapsed');
+                } else {
+                    sidebar.classList.remove('collapsed');
+                }
+            } else if (isMobile()) {
+                sidebar.classList.add('collapsed');
+                localStorage.setItem('sidebarCollapsed', 'true');
+            } else {
+                sidebar.classList.remove('collapsed');
+                localStorage.setItem('sidebarCollapsed', 'false');
+            }
+        }
+
+        // Initial check
+        handleSidebarState();
+
+        // Listen for window resize
+        window.addEventListener('resize', handleSidebarState);
+
+        // Toggle sidebar on burger menu click
         burgerMenu.addEventListener('click', () => {
             sidebar.classList.toggle('collapsed');
+            // Save the state to localStorage
+            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
         });
 
         function openChangePasswordModal() {
