@@ -206,6 +206,8 @@ if ($fileExtension === 'csv') {
     }
 }
 
+require_once 'includes/holiday_sync.php';
+
 try {
     // Connect to the database
     $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
@@ -346,6 +348,7 @@ try {
         $pmOut = $record['pm_out'];
         $late = $record['late'];
         $undertime = $record['undertime'];
+        
         // Skip if missing critical data
         if (empty($empId) || empty($date)) {
             file_put_contents(__DIR__ . '/excel_debug.log', "Skipping attendance without ID or date: Name=$name, Date=$date\n", FILE_APPEND);
@@ -364,6 +367,9 @@ try {
                 $stmt->execute([$amIn, $amOut, $pmIn, $pmOut, $late, $undertime, $empId, $date]);
                 $attendanceUpdated++;
                 file_put_contents(__DIR__ . '/excel_debug.log', "Updated attendance: ID=$empId, Date=$date\n", FILE_APPEND);
+                
+                // Immediately sync holiday status for this date
+                syncHolidaysForDate($pdo, $date);
             } else {
                 // Skip this record as user wanted to skip duplicates
                 $attendanceSkipped++;
@@ -375,7 +381,18 @@ try {
             $stmt->execute([$empId, $date, $amIn, $amOut, $pmIn, $pmOut, $late, $undertime]);
             $attendanceInserted++;
             file_put_contents(__DIR__ . '/excel_debug.log', "Inserted attendance record: ID=$empId, Date=$date\n", FILE_APPEND);
+            
+            // Immediately sync holiday status for this date
+            syncHolidaysForDate($pdo, $date);
         }
+    }
+    
+    // Sync holidays for all dates in the imported data
+    $dates = array_unique(array_column($attendanceData, 'date'));
+    if (!empty($dates)) {
+        $minDate = min($dates);
+        $maxDate = max($dates);
+        syncHolidaysForDateRange($pdo, $minDate, $maxDate);
     }
     
     // Commit all changes

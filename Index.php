@@ -16,7 +16,7 @@ require_once 'includes/session_handler.php';
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
+                navigator.serviceWorker.register('/attendance-monitoring/sw.js')
                     .then(registration => {
                         console.log('ServiceWorker registration successful');
                     })
